@@ -3,7 +3,7 @@ import { useLayoutEffect } from 'react'
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { Text, TouchableOpacity } from 'react-native'
 // @ts-ignore
-import MapComponent from '@/components/personals/MapComponent'
+import MapComponent from '@/components/personals/NewMapComponent.native'
 
 export default function MapsScreen() {
   const navigation = useNavigation()
@@ -53,5 +53,4 @@ export default function MapsScreen() {
   }, [navigation, sharedParams])
 
   return <MapComponent />
-  // return <App />
 }

@@ -4,30 +4,44 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import { AppleMaps, GoogleMaps } from 'expo-maps'
 import { router, useLocalSearchParams } from 'expo-router'
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
+import {
+  Dimensions,
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useBottomTabOverflow } from '../ui/TabBarBackground'
+
+import { AppleMapsMapType } from 'expo-maps/build/apple/AppleMaps.types'
+import { GoogleMapsMapType } from 'expo-maps/build/google/GoogleMaps.types'
 
 import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
 import '@/global.css'
+import { Ionicons } from '@expo/vector-icons'
 import 'react-native-get-random-values'
 
-const INITIAL_DELTA = { latitudeDelta: 0.005, longitudeDelta: 0.005 }
-
 export default function MapComponent() {
-  const mapRef = useRef<any>(null)
-  const autoCompleteRef = useRef<any>(null)
+  const ref = useRef<AppleMaps.MapView>(null)
 
   const bottom = useBottomTabOverflow()
   const [address, setAddress] = useState<string | null>(null)
   const [locationConfirmed, setLocationConfirmed] = useState(false)
 
+  const [query, setQuery] = useState('')
+  const [suggestions, setSuggestions] = useState<any[]>([])
+
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
     null
   )
+
+  const [zoom, setZoom] = useState<number>(15)
 
   const params = useLocalSearchParams()
   const { operationTypes, description, housingTypes, bathrooms, bedrooms, price, size } = params
@@ -55,39 +69,6 @@ export default function MapComponent() {
     }
   }
 
-  const handlePlaceSelect = async (data: any, details: any) => {
-    if (!details) return
-
-    const { lat, lng } = details.geometry.location
-    const newCoords = { latitude: lat, longitude: lng }
-
-    setCoords(newCoords)
-    fetchAddress(newCoords)
-    setLocationConfirmed(false)
-    mapRef.current?.animateToRegion({ ...newCoords, ...INITIAL_DELTA }, 1000)
-    if (autoCompleteRef.current) {
-      autoCompleteRef.current.blur()
-    }
-  }
-
-  useEffect(() => {
-    ;(async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync()
-      if (status !== 'granted') return alert('Location permission denied')
-
-      const { coords } = await Location.getCurrentPositionAsync({})
-      const userCoords = { latitude: coords.latitude, longitude: coords.longitude }
-
-      setUserLocation(userCoords)
-      setCoords(userCoords)
-      fetchAddress(userCoords)
-
-      setTimeout(() => {
-        mapRef.current?.animateToRegion({ ...userCoords, ...INITIAL_DELTA }, 1000)
-      }, 500)
-    })()
-  }, [])
-
   const confirmLocation = () => {
     if (!coords) return
 
@@ -103,11 +84,133 @@ export default function MapComponent() {
 
   const cameraPositiom = {
     coordinates: {
-      latitude: 40.111706595275386,
-      longitude: -3.6335869290179206
+      latitude: coords?.latitude,
+      longitude: coords?.longitude
     },
-    zoom: 10
+    zoom
   }
+
+  useEffect(() => {
+    ;(async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== 'granted') return alert('Location permission denied')
+
+      const { coords } = await Location.getCurrentPositionAsync({})
+      const userCoords = { latitude: coords.latitude, longitude: coords.longitude }
+
+      setUserLocation(userCoords)
+      setCoords(userCoords)
+      fetchAddress(userCoords)
+
+      setTimeout(() => {
+        ref.current?.setCameraPosition({
+          coordinates: {
+            latitude: coords.latitude,
+            longitude: coords.longitude
+          },
+          zoom: zoom
+        })
+      }, 1500)
+    })()
+  }, [])
+
+  const handleSelect = async (placeId: string, description: string) => {
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}&fields=geometry`
+      )
+      const json = await res.json()
+      const { lat, lng } = json.result.geometry.location
+      const newCoords = { latitude: lat, longitude: lng }
+
+      setCoords(newCoords)
+      fetchAddress(newCoords)
+      setZoom(20)
+      setLocationConfirmed(false)
+      ref.current?.setCameraPosition({
+        coordinates: {
+          latitude: coords?.latitude,
+          longitude: coords?.longitude
+        },
+        zoom: zoom
+      })
+      setQuery(description)
+      setSuggestions([])
+    } catch (err) {
+      console.error('Error selecting place:', err)
+    }
+  }
+
+  const fetchSuggestions = async (text: string) => {
+    setQuery(text)
+    if (text.length < 3) return setSuggestions([])
+
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&key=${GOOGLE_MAPS_API_KEY}&language=en`
+    try {
+      const res = await fetch(url)
+      const json = await res.json()
+      setSuggestions(json.predictions || [])
+    } catch (err) {
+      console.error('Error fetching suggestions:', err)
+      setSuggestions([])
+    }
+  }
+
+  const markerApple = [
+    {
+      coordinates: { latitude: coords?.latitude, longitude: coords?.longitude },
+      title: address || '',
+      tintColor: 'red',
+      systemImage: 'cup.and.saucer.fill'
+    },
+    {
+      coordinates: { latitude: userLocation?.latitude, longitude: userLocation?.longitude },
+      title: 'Your Location',
+      tintColor: 'blue',
+      systemImage: 'cup.and.saucer.fill'
+    }
+  ]
+
+  const markerAndroid = [
+    {
+      coordinates: { latitude: coords?.latitude, longitude: coords?.longitude },
+      title: 'Selected Location',
+      snippet: address || '',
+      draggable: true
+    },
+    {
+      coordinates: { latitude: userLocation?.latitude, longitude: userLocation?.longitude },
+      title: 'Your Location',
+      snippet: address || '',
+      color: 'blue',
+      draggable: true
+    }
+  ]
+
+  const centerMap = () => {
+    if (!userLocation) return alert('User location not available.')
+
+    setZoom(18)
+
+    ref.current?.setCameraPosition({
+      coordinates: {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude
+      },
+      zoom: zoom
+    })
+  }
+
+  const renterCenterButton = () => (
+    <>
+      <TouchableOpacity
+        onPress={centerMap}
+        className="absolute bottom-7 right-5 bg-white rounded-full z-20"
+        style={[styles.shadow, { padding: 10 }]}>
+        <Ionicons name="locate" size={24} color="#353949" />
+      </TouchableOpacity>
+    </>
+  )
 
   const renderConfirmView = () => (
     <>
@@ -125,39 +228,74 @@ export default function MapComponent() {
 
   const renderPlacesAutocomplete = () => (
     <>
-      <GooglePlacesAutocomplete
-        ref={autoCompleteRef}
-        placeholder="Search location"
-        filterReverseGeocodingByTypes={['locality', 'sublocality']}
-        fetchDetails
-        debounce={200}
-        enablePoweredByContainer={false}
-        onPress={handlePlaceSelect}
-        query={{ key: GOOGLE_MAPS_API_KEY, language: 'en' }}
-        GooglePlacesDetailsQuery={{ fields: 'geometry' }}
-        styles={autocompleteStyles}
-      />
+      <View style={styles.autocompleteContainer}>
+        <TextInput
+          placeholder="Search location"
+          value={query}
+          onChangeText={fetchSuggestions}
+          style={styles.textInput}
+        />
+        {suggestions.length > 0 && (
+          <FlatList
+            data={suggestions}
+            keyExtractor={(item) => item.place_id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.suggestionItem}
+                onPress={() => handleSelect(item.place_id, item.description)}>
+                <Text>{item.description}</Text>
+              </TouchableOpacity>
+            )}
+            style={styles.suggestionsList}
+          />
+        )}
+      </View>
     </>
   )
 
   if (Platform.OS === 'ios') {
     return (
       <>
-        <AppleMaps.View style={StyleSheet.absoluteFill} cameraPosition={cameraPositiom} />
+        <AppleMaps.View
+          ref={ref}
+          style={StyleSheet.absoluteFill}
+          cameraPosition={cameraPositiom}
+          markers={markerApple}
+          properties={{
+            isTrafficEnabled: false,
+            mapType: AppleMapsMapType.STANDARD,
+            selectionEnabled: true
+          }}
+        />
 
         <SafeAreaView style={{ flex: 1, paddingBottom: bottom }} pointerEvents="box-none">
           {renderPlacesAutocomplete()}
           {renderConfirmView()}
+          {renterCenterButton()}
         </SafeAreaView>
       </>
     )
   } else if (Platform.OS === 'android') {
     return (
       <>
-        <GoogleMaps.View style={StyleSheet.absoluteFill} cameraPosition={cameraPositiom} />
+        <GoogleMaps.View
+          ref={ref}
+          style={StyleSheet.absoluteFill}
+          cameraPosition={cameraPositiom}
+          markers={markerAndroid}
+          properties={{
+            isBuildingEnabled: true,
+            isIndoorEnabled: true,
+            mapType: GoogleMapsMapType.NORMAL,
+            selectionEnabled: true,
+            isTrafficEnabled: true
+          }}
+        />
+
         <SafeAreaView style={{ flex: 1, paddingBottom: bottom }} pointerEvents="box-none">
           {renderPlacesAutocomplete()}
           {renderConfirmView()}
+          {renterCenterButton()}
         </SafeAreaView>
       </>
     )
@@ -166,13 +304,24 @@ export default function MapComponent() {
   }
 }
 
-const autocompleteStyles = {
-  container: {
+const styles = StyleSheet.create({
+  map: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height
+  },
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 4
+  },
+  autocompleteContainer: {
     position: 'absolute',
     top: 20,
-    width: '90%',
-    alignSelf: 'center',
-    zIndex: 999
+    left: 20,
+    right: 20,
+    zIndex: 1000
   },
   textInput: {
     height: 48,
@@ -182,10 +331,16 @@ const autocompleteStyles = {
     backgroundColor: '#fff',
     elevation: 5
   },
-  listView: {
+  suggestionsList: {
     backgroundColor: '#fff',
     borderRadius: 12,
     marginTop: 8,
-    elevation: 5
+    elevation: 5,
+    maxHeight: 150
+  },
+  suggestionItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#eee'
   }
-}
+})

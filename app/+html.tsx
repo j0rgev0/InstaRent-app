@@ -24,18 +24,17 @@ export default function Root({ children }: PropsWithChildren) {
               src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geocoding`}
               async
               defer
-              onError={() => console.error('Error loading Google Maps API')}
             />
             <script
               dangerouslySetInnerHTML={{
                 __html: `
-          window.initGoogleMaps = function() {
-            window.googleMapsLoaded = true;
-            if (window.onGoogleMapsLoaded) {
-              window.onGoogleMapsLoaded();
-            }
-          };
-        `
+                  window.initGoogleMaps = function() {
+                    window.googleMapsLoaded = true;
+                    if (window.onGoogleMapsLoaded) {
+                      window.onGoogleMapsLoaded();
+                    }
+                  };
+                `
               }}
             />
           </React.Fragment>
