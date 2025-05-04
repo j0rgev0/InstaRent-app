@@ -1,24 +1,24 @@
+import * as Location from 'expo-location'
+import { router, useLocalSearchParams } from 'expo-router'
 import React, { useEffect, useRef, useState } from 'react'
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
   Dimensions,
-  StyleSheet,
+  FlatList,
   Keyboard,
-  TouchableWithoutFeedback
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native'
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
-import { router, useLocalSearchParams } from 'expo-router'
 import MapView, { Marker } from 'react-native-maps'
-
-import * as Location from 'expo-location'
 
 import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
-import 'react-native-get-random-values'
 import '@/global.css'
+import 'react-native-get-random-values'
 
 const INITIAL_DELTA = { latitudeDelta: 0.005, longitudeDelta: 0.005 }
 
@@ -37,7 +37,6 @@ export default function MapComponent() {
   }
 
   const mapRef = useRef<MapView>(null)
-  const autoCompleteRef = useRef<any>(null)
 
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
@@ -45,6 +44,9 @@ export default function MapComponent() {
   )
   const [address, setAddress] = useState<string | null>(null)
   const [locationConfirmed, setLocationConfirmed] = useState(false)
+
+  const [query, setQuery] = useState('')
+  const [suggestions, setSuggestions] = useState<any[]>([])
 
   useEffect(() => {
     ;(async () => {
@@ -77,17 +79,39 @@ export default function MapComponent() {
     }
   }
 
-  const handlePlaceSelect = async (data: any, details: any) => {
-    if (!details) return
+  const fetchSuggestions = async (text: string) => {
+    setQuery(text)
+    if (text.length < 3) return setSuggestions([])
 
-    const { lat, lng } = details.geometry.location
-    const newCoords = { latitude: lat, longitude: lng }
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&key=${GOOGLE_MAPS_API_KEY}&language=en`
+    try {
+      const res = await fetch(url)
+      const json = await res.json()
+      setSuggestions(json.predictions || [])
+    } catch (err) {
+      console.error('Error fetching suggestions:', err)
+      setSuggestions([])
+    }
+  }
 
-    setCoords(newCoords)
-    fetchAddress(newCoords)
-    setLocationConfirmed(false)
-    mapRef.current?.animateToRegion({ ...newCoords, ...INITIAL_DELTA }, 1000)
-    autoCompleteRef.current?.blur()
+  const handleSelect = async (placeId: string, description: string) => {
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${GOOGLE_MAPS_API_KEY}&fields=geometry`
+      )
+      const json = await res.json()
+      const { lat, lng } = json.result.geometry.location
+      const newCoords = { latitude: lat, longitude: lng }
+
+      setCoords(newCoords)
+      fetchAddress(newCoords)
+      setLocationConfirmed(false)
+      mapRef.current?.animateToRegion({ ...newCoords, ...INITIAL_DELTA }, 1000)
+      setQuery(description)
+      setSuggestions([])
+    } catch (err) {
+      console.error('Error selecting place:', err)
+    }
   }
 
   const confirmLocation = () => {
@@ -120,28 +144,40 @@ export default function MapComponent() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View className="flex-1">
-        <GooglePlacesAutocomplete
-          ref={autoCompleteRef}
-          placeholder="Search location"
-          fetchDetails
-          debounce={200}
-          enablePoweredByContainer={false}
-          onPress={handlePlaceSelect}
-          query={{ key: GOOGLE_MAPS_API_KEY, language: 'en' }}
-          GooglePlacesDetailsQuery={{ fields: 'geometry' }}
-          styles={autocompleteStyles}
-        />
+        <View style={styles.autocompleteContainer}>
+          <TextInput
+            placeholder="Search location"
+            value={query}
+            onChangeText={fetchSuggestions}
+            style={styles.textInput}
+          />
+          {suggestions.length > 0 && (
+            <FlatList
+              data={suggestions}
+              keyExtractor={(item) => item.place_id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.suggestionItem}
+                  onPress={() => handleSelect(item.place_id, item.description)}>
+                  <Text>{item.description}</Text>
+                </TouchableOpacity>
+              )}
+              style={styles.suggestionsList}
+            />
+          )}
+        </View>
 
         <TouchableOpacity
           onPress={centerMap}
           className="absolute bottom-10 right-5 bg-white rounded-full z-20"
-          style={[styles.shadow, { padding: 12 }]}></TouchableOpacity>
+          style={[styles.shadow, { padding: 12 }]}
+        />
 
         {userLocation && (
           <MapView
             ref={mapRef}
             style={styles.map}
-            initialRegion={{ ...userLocation, latitudeDelta: 0.002, longitudeDelta: 0.002 }}
+            initialRegion={{ ...userLocation, ...INITIAL_DELTA }}
             showsUserLocation
             showsMyLocationButton
             showsBuildings
@@ -187,16 +223,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 4
-  }
-})
-
-const autocompleteStyles = {
-  container: {
+  },
+  autocompleteContainer: {
     position: 'absolute',
     top: 20,
-    width: '90%',
-    alignSelf: 'center',
-    zIndex: 999
+    left: 20,
+    right: 20,
+    zIndex: 1000
   },
   textInput: {
     height: 48,
@@ -206,10 +239,16 @@ const autocompleteStyles = {
     backgroundColor: '#fff',
     elevation: 5
   },
-  listView: {
+  suggestionsList: {
     backgroundColor: '#fff',
     borderRadius: 12,
     marginTop: 8,
-    elevation: 5
+    elevation: 5,
+    maxHeight: 150
+  },
+  suggestionItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#eee'
   }
-}
+})

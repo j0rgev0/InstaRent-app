@@ -53,4 +53,5 @@ export default function MapsScreen() {
   }, [navigation, sharedParams])
 
   return <MapComponent />
+  // return <App />
 }
