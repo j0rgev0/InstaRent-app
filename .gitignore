@@ -3,14 +3,33 @@
 # dependencies
 node_modules/
 
+# iOS
+ios
+
+# Android
+android
+
+utils/constants.ts
+
 # Expo
 .expo/
 dist/
 web-build/
+
+.vscode/
+.metro-cache/
+.idea/
+
+
+
+
 expo-env.d.ts
 
+nativewind-env.d.ts
+
+app-env.*s
+
 # Native
-.kotlin/
 *.orig.*
 *.jks
 *.p8
@@ -32,6 +51,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo

@@ -1,22 +1,35 @@
 {
   "expo": {
+    "scheme": "instarentapp",
     "name": "instarent-app",
     "slug": "instarent-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "instarentapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "We need your location to show it on the map.",
+        "NSLocationAlwaysUsageDescription": "Your location will always be used to improve your experience on the application."
+      }
     },
     "android": {
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCMDZehRRJZmHC_ER3WxzTOSKrvf0tcz60"
+        }
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.j0rgev.instarentapp"
     },
     "web": {
       "bundler": "metro",
