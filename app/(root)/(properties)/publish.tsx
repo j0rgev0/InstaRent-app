@@ -14,11 +14,12 @@ import {
 
 import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
-import AddressAutocomplete from '@/components/personals/MapComponent.web'
-// @ts-ignore
-import MapPreview from '@/components/personals/MapPreview'
+import AddressAutocomplete from '@/components/map/MapComponent.web'
 
-import Counter from '@/components/personals/Counter'
+// @ts-ignore
+import MapPreview from '@/components/map/MapPreview'
+
+import Counter from '@/components/common/Counter'
 import { Ionicons } from '@expo/vector-icons'
 
 import '@/global.css'

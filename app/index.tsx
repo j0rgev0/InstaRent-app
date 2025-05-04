@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-import Button from '@/components/personals/Button'
+import Button from '@/components/common/Button'
 
 import '@/global.css'
 

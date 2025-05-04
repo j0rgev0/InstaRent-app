@@ -10,9 +10,9 @@ import {
   View
 } from 'react-native'
 
-import { authClient } from '@/lib/auth-client'
-import InputTextField from '@/components/personals/InputTextField'
+import InputTextField from '@/components/common/InputTextField'
 import '@/global.css'
+import { authClient } from '@/lib/auth-client'
 
 const changeEmailPage = () => {
   const [errorMessage, setErrorMessage] = useState('')

@@ -1,12 +1,11 @@
 import { useState } from 'react'
 
-import { View, Text, TouchableWithoutFeedback, Keyboard, Alert, Platform } from 'react-native'
-import { useRouter } from 'expo-router'
-import { Link } from 'expo-router'
+import { Link, useRouter } from 'expo-router'
+import { Alert, Keyboard, Platform, Text, TouchableWithoutFeedback, View } from 'react-native'
 
-import InputTextField from '@/components/personals/InputTextField'
+import Button from '@/components/common/Button'
+import InputTextField from '@/components/common/InputTextField'
 import { authClient } from '@/lib/auth-client'
-import Button from '@/components/personals/Button'
 
 import '@/global.css'
 

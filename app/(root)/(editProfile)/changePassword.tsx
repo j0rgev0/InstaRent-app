@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 
+import { router } from 'expo-router'
 import {
   Alert,
   Keyboard,
@@ -9,9 +10,8 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native'
-import { router } from 'expo-router'
 
-import InputTextField from '@/components/personals/InputTextField'
+import InputTextField from '@/components/common/InputTextField'
 import { authClient } from '@/lib/auth-client'
 
 import '@/global.css'

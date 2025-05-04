@@ -1,13 +1,13 @@
 import React, { useCallback, useState } from 'react'
 
-import { Platform, ScrollView, Text, TouchableOpacity, View, Image, Alert } from 'react-native'
-import { router, useNavigation, useFocusEffect } from 'expo-router'
+import { router, useFocusEffect, useNavigation } from 'expo-router'
+import { Alert, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 import * as ImagePicker from 'expo-image-picker'
 
-import { CLOUDINARY_CLOUD_NAME } from '@/utils/constants'
-import InputTextField from '@/components/personals/InputTextField'
+import InputTextField from '@/components/common/InputTextField'
 import { authClient } from '@/lib/auth-client'
+import { CLOUDINARY_CLOUD_NAME } from '@/utils/constants'
 import { Ionicons } from '@expo/vector-icons'
 
 import '@/global.css'
