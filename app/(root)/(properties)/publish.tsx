@@ -47,6 +47,7 @@ const PublishPage = () => {
   const [doorNumber, setDoorNumber] = useState<number | null>(null)
   const [doorLetter, setDoorLetter] = useState<string | undefined>(undefined)
   const [constructionYear, setConstructionYear] = useState<string>('')
+  const [constructionYearError, setConstructionYearError] = useState<string>('')
   const [description, setDescription] = useState<string | undefined>(
     params.description ? String(params.description) : undefined
   )
@@ -453,7 +454,7 @@ const PublishPage = () => {
 
           {hasContructionYear && (
             <View>
-              <Text className="text-sm text-gray-500 mb-1">Insert construction year</Text>
+              <Text className="text-sm text-gray-500 mb-1">Insert construction year (YYYY)</Text>
               <View className="flex-row items-center rounded-xl border border-gray-400 h-14 px-4 mb-4">
                 <TextInput
                   keyboardType="numeric"
@@ -466,10 +467,31 @@ const PublishPage = () => {
                     const year = text.replace(/[^0-9]/g, '')
                     if (year.length <= 4) {
                       setConstructionYear(year)
+                      if (year.length === 4) {
+                        const yearNum = parseInt(year)
+                        const currentYear = new Date().getFullYear()
+                        if (yearNum > currentYear) {
+                          setConstructionYearError('Year cannot be in the future')
+                        } else if (yearNum < 1800) {
+                          setConstructionYearError('Year seems too old')
+                        } else {
+                          setConstructionYearError('')
+                        }
+                      } else if (year.length > 0) {
+                        setConstructionYearError('Please enter a complete 4-digit year')
+                      } else {
+                        setConstructionYearError('')
+                      }
                     }
                   }}
                 />
               </View>
+              {constructionYearError ? (
+                <Text className="text-red-500 text-sm mb-2">{constructionYearError}</Text>
+              ) : null}
+              <Text className="text-xs text-gray-500 mb-4">
+                Enter a year between 1800 and {new Date().getFullYear()}
+              </Text>
             </View>
           )}
         </View>
