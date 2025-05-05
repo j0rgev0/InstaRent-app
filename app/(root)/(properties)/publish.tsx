@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 
-import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
+import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY } from '@/utils/constants'
 
 import Counter from '@/components/common/Counter'
 import AddressAutocomplete from '@/components/map/MapComponent.web'
@@ -25,7 +25,7 @@ import '@/global.css'
 
 const PublishPage = () => {
   const [showMarker, setShowMarker] = useState(false)
-  const [hasDoorNumber, setHasDoorNumber] = useState(false)
+  const [hasFloorNumber, setHasFloorNumber] = useState(false)
   const [hasContructionYear, sethasContructionYear] = useState(false)
 
   const params = useLocalSearchParams()
@@ -44,7 +44,7 @@ const PublishPage = () => {
   const conservation = params.conservation
   const latitude = params.latitude
   const longitude = params.longitude
-  const [doorNumber, setDoorNumber] = useState<number | null>(null)
+  const [floorNumber, setfloorNumber] = useState<number | null>(null)
   const [doorLetter, setDoorLetter] = useState<string | undefined>(undefined)
   const [constructionYear, setConstructionYear] = useState<string>('')
   const [constructionYearError, setConstructionYearError] = useState<string>('')
@@ -175,6 +175,30 @@ const PublishPage = () => {
         postalCode: '',
         formattedAddress: ''
       })
+    }
+  }
+
+  async function createProperty(propertyData: any, token: string) {
+    try {
+      const response = await fetch('https://tu-api.com/api/properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(propertyData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al crear el piso')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error al crear el piso:', error)
+      throw error
     }
   }
 
@@ -402,24 +426,24 @@ const PublishPage = () => {
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-lg">Has door number?</Text>
               <Switch
-                value={hasDoorNumber}
-                onValueChange={setHasDoorNumber}
+                value={hasFloorNumber}
+                onValueChange={setHasFloorNumber}
                 trackColor={{ false: '#ccc', true: '#353949' }}
                 thumbColor="#fff"
               />
             </View>
 
-            {hasDoorNumber && (
+            {hasFloorNumber && (
               <View>
-                <Text className="text-sm text-gray-500 mb-1">Insert door number (ej: 2A)</Text>
+                <Text className="text-sm text-gray-500 mb-1">Insert Floor number (ej: 2A)</Text>
                 <View className="flex-row items-center rounded-xl border border-gray-400 h-14 px-4 mb-4">
                   <TextInput
                     keyboardType="numeric"
                     className="flex-1 text-lg h-full"
-                    placeholder="Number"
+                    placeholder="Floor"
                     placeholderTextColor="gray"
-                    value={doorNumber !== null ? doorNumber.toString() : ''}
-                    onChangeText={(text) => handleNumericInput(text, setDoorNumber, 99999)}
+                    value={floorNumber !== null ? floorNumber.toString() : ''}
+                    onChangeText={(text) => handleNumericInput(text, setfloorNumber, 99999)}
                   />
 
                   <TextInput
@@ -512,14 +536,43 @@ const PublishPage = () => {
 
       <View className="bg-white border-t border-gray-200 px-4 py-3 pb-10">
         <View className="flex-row justify-between">
-          <TouchableOpacity className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4">
-            <Ionicons name="pencil-outline" size={24} color="white" />
-            <Text className="ml-2 text-base font-semibold text-white">Publish</Text>
+          <TouchableOpacity className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4">
+            <Ionicons name="albums-outline" size={24} color="#353949" />
+            <Text className="ml-2 text-base font-semibold text-darkBlue">My Properties</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4">
-            <Ionicons name="albums-outline" size={24} color="white" />
-            <Text className="ml-2 text-base font-semibold text-white">My Properties</Text>
+          <TouchableOpacity
+            className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4"
+            onPress={() =>
+              createProperty(
+                {
+                  housingTypes,
+                  operationTypes,
+                  bathrooms,
+                  bedrooms,
+                  size,
+                  price,
+                  latitude: markerCoords.latitude,
+                  longitude: markerCoords.longitude,
+                  street: addressComponents.street,
+                  street_number: addressComponents.streetNumber,
+                  neighborhood: addressComponents.neighborhood,
+                  locality: addressComponents.locality,
+                  province: addressComponents.province,
+                  state: addressComponents.state,
+                  country: addressComponents.country,
+                  postal_code: addressComponents.postalCode,
+                  floor: floorNumber,
+                  letter: doorLetter,
+                  conservation,
+
+                  description
+                },
+                INSTARENT_API_KEY
+              )
+            }>
+            <Ionicons name="pencil-outline" size={24} color="white" />
+            <Text className="ml-2 text-base font-semibold text-white">Publish</Text>
           </TouchableOpacity>
         </View>
       </View>
