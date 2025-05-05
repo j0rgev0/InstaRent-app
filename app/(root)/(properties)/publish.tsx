@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 
-import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY } from '@/utils/constants'
+import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import Counter from '@/components/common/Counter'
 import AddressAutocomplete from '@/components/map/MapComponent.web'
@@ -180,7 +180,7 @@ const PublishPage = () => {
 
   async function createProperty(propertyData: any, token: string) {
     try {
-      const response = await fetch('https://tu-api.com/api/properties', {
+      const response = await fetch(`${INSTARENT_API_URL}/properties/new`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -565,8 +565,8 @@ const PublishPage = () => {
                   floor: floorNumber,
                   letter: doorLetter,
                   conservation,
-
-                  description
+                  description,
+                  construction_year: constructionYear
                 },
                 INSTARENT_API_KEY
               )
