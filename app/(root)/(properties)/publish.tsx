@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react'
 
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,15 +11,15 @@ import {
   View
 } from 'react-native'
 
+import { Ionicons } from '@expo/vector-icons'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
+
 import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
+import Counter from '@/components/common/Counter'
 import AddressAutocomplete from '@/components/map/MapComponent.web'
-
 // @ts-ignore
 import MapPreview from '@/components/map/MapPreview'
-
-import Counter from '@/components/common/Counter'
-import { Ionicons } from '@expo/vector-icons'
 
 import '@/global.css'
 

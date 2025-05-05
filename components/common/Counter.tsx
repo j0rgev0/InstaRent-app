@@ -1,6 +1,7 @@
 import React from 'react'
 
-import { View, Text, TouchableOpacity } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
+
 import { Ionicons } from '@expo/vector-icons'
 
 type CounterProps = {

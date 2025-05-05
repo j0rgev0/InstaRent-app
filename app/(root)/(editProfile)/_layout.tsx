@@ -1,8 +1,11 @@
-import { router, Stack } from 'expo-router'
+import React from 'react'
+
 import { Alert, Platform, Text, TouchableOpacity } from 'react-native'
 
-import { authClient } from '@/lib/auth-client'
 import { Ionicons } from '@expo/vector-icons'
+import { router, Stack } from 'expo-router'
+
+import { authClient } from '@/lib/auth-client'
 
 import '@/global.css'
 

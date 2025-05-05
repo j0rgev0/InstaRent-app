@@ -1,21 +1,24 @@
 import React, { useState } from 'react'
 
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  Image,
-  Alert,
-  Platform,
-  ScrollView,
-  RefreshControl
-} from 'react-native'
-import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
+import {
+  Alert,
+  Image,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native'
+
+import * as ImagePicker from 'expo-image-picker'
+
+import { Ionicons } from '@expo/vector-icons'
+
+import { authClient } from '@/lib/auth-client'
 
 import { CLOUDINARY_CLOUD_NAME } from '@/utils/constants'
-import { authClient } from '@/lib/auth-client'
-import { Ionicons } from '@expo/vector-icons'
 
 import '@/global.css'
 

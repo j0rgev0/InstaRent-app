@@ -1,6 +1,8 @@
 import React, { useCallback, useLayoutEffect } from 'react'
-import { View, TouchableOpacity, Text, FlatList } from 'react-native'
-import { useNavigation, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+
+import { FlatList, Text, TouchableOpacity, View } from 'react-native'
+
+import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 
 import '@/global.css'
 

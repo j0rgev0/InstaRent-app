@@ -1,7 +1,9 @@
+import React, { useEffect } from 'react'
+
 import { ActivityIndicator, SafeAreaView, View } from 'react-native'
+
 import { Stack, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import React, { useEffect } from 'react'
 
 import { authClient } from '@/lib/auth-client'
 

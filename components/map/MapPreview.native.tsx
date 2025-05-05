@@ -1,6 +1,8 @@
-import MapView, { Marker, Callout } from 'react-native-maps'
-import { Text, View } from 'react-native'
 import React, { useState } from 'react'
+
+import { Text, View } from 'react-native'
+import MapView, { Callout, Marker } from 'react-native-maps'
+
 import { router } from 'expo-router'
 
 import { Ionicons } from '@expo/vector-icons'

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 
-import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 import { useLoadScript } from '@react-google-maps/api'
+
+import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
 import '@/global.css'
 

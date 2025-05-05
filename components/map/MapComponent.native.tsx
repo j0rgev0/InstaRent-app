@@ -1,11 +1,6 @@
-import * as Location from 'expo-location'
-
 import React, { useEffect, useRef, useState } from 'react'
 
-import { AppleMaps, GoogleMaps } from 'expo-maps'
-import { router, useLocalSearchParams } from 'expo-router'
 import {
-  Dimensions,
   FlatList,
   Platform,
   StyleSheet,
@@ -15,15 +10,21 @@ import {
   View
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useBottomTabOverflow } from '../ui/TabBarBackground'
 
+import { Ionicons } from '@expo/vector-icons'
+import { router, useLocalSearchParams } from 'expo-router'
+
+import { AppleMaps, GoogleMaps } from 'expo-maps'
 import { AppleMapsMapType } from 'expo-maps/build/apple/AppleMaps.types'
 import { GoogleMapsMapType } from 'expo-maps/build/google/GoogleMaps.types'
+
+import * as Location from 'expo-location'
+
+import { useBottomTabOverflow } from '@/components/ui/TabBarBackground'
 
 import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
 import '@/global.css'
-import { Ionicons } from '@expo/vector-icons'
 import 'react-native-get-random-values'
 
 export default function MapComponent() {
@@ -129,10 +130,10 @@ export default function MapComponent() {
       setLocationConfirmed(false)
       ref.current?.setCameraPosition({
         coordinates: {
-          latitude: coords?.latitude,
-          longitude: coords?.longitude
+          latitude: newCoords.latitude,
+          longitude: newCoords.longitude
         },
-        zoom: zoom
+        zoom: 20
       })
       setQuery(description)
       setSuggestions([])
@@ -197,60 +198,53 @@ export default function MapComponent() {
         latitude: userLocation.latitude,
         longitude: userLocation.longitude
       },
-      zoom: zoom
+      zoom: 18
     })
   }
 
   const renterCenterButton = () => (
-    <>
-      <TouchableOpacity
-        onPress={centerMap}
-        className="absolute bottom-7 right-5 bg-white rounded-full z-20"
-        style={[styles.shadow, { padding: 10 }]}>
-        <Ionicons name="locate" size={24} color="#353949" />
-      </TouchableOpacity>
-    </>
+    <TouchableOpacity
+      onPress={centerMap}
+      className="absolute bottom-7 right-5 bg-white rounded-full p-2 shadow-md z-20">
+      <Ionicons name="locate" size={24} color="#353949" />
+    </TouchableOpacity>
   )
 
   const renderConfirmView = () => (
-    <>
-      <View className="absolute bottom-20 left-5 right-5 bg-white rounded-2xl p-4 shadow-lg items-center justify-center z-30">
-        <Text className="text-base text-neutral-800 mb-3 font-medium text-center">
-          Confirm this location?{'\n'}
-          {address ?? 'Loading address...'}
-        </Text>
-        <TouchableOpacity className="bg-[#353949] px-6 py-2 rounded-lg" onPress={confirmLocation}>
-          <Text className="text-white text-base font-semibold">Confirm</Text>
-        </TouchableOpacity>
-      </View>
-    </>
+    <View className="absolute bottom-20 left-5 right-5 bg-white rounded-2xl p-4 shadow-lg items-center justify-center z-30">
+      <Text className="text-base text-neutral-800 mb-3 font-medium text-center">
+        Confirm this location?{'\n'}
+        {address ?? 'Loading address...'}
+      </Text>
+      <TouchableOpacity className="bg-[#353949] px-6 py-2 rounded-lg" onPress={confirmLocation}>
+        <Text className="text-white text-base font-semibold">Confirm</Text>
+      </TouchableOpacity>
+    </View>
   )
 
   const renderPlacesAutocomplete = () => (
-    <>
-      <View style={styles.autocompleteContainer}>
-        <TextInput
-          placeholder="Search location"
-          value={query}
-          onChangeText={fetchSuggestions}
-          style={styles.textInput}
+    <View className="absolute top-5 left-5 right-5 z-50">
+      <TextInput
+        placeholder="Search location"
+        value={query}
+        onChangeText={fetchSuggestions}
+        className="h-12 rounded-xl px-4 text-base bg-white shadow-md"
+      />
+      {suggestions.length > 0 && (
+        <FlatList
+          data={suggestions}
+          keyExtractor={(item) => item.place_id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              className="p-3 border-b border-gray-200 bg-white"
+              onPress={() => handleSelect(item.place_id, item.description)}>
+              <Text>{item.description}</Text>
+            </TouchableOpacity>
+          )}
+          className="bg-white rounded-xl mt-2 max-h-40 shadow-md"
         />
-        {suggestions.length > 0 && (
-          <FlatList
-            data={suggestions}
-            keyExtractor={(item) => item.place_id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.suggestionItem}
-                onPress={() => handleSelect(item.place_id, item.description)}>
-                <Text>{item.description}</Text>
-              </TouchableOpacity>
-            )}
-            style={styles.suggestionsList}
-          />
-        )}
-      </View>
-    </>
+      )}
+    </View>
   )
 
   if (Platform.OS === 'ios') {
@@ -268,7 +262,7 @@ export default function MapComponent() {
           }}
         />
 
-        <SafeAreaView style={{ flex: 1, paddingBottom: bottom }} pointerEvents="box-none">
+        <SafeAreaView className="flex-1" style={{ paddingBottom: bottom }} pointerEvents="box-none">
           {renderPlacesAutocomplete()}
           {renderConfirmView()}
           {renterCenterButton()}
@@ -292,7 +286,7 @@ export default function MapComponent() {
           }}
         />
 
-        <SafeAreaView style={{ flex: 1, paddingBottom: bottom }} pointerEvents="box-none">
+        <SafeAreaView className="flex-1" style={{ paddingBottom: bottom }} pointerEvents="box-none">
           {renderPlacesAutocomplete()}
           {renderConfirmView()}
           {renterCenterButton()}
@@ -303,44 +297,3 @@ export default function MapComponent() {
     return <Text>Maps are only available on Android and iOS</Text>
   }
 }
-
-const styles = StyleSheet.create({
-  map: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height
-  },
-  shadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 4
-  },
-  autocompleteContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
-    zIndex: 1000
-  },
-  textInput: {
-    height: 48,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: '#fff',
-    elevation: 5
-  },
-  suggestionsList: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginTop: 8,
-    elevation: 5,
-    maxHeight: 150
-  },
-  suggestionItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: '#eee'
-  }
-})

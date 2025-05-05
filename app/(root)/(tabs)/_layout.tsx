@@ -1,4 +1,5 @@
 import { Platform, StyleSheet, View } from 'react-native'
+
 import { BlurView } from 'expo-blur'
 import { Tabs } from 'expo-router'
 

@@ -1,5 +1,6 @@
-import { Stack, router } from 'expo-router'
 import { Alert, Platform, Text, TouchableOpacity } from 'react-native'
+
+import { Stack, router } from 'expo-router'
 
 export default function RootLayout() {
   return (

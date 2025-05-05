@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { ActivityIndicator, Text, TouchableOpacity } from 'react-native'
 
 interface ButtonProps {
   title: string

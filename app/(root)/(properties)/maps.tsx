@@ -1,7 +1,8 @@
 import { useLayoutEffect } from 'react'
 
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { Text, TouchableOpacity } from 'react-native'
+
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 
 // @ts-ignore
 import MapComponent from '@/components/map/MapComponent'

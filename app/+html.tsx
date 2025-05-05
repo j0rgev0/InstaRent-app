@@ -3,7 +3,7 @@ import React, { type PropsWithChildren } from 'react'
 
 import { GOOGLE_MAPS_API_KEY } from '@/utils/constants'
 
-declare module 'react-native-google-places-autocomplete' {
+declare global {
   interface Window {
     googleMapsLoaded: boolean
     onGoogleMapsLoaded: () => void
