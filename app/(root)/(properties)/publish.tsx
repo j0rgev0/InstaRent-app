@@ -85,11 +85,11 @@ const PublishPage = () => {
     state: addressComponents.state,
     country: addressComponents.country,
     postal_code: String(addressComponents.postalCode),
-    floor: floorNumber,
+    floor: floorNumber ?? 0,
     letter: doorLetter,
     conservation,
     description,
-    construction_year: Number(constructionYear)
+    construction_year: Number(constructionYear) ?? ''
   }
 
   const conservationValue =
