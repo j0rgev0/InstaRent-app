@@ -26,7 +26,7 @@ import '@/global.css'
 const PublishPage = () => {
   const [showMarker, setShowMarker] = useState(false)
   const [hasFloorNumber, setHasFloorNumber] = useState(false)
-  const [hasContructionYear, sethasContructionYear] = useState(false)
+  const [hasContructionYear, setHasContructionYear] = useState(false)
 
   const params = useLocalSearchParams()
 
@@ -42,9 +42,9 @@ const PublishPage = () => {
   const [bathrooms, setBathrooms] = useState(initialBathrooms)
   const [bedrooms, setBedrooms] = useState(initialBedrooms)
   const conservation = params.conservation
-  const latitude = params.latitude
-  const longitude = params.longitude
-  const [floorNumber, setfloorNumber] = useState<number | null>(null)
+  const latitude = isNaN(Number(params.latitude)) ? null : Number(params.latitude)
+  const longitude = isNaN(Number(params.longitude)) ? null : Number(params.longitude)
+  const [floorNumber, setFloorNumber] = useState<number | null>(null)
   const [doorLetter, setDoorLetter] = useState<string | undefined>(undefined)
   const [constructionYear, setConstructionYear] = useState<string>('')
   const [constructionYearError, setConstructionYearError] = useState<string>('')
@@ -67,6 +67,30 @@ const PublishPage = () => {
     latitude: Number(latitude) || 40.4168,
     longitude: Number(longitude) || -3.7038
   })
+
+  const propertyPayload = {
+    type: housingTypes,
+    operation: operationTypes,
+    bathrooms,
+    bedrooms,
+    size,
+    price,
+    latitude: String(markerCoords.latitude),
+    longitude: String(markerCoords.longitude),
+    street: addressComponents.street,
+    street_number: String(addressComponents.streetNumber),
+    neighborhood: addressComponents.neighborhood || '',
+    locality: addressComponents.locality,
+    province: addressComponents.province,
+    state: addressComponents.state,
+    country: addressComponents.country,
+    postal_code: String(addressComponents.postalCode),
+    floor: floorNumber,
+    letter: doorLetter,
+    conservation,
+    description,
+    construction_year: Number(constructionYear)
+  }
 
   const conservationValue =
     typeof conservation === 'string' ? conservation : conservation?.[0] || ''
@@ -443,7 +467,7 @@ const PublishPage = () => {
                     placeholder="Floor"
                     placeholderTextColor="gray"
                     value={floorNumber !== null ? floorNumber.toString() : ''}
-                    onChangeText={(text) => handleNumericInput(text, setfloorNumber, 99999)}
+                    onChangeText={(text) => handleNumericInput(text, setFloorNumber, 99999)}
                   />
 
                   <TextInput
@@ -470,7 +494,7 @@ const PublishPage = () => {
             <Text className="text-lg">Has construction date?</Text>
             <Switch
               value={hasContructionYear}
-              onValueChange={sethasContructionYear}
+              onValueChange={setHasContructionYear}
               trackColor={{ false: '#ccc', true: '#353949' }}
               thumbColor="#fff"
             />
@@ -543,34 +567,7 @@ const PublishPage = () => {
 
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4"
-            onPress={() =>
-              createProperty(
-                {
-                  housingTypes,
-                  operationTypes,
-                  bathrooms,
-                  bedrooms,
-                  size,
-                  price,
-                  latitude: markerCoords.latitude,
-                  longitude: markerCoords.longitude,
-                  street: addressComponents.street,
-                  street_number: addressComponents.streetNumber,
-                  neighborhood: addressComponents.neighborhood,
-                  locality: addressComponents.locality,
-                  province: addressComponents.province,
-                  state: addressComponents.state,
-                  country: addressComponents.country,
-                  postal_code: addressComponents.postalCode,
-                  floor: floorNumber,
-                  letter: doorLetter,
-                  conservation,
-                  description,
-                  construction_year: constructionYear
-                },
-                INSTARENT_API_KEY
-              )
-            }>
+            onPress={async () => await createProperty(propertyPayload, INSTARENT_API_KEY)}>
             <Ionicons name="pencil-outline" size={24} color="white" />
             <Text className="ml-2 text-base font-semibold text-white">Publish</Text>
           </TouchableOpacity>
