@@ -220,7 +220,7 @@ const PublishPage = () => {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Error publishing property:')
+        throw new Error(data.message || 'Error publishing property')
       }
 
       return data
@@ -331,7 +331,6 @@ const PublishPage = () => {
       router.replace('/(root)/(tabs)/profile')
     } catch (error) {
       console.error('Error publishing property:', error)
-      // You might want to show an error message to the user here
     }
   }
 
@@ -380,7 +379,6 @@ const PublishPage = () => {
                   longitude: markerCoords.longitude,
                   latitude: markerCoords.latitude,
                   bedrooms,
-                  price,
                   size
                 }
               })

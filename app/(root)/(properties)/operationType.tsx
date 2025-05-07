@@ -21,7 +21,6 @@ const OperationType = () => {
     housingTypes,
     bathrooms,
     bedrooms,
-    price,
     size,
     longitude,
     latitude
@@ -35,7 +34,6 @@ const OperationType = () => {
     longitude,
     latitude,
     bedrooms,
-    price,
     size
   }
 
