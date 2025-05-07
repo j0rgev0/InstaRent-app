@@ -283,7 +283,6 @@ const PublishPage = () => {
   const validatePropertyData = () => {
     const errors: Record<string, string> = {}
 
-    // Required fields validation
     if (!size) errors.size = 'Size is required'
     if (!price) errors.price = 'Price is required'
     if (!addressComponents.street) errors.address = 'Address is required'
@@ -292,20 +291,17 @@ const PublishPage = () => {
     if (!addressComponents.country) errors.address = 'Country is required'
     if (!description) errors.description = 'Description is required'
 
-    // Location validation
     if (!markerCoords.latitude || !markerCoords.longitude) {
       errors.location = 'Please select a location on the map'
     } else if (markerCoords.latitude === 40.4168 && markerCoords.longitude === -3.7038) {
       errors.location = 'Please select a location on the map'
     }
 
-    // Numeric validations
     if (size && (size <= 0 || size > 99999)) errors.size = 'Size must be between 1 and 99999'
     if (price && (price <= 0 || price > (operationTypes === 'rent' ? 999999 : 999999999))) {
       errors.price = `Price must be between 1 and ${operationTypes === 'rent' ? '999,999' : '999,999,999'}`
     }
 
-    // Construction year validation
     if (hasContructionYear && constructionYear) {
       const yearNum = parseInt(constructionYear)
       const currentYear = new Date().getFullYear()
@@ -316,7 +312,6 @@ const PublishPage = () => {
       }
     }
 
-    // Floor number validation for apartments
     if (hasFloorNumber && floorNumber === null) {
       errors.floorNumber = 'Floor number is required'
     }
