@@ -1,4 +1,4 @@
-import { Alert, Platform, Text, TouchableOpacity } from 'react-native'
+import { Text, TouchableOpacity } from 'react-native'
 
 import { Stack, router } from 'expo-router'
 
@@ -11,33 +11,7 @@ export default function RootLayout() {
           headerShown: true,
           animation: 'ios_from_left',
           headerTitleAlign: 'center',
-          headerTitle: 'Place your advert',
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => {
-                if (Platform.OS !== 'web') {
-                  Alert.alert(
-                    'Discard changes?',
-                    'If you go back now, you will lose your changes.',
-                    [
-                      {
-                        text: 'Discard changes',
-                        onPress: () => router.back(),
-                        style: 'destructive'
-                      },
-                      {
-                        text: 'Keep editing',
-                        style: 'cancel'
-                      }
-                    ]
-                  )
-                } else {
-                  router.back()
-                }
-              }}>
-              <Text className="px-4 text-lg text-blue-500">Cancel</Text>
-            </TouchableOpacity>
-          )
+          headerTitle: 'Place your advert'
         }}
       />
 

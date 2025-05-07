@@ -288,13 +288,13 @@ const PublishPage = () => {
     if (!addressComponents.street) errors.address = 'Address is required'
     if (!addressComponents.streetNumber) errors.address = 'Street number is required'
     if (!addressComponents.locality) errors.address = 'City is required'
-    if (!addressComponents.country) errors.address = 'Country is required'
+    if (!addressComponents.country) errors.address = 'Address is required'
     if (!description) errors.description = 'Description is required'
 
     if (!markerCoords.latitude || !markerCoords.longitude) {
-      errors.location = 'Please select a location on the map'
+      errors.location = 'Please select a location'
     } else if (markerCoords.latitude === 40.4168 && markerCoords.longitude === -3.7038) {
-      errors.location = 'Please select a location on the map'
+      errors.location = 'Please select a location'
     }
 
     if (size && (size <= 0 || size > 99999)) errors.size = 'Size must be between 1 and 99999'
@@ -328,7 +328,7 @@ const PublishPage = () => {
     try {
       await createProperty(propertyPayload, INSTARENT_API_KEY)
       Alert.alert('Added property')
-      router.replace('/(root)/(tabs)/profile')
+      router.replace('/(root)/(properties)/addPictures')
     } catch (error) {
       console.error('Error publishing property:', error)
     }
@@ -634,9 +634,27 @@ const PublishPage = () => {
 
       <View className="bg-white border-t border-gray-200 px-4 py-3 pb-10">
         <View className="flex-row justify-between">
-          <TouchableOpacity className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4">
-            <Ionicons name="albums-outline" size={24} color="#353949" />
-            <Text className="ml-2 text-base font-semibold text-darkBlue">My Properties</Text>
+          <TouchableOpacity
+            className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4"
+            onPress={() => {
+              if (Platform.OS !== 'web') {
+                Alert.alert('Discard changes?', 'If you go back now, you will lose your changes.', [
+                  {
+                    text: 'Discard changes',
+                    onPress: () => router.back(),
+                    style: 'destructive'
+                  },
+                  {
+                    text: 'Keep editing',
+                    style: 'cancel'
+                  }
+                ])
+              } else {
+                router.back()
+              }
+            }}>
+            <Ionicons name="close-circle-outline" size={24} color="#353949" />
+            <Text className="ml-2 text-base font-semibold text-darkBlue">Cancel</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
