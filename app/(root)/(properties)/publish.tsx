@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,6 +15,8 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 
+import { authClient } from '@/lib/auth-client'
+
 import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import Counter from '@/components/common/Counter'
@@ -24,6 +27,8 @@ import MapPreview from '@/components/map/MapPreview'
 import '@/global.css'
 
 const PublishPage = () => {
+  const { data: session } = authClient.useSession()
+
   const [showMarker, setShowMarker] = useState(false)
   const [hasFloorNumber, setHasFloorNumber] = useState(false)
   const [hasContructionYear, setHasContructionYear] = useState(false)
@@ -89,6 +94,7 @@ const PublishPage = () => {
     letter: doorLetter,
     conservation,
     description,
+    user_id: session?.user.id,
     construction_year: Number(constructionYear) ?? ''
   }
 
@@ -111,7 +117,6 @@ const PublishPage = () => {
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}&language=en`
       )
       const data = await response.json()
-      console.log(JSON.stringify(data.results[0].address_components, null, 2))
       if (data.results.length > 0) {
         const result = data.results[0]
 
@@ -171,7 +176,6 @@ const PublishPage = () => {
         })
 
         setAddressComponents(components)
-        console.log('Address Components:', JSON.stringify(components, null, 2))
       } else {
         setAddressComponents({
           street: '',
@@ -216,12 +220,12 @@ const PublishPage = () => {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Error al crear el piso')
+        throw new Error(data.message || 'Error publishing property:')
       }
 
       return data
     } catch (error) {
-      console.error('Error al crear el piso:', error)
+      console.error('Error publishing property:', error)
       throw error
     }
   }
@@ -273,6 +277,68 @@ const PublishPage = () => {
       }
     }, [latitude, longitude])
   )
+
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+
+  const validatePropertyData = () => {
+    const errors: Record<string, string> = {}
+
+    // Required fields validation
+    if (!size) errors.size = 'Size is required'
+    if (!price) errors.price = 'Price is required'
+    if (!addressComponents.street) errors.address = 'Address is required'
+    if (!addressComponents.streetNumber) errors.address = 'Street number is required'
+    if (!addressComponents.locality) errors.address = 'City is required'
+    if (!addressComponents.country) errors.address = 'Country is required'
+    if (!description) errors.description = 'Description is required'
+
+    // Location validation
+    if (!markerCoords.latitude || !markerCoords.longitude) {
+      errors.location = 'Please select a location on the map'
+    } else if (markerCoords.latitude === 40.4168 && markerCoords.longitude === -3.7038) {
+      errors.location = 'Please select a location on the map'
+    }
+
+    // Numeric validations
+    if (size && (size <= 0 || size > 99999)) errors.size = 'Size must be between 1 and 99999'
+    if (price && (price <= 0 || price > (operationTypes === 'rent' ? 999999 : 999999999))) {
+      errors.price = `Price must be between 1 and ${operationTypes === 'rent' ? '999,999' : '999,999,999'}`
+    }
+
+    // Construction year validation
+    if (hasContructionYear && constructionYear) {
+      const yearNum = parseInt(constructionYear)
+      const currentYear = new Date().getFullYear()
+      if (yearNum > currentYear) {
+        errors.constructionYear = 'Year cannot be in the future'
+      } else if (yearNum < 1800) {
+        errors.constructionYear = 'Year seems too old'
+      }
+    }
+
+    // Floor number validation for apartments
+    if (hasFloorNumber && floorNumber === null) {
+      errors.floorNumber = 'Floor number is required'
+    }
+
+    setValidationErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handlePublish = async () => {
+    if (!validatePropertyData()) {
+      return
+    }
+
+    try {
+      await createProperty(propertyPayload, INSTARENT_API_KEY)
+      Alert.alert('Added property')
+      router.replace('/(root)/(tabs)/profile')
+    } catch (error) {
+      console.error('Error publishing property:', error)
+      // You might want to show an error message to the user here
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -342,6 +408,9 @@ const PublishPage = () => {
             />
             <Text className="text-lg ml-2">m²</Text>
           </View>
+          {validationErrors.size && (
+            <Text className="text-red-500 text-sm mb-2">{validationErrors.size}</Text>
+          )}
 
           <View className="flex-row items-center rounded-xl border border-gray-400 h-14 px-4 mb-4">
             <TextInput
@@ -356,6 +425,9 @@ const PublishPage = () => {
             />
             <Text className="text-lg ml-2">{operationTypes === 'sell' ? '€' : '€/month'}</Text>
           </View>
+          {validationErrors.price && (
+            <Text className="text-red-500 text-sm mb-2">{validationErrors.price}</Text>
+          )}
 
           <Counter label="Bedrooms:" value={bedrooms} setValue={setBedrooms} min={1} max={10} />
           <Counter label="Bathrooms:" value={bathrooms} setValue={setBathrooms} min={1} max={10} />
@@ -395,6 +467,12 @@ const PublishPage = () => {
               ? addressComponents.formattedAddress
               : 'Select your address'}
           </Text>
+          {validationErrors.location && (
+            <Text className="text-red-500 text-sm mb-2">{validationErrors.location}</Text>
+          )}
+          {validationErrors.address && (
+            <Text className="text-red-500 text-sm mb-2">{validationErrors.address}</Text>
+          )}
 
           {Platform.OS === 'web' ? (
             <AddressAutocomplete
@@ -555,6 +633,9 @@ const PublishPage = () => {
             value={description}
             onChangeText={setDescription}
           />
+          {validationErrors.description && (
+            <Text className="text-red-500 text-sm mb-2">{validationErrors.description}</Text>
+          )}
         </View>
       </ScrollView>
 
@@ -567,7 +648,7 @@ const PublishPage = () => {
 
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4"
-            onPress={async () => await createProperty(propertyPayload, INSTARENT_API_KEY)}>
+            onPress={handlePublish}>
             <Ionicons name="pencil-outline" size={24} color="white" />
             <Text className="ml-2 text-base font-semibold text-white">Publish</Text>
           </TouchableOpacity>
