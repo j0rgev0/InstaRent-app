@@ -1,19 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { View } from 'react-native'
 
-import { useLocalSearchParams } from 'expo-router'
-import { Text, View } from 'react-native'
+import ImageCarousel from '@/components/selectImages/ImageCarousel'
+import ImageSelectorExpo from '@/components/selectImages/ImageSelector'
 
-import '@/global.css'
+type AppImage = {
+  uri: string
+}
 
-const addPictures = () => {
-  const params = useLocalSearchParams()
-  const propertyId = params.propertyId
+const AddPictures = () => {
+  const [images, setImages] = useState<AppImage[]>([])
+
+  const handleSelectImages = (newImages: AppImage[]) => {
+    setImages((prev) => [...prev, ...newImages])
+  }
 
   return (
-    <View className="flex-1 items-center justify-center bg-gray-50 pt-10">
-      <Text>Welcome add Pictures to {propertyId}</Text>
+    <View style={{ flex: 1, padding: 20, paddingTop: 50 }}>
+      <ImageSelectorExpo onSelect={handleSelectImages} />
+      <ImageCarousel images={images} />
     </View>
   )
 }
 
-export default addPictures
+export default AddPictures

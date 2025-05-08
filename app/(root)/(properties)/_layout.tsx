@@ -24,6 +24,15 @@ export default function RootLayout() {
       />
 
       <Stack.Screen
+        name="conservation"
+        options={{
+          animation: 'slide_from_bottom',
+          headerTitleAlign: 'center',
+          headerTitle: 'Select Condition'
+        }}
+      />
+
+      <Stack.Screen
         name="operationType"
         options={{
           animation: 'slide_from_bottom',
@@ -36,6 +45,15 @@ export default function RootLayout() {
         name="maps"
         options={{
           animation: 'slide_from_bottom'
+        }}
+      />
+
+      <Stack.Screen
+        name="addPictures"
+        options={{
+          animation: 'slide_from_bottom',
+          headerTitleAlign: 'center',
+          headerTitle: 'Add Pctures'
         }}
       />
     </Stack>

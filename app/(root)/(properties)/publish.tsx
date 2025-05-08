@@ -15,12 +15,9 @@ import {
 import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
 
-
-
 import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import { authClient } from '@/lib/auth-client'
-
 
 import Counter from '@/components/common/Counter'
 import AddressAutocomplete from '@/components/map/MapComponent.web'
@@ -656,22 +653,26 @@ const PublishPage = () => {
         <View className="flex-row justify-between">
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4"
+            // onPress={() => {
+            //   if (Platform.OS !== 'web') {
+            //     Alert.alert('Discard changes?', 'If you go back now, you will lose your changes.', [
+            //       {
+            //         text: 'Discard changes',
+            //         onPress: () => router.back(),
+            //         style: 'destructive'
+            //       },
+            //       {
+            //         text: 'Keep editing',
+            //         style: 'cancel'
+            //       }
+            //     ])
+            //   } else {
+            //     router.back()
+            //   }
+            // }}
+
             onPress={() => {
-              if (Platform.OS !== 'web') {
-                Alert.alert('Discard changes?', 'If you go back now, you will lose your changes.', [
-                  {
-                    text: 'Discard changes',
-                    onPress: () => router.back(),
-                    style: 'destructive'
-                  },
-                  {
-                    text: 'Keep editing',
-                    style: 'cancel'
-                  }
-                ])
-              } else {
-                router.back()
-              }
+              router.replace('/(root)/(properties)/addPictures')
             }}>
             <Ionicons name="close-circle-outline" size={24} color="#353949" />
             <Text className="ml-2 text-base font-semibold text-darkBlue">Cancel</Text>
