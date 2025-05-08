@@ -11,7 +11,7 @@ type Props = {
   onSelect: (images: AppImage[]) => void
 }
 
-const ImageSelectorExpo: React.FC<Props> = ({ onSelect }) => {
+const ImageSelector: React.FC<Props> = ({ onSelect }) => {
   const selectImages = async () => {
     const { status } = await ExpoImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== 'granted') {
@@ -36,15 +36,11 @@ const ImageSelectorExpo: React.FC<Props> = ({ onSelect }) => {
   return (
     <TouchableOpacity
       onPress={selectImages}
-      style={{
-        backgroundColor: 'blue',
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 16
-      }}>
-      <Text style={{ color: 'white', textAlign: 'center' }}>Select Images</Text>
+      className="bg-blue-600 px-6 py-3 rounded-lg w-full items-center"
+      activeOpacity={0.8}>
+      <Text className="text-white font-medium text-lg">Select Image</Text>
     </TouchableOpacity>
   )
 }
 
-export default ImageSelectorExpo
+export default ImageSelector

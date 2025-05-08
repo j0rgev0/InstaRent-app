@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 
 import ImageCarousel from '@/components/selectImages/ImageCarousel'
-import ImageSelectorExpo from '@/components/selectImages/ImageSelector'
+import ImageSelector from '@/components/selectImages/ImageSelector'
 
 type AppImage = {
   uri: string
@@ -16,8 +16,9 @@ const AddPictures = () => {
   }
 
   return (
-    <View style={{ flex: 1, padding: 20, paddingTop: 50 }}>
-      <ImageSelectorExpo onSelect={handleSelectImages} />
+    <View className="flex-1 p-5 pt-12 bg-white justify-start items-center">
+      <Text className="text-xl font-semibold text-gray-800 mb-2">Add pictures for your property</Text>
+      <ImageSelector onSelect={handleSelectImages} />
       <ImageCarousel images={images} />
     </View>
   )
