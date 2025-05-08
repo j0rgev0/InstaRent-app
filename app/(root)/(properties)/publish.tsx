@@ -40,6 +40,7 @@ const PublishPage = () => {
   const initialSize = params.size ? Number(params.size) : null
   const initialPrice = params.price ? Number(params.price) : null
 
+  const [propertyId, setPropertyId] = useState<string>('')
   const housingTypes = params.housingTypes ?? 'apartment'
   const operationTypes = params.operationTypes ?? 'rent'
   const [size, setSize] = useState<number | null>(initialSize)
@@ -220,7 +221,7 @@ const PublishPage = () => {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || 'Error publishing property')
+        throw new Error(data.error || 'Error publishing property')
       }
 
       return data
@@ -324,13 +325,18 @@ const PublishPage = () => {
     if (!validatePropertyData()) {
       return
     }
-
     try {
-      await createProperty(propertyPayload, INSTARENT_API_KEY)
+      const data = await createProperty(propertyPayload, INSTARENT_API_KEY)
+      const newPropertyId = data.property.id
+
       Alert.alert('Added property')
-      router.replace('/(root)/(properties)/addPictures')
+      router.replace({
+        pathname: '/(root)/(properties)/addPictures',
+        params: { propertyId: newPropertyId }
+      })
     } catch (error) {
-      console.error('Error publishing property:', error)
+      console.error(error)
+      Alert.alert('Failed to create property')
     }
   }
 
