@@ -13,11 +13,14 @@ import {
 } from 'react-native'
 
 import { Ionicons } from '@expo/vector-icons'
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
+
+
+
+import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import { authClient } from '@/lib/auth-client'
 
-import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import Counter from '@/components/common/Counter'
 import AddressAutocomplete from '@/components/map/MapComponent.web'
@@ -27,20 +30,20 @@ import MapPreview from '@/components/map/MapPreview'
 import '@/global.css'
 
 const PublishPage = () => {
+  const params = useLocalSearchParams()
+  const navigation = useNavigation()
+
   const { data: session } = authClient.useSession()
 
   const [showMarker, setShowMarker] = useState(false)
   const [hasFloorNumber, setHasFloorNumber] = useState(false)
   const [hasContructionYear, setHasContructionYear] = useState(false)
 
-  const params = useLocalSearchParams()
-
   const initialBathrooms = params.bathrooms ? Number(params.bathrooms) : 1
   const initialBedrooms = params.bedrooms ? Number(params.bedrooms) : 1
   const initialSize = params.size ? Number(params.size) : null
   const initialPrice = params.price ? Number(params.price) : null
 
-  const [propertyId, setPropertyId] = useState<string>('')
   const housingTypes = params.housingTypes ?? 'apartment'
   const operationTypes = params.operationTypes ?? 'rent'
   const [size, setSize] = useState<number | null>(initialSize)
@@ -250,6 +253,11 @@ const PublishPage = () => {
 
   useFocusEffect(
     useCallback(() => {
+      const parent = navigation.getParent()
+      if (parent) {
+        parent.setOptions({ gestureEnabled: false })
+      }
+
       if (latitude && longitude) {
         const parsedLat = Number(latitude)
         const parsedLng = Number(longitude)
@@ -276,7 +284,13 @@ const PublishPage = () => {
           handleAsyncTasks()
         }
       }
-    }, [latitude, longitude])
+
+      return () => {
+        if (parent) {
+          parent.setOptions({ gestureEnabled: true })
+        }
+      }
+    }, [latitude, longitude, navigation])
   )
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})

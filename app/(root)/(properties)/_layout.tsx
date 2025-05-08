@@ -1,6 +1,4 @@
-import { Text, TouchableOpacity } from 'react-native'
-
-import { Stack, router } from 'expo-router'
+import { Stack } from 'expo-router'
 
 export default function RootLayout() {
   return (
@@ -11,7 +9,8 @@ export default function RootLayout() {
           headerShown: true,
           animation: 'ios_from_left',
           headerTitleAlign: 'center',
-          headerTitle: 'Place your advert'
+          headerTitle: 'Place your advert',
+          headerLeft: () => ''
         }}
       />
 
@@ -29,19 +28,10 @@ export default function RootLayout() {
         options={{
           animation: 'slide_from_bottom',
           headerTitleAlign: 'center',
-          headerTitle: 'Select Operation Type',
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() =>
-                router.replace({
-                  pathname: '/(root)/(properties)/publish'
-                })
-              }>
-              <Text className="px-4 text-lg text-blue-500">Cancel</Text>
-            </TouchableOpacity>
-          )
+          headerTitle: 'Select Operation Type'
         }}
       />
+
       <Stack.Screen
         name="maps"
         options={{
