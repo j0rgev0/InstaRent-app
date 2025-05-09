@@ -1,5 +1,5 @@
 import React from 'react'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { FlatList, Image, ScrollView, View } from 'react-native'
 
 type AppImage = {
   uri: string
@@ -11,25 +11,21 @@ type Props = {
 
 const ImageCarousel: React.FC<Props> = ({ images }) => {
   return (
-    <ScrollView horizontal style={{ marginTop: 10 }}>
-      {images.map((img, i) => (
-        <View key={i} style={styles.imageContainer}>
-          <Image source={{ uri: img.uri }} style={styles.imagePreview} />
-        </View>
-      ))}
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <FlatList
+        data={images}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View className="mr-3 mb-3">
+            <Image source={{ uri: item.uri }} className="w-28 h-28 rounded-md" />
+          </View>
+        )}
+        numColumns={3}
+        scrollEnabled={false}
+        contentContainerStyle={{ marginTop: 10 }}
+      />
     </ScrollView>
   )
 }
-
-const styles = StyleSheet.create({
-  imageContainer: {
-    marginRight: 10
-  },
-  imagePreview: {
-    width: 100,
-    height: 100,
-    borderRadius: 10
-  }
-})
 
 export default ImageCarousel
