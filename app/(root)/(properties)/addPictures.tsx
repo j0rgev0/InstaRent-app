@@ -16,8 +16,10 @@ const AddPictures = () => {
   }
 
   return (
-    <View className="flex-1 p-5 pt-12 bg-white justify-start items-center">
-      <Text className="text-xl font-semibold text-gray-800 mb-2">Add pictures for your property</Text>
+    <View className="flex-1 p-5 bg-white items-center">
+      <Text className="text-xl font-semibold text-gray-800 mb-2">
+        Add pictures for your property
+      </Text>
       <ImageSelector onSelect={handleSelectImages} />
       <ImageCarousel images={images} />
     </View>

@@ -24,7 +24,8 @@ const ImageSelector: React.FC<Props> = ({ onSelect }) => {
       aspect: [1, 1],
       base64: false,
       mediaTypes: 'images',
-      allowsMultipleSelection: true
+      allowsMultipleSelection: true,
+      selectionLimit: 30
     })
 
     if (!result.canceled) {
@@ -36,7 +37,7 @@ const ImageSelector: React.FC<Props> = ({ onSelect }) => {
   return (
     <TouchableOpacity
       onPress={selectImages}
-      className="bg-blue-600 px-6 py-3 rounded-lg w-full items-center"
+      className="bg-blue-600 px-6 py-3 rounded-lg w-11/12 items-center"
       activeOpacity={0.8}>
       <Text className="text-white font-medium text-lg">Select Image</Text>
     </TouchableOpacity>

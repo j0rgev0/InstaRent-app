@@ -51,7 +51,7 @@ export default function RootLayout() {
       <Stack.Screen
         name="addPictures"
         options={{
-          animation: 'slide_from_bottom',
+          animation: 'none',
           headerTitleAlign: 'center',
           headerTitle: 'Add Pctures'
         }}

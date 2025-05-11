@@ -12,7 +12,6 @@ import {
   View
 } from 'react-native'
 
-import { Ionicons } from '@expo/vector-icons'
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
 
 import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
@@ -673,17 +672,14 @@ const PublishPage = () => {
 
             onPress={() => {
               router.replace('/(root)/(properties)/addPictures')
-            }}
-          >
-            <Ionicons name="close-circle-outline" size={24} color="#353949" />
-            <Text className="ml-2 text-base font-semibold text-darkBlue">Cancel</Text>
+            }}>
+            <Text className="text-base font-semibold text-darkBlue">Cancel</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4"
             onPress={handlePublish}>
-            <Ionicons name="pencil-outline" size={24} color="white" />
-            <Text className="ml-2 text-base font-semibold text-white">Publish</Text>
+            <Text className="text-base font-semibold text-white">Continue</Text>
           </TouchableOpacity>
         </View>
       </View>
