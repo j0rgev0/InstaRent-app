@@ -9,10 +9,16 @@ type AppImage = {
 }
 
 const AddPictures = () => {
+  const SELECTIONLIMIT = 30
+
   const [images, setImages] = useState<AppImage[]>([])
+  const disabledSelect = images.length >= SELECTIONLIMIT
 
   const handleSelectImages = (newImages: AppImage[]) => {
-    setImages((prev) => [...prev, ...newImages])
+    const availableSlots = SELECTIONLIMIT - images.length
+    const imagesToAdd = newImages.slice(0, availableSlots)
+
+    setImages((prev) => [...prev, ...imagesToAdd])
   }
 
   const handleRemoveImage = (uri: string) => {
@@ -20,11 +26,16 @@ const AddPictures = () => {
   }
 
   return (
-    <View className="flex-1 p-5 bg-white items-center">
+    <View className="flex-1 shadow-current p-5 bg-white items-center">
       <Text className="text-xl font-semibold text-gray-800 mb-2">
         Add pictures for your property
       </Text>
-      <ImageSelector onSelect={handleSelectImages} />
+      <ImageSelector
+        onSelect={handleSelectImages}
+        selectionLimit={SELECTIONLIMIT}
+        selected={images.length}
+        disabled={disabledSelect}
+      />
       <ImageCarousel images={images} onRemove={handleRemoveImage} />
     </View>
   )
