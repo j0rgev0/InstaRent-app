@@ -53,7 +53,8 @@ export default function RootLayout() {
         options={{
           animation: 'none',
           headerTitleAlign: 'center',
-          headerTitle: 'Add Pctures'
+          headerTitle: 'Add Pctures',
+          headerLeft: () => ''
         }}
       />
     </Stack>

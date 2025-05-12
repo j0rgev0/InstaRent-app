@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Text, View } from 'react-native'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+
+import { router } from 'expo-router'
 
 import ImageCarousel from '@/components/selectImages/ImageCarousel'
 import ImageSelector from '@/components/selectImages/ImageSelector'
@@ -26,17 +28,47 @@ const AddPictures = () => {
   }
 
   return (
-    <View className="flex-1 shadow-current p-5 bg-white items-center">
-      <Text className="text-xl font-semibold text-gray-800 mb-2">
-        Add pictures for your property
-      </Text>
-      <ImageSelector
-        onSelect={handleSelectImages}
-        selectionLimit={SELECTIONLIMIT}
-        selected={images.length}
-        disabled={disabledSelect}
-      />
-      <ImageCarousel images={images} onRemove={handleRemoveImage} />
+    <View className="flex-1 bg-white">
+      <ScrollView
+        className="flex-1 px-5 pt-5"
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}>
+        <Text className="text-xl font-semibold text-gray-800 mb-2">
+          Add pictures for your property
+        </Text>
+
+        <ImageSelector
+          onSelect={handleSelectImages}
+          selectionLimit={SELECTIONLIMIT}
+          selected={images.length}
+          disabled={disabledSelect}
+        />
+
+        <ImageCarousel images={images} onRemove={handleRemoveImage} />
+      </ScrollView>
+
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 pb-10">
+        <View className="flex-row justify-between">
+          <TouchableOpacity
+            className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4"
+            onPress={() => router.back()}>
+            <Text className="text-base font-semibold text-darkBlue">Cancel</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className={`w-[48%] h-16 flex-row items-center justify-center rounded-xl p-4 ${
+              images.length === 0 ? 'bg-gray-400' : 'bg-darkBlue'
+            }`}
+            onPress={() => {
+              if (images.length > 0) {
+                // Continúa con la lógica
+              }
+            }}
+            disabled={images.length === 0}>
+            <Text className="text-base font-semibold text-white">Continue</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   )
 }
