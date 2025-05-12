@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { FlatList, Image, ScrollView, View } from 'react-native'
+import { FlatList, Image, Pressable, ScrollView, Text, View } from 'react-native'
 
 type AppImage = {
   uri: string
@@ -7,9 +8,10 @@ type AppImage = {
 
 type Props = {
   images: AppImage[]
+  onRemove: (uri: string) => void
 }
 
-const ImageCarousel: React.FC<Props> = ({ images }) => {
+const ImageCarousel: React.FC<Props> = ({ images, onRemove }) => {
   if (images.length === 0) return null
 
   const itemHeight = 112
@@ -26,17 +28,31 @@ const ImageCarousel: React.FC<Props> = ({ images }) => {
             <View
               className="mb-3"
               style={{
-                marginRight: (index + 1) % 3 === 0 ? 0 : 12
+                marginRight: (index + 1) % 3 === 0 ? 0 : 22
               }}>
-              <Image source={{ uri: item.uri }} className="w-28 h-28 rounded-md" />
+              <View
+                className="shadow-lg bg-white rounded-md"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 4,
+                  elevation: 6
+                }}>
+                <View className="w-28 h-28 rounded-md overflow-hidden relative">
+                  <Image source={{ uri: item.uri }} className="w-full h-full" />
+                  <Pressable
+                    onPress={() => onRemove(item.uri)}
+                    className="absolute top-1 right-1 w-8 h-6 rounded-full bg-white/60 items-center justify-center">
+                    <Ionicons  name="trash-outline" color={'red'} />
+                  </Pressable>
+                </View>
+              </View>
             </View>
           )}
           numColumns={3}
+          className="w-full mt-3"
           scrollEnabled={false}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            marginTop: 10
-          }}
         />
       </ScrollView>
     </View>

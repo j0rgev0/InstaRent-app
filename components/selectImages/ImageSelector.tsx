@@ -37,7 +37,7 @@ const ImageSelector: React.FC<Props> = ({ onSelect }) => {
   return (
     <TouchableOpacity
       onPress={selectImages}
-      className="bg-blue-600 px-6 py-3 rounded-lg w-11/12 items-center"
+      className="bg-blue-600 px-6 py-3 rounded-lg w-full items-center"
       activeOpacity={0.8}>
       <Text className="text-white font-medium text-lg">Select Image</Text>
     </TouchableOpacity>

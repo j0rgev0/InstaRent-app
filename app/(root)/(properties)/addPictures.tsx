@@ -15,13 +15,17 @@ const AddPictures = () => {
     setImages((prev) => [...prev, ...newImages])
   }
 
+  const handleRemoveImage = (uri: string) => {
+    setImages((prev) => prev.filter((img) => img.uri !== uri))
+  }
+
   return (
     <View className="flex-1 p-5 bg-white items-center">
       <Text className="text-xl font-semibold text-gray-800 mb-2">
         Add pictures for your property
       </Text>
       <ImageSelector onSelect={handleSelectImages} />
-      <ImageCarousel images={images} />
+      <ImageCarousel images={images} onRemove={handleRemoveImage} />
     </View>
   )
 }
