@@ -61,7 +61,6 @@ const AddPictures = () => {
             }`}
             onPress={() => {
               if (images.length > 0) {
-                // Continúa con la lógica
               }
             }}
             disabled={images.length === 0}>
