@@ -24,11 +24,9 @@ const AddPictures = () => {
 
   const SELECTIONLIMIT = 30
 
-  const propertyId = '2e6436fb-4f77-4eaf-b135-032be2368618'
-
-  // Array.isArray(params.propertyId)
-  //   ? params.propertyId[0]
-  //   : params.propertyId || ''
+  const propertyId = Array.isArray(params.propertyId)
+    ? params.propertyId[0]
+    : params.propertyId || '' // '2e6436fb-4f77-4eaf-b135-032be2368618'
 
   const [imagesAdded, setImagesAdded] = useState(0)
   const [images, setImages] = useState<AppImage[]>([])
