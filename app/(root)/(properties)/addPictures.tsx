@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 import { router, useLocalSearchParams } from 'expo-router'
 
@@ -15,29 +15,30 @@ const AddPictures = () => {
   const params = useLocalSearchParams()
 
   const SELECTIONLIMIT = 30
-  const propertyId = '1nk1B3XrIQ0FNIG9MqkNZFod3t9Qiut2' // params.propertyId (usar params en lugar de hardcodear)
+  const propertyId = '2e6436fb-4f77-4eaf-b135-032be2368618' // params.propertyId 
 
   const [images, setImages] = useState<AppImage[]>([])
   const disabledSelect = images.length >= SELECTIONLIMIT
 
-  async function addImage(propertyData: { image: any; propertyId: string }) {
+  async function addImage(propertyData: { uri: string; propertyId: string }) {
     try {
       const formData = new FormData()
 
-      let imageBlob
-      if (typeof propertyData.image === 'string') {
-        const response = await fetch(propertyData.image)
+      if (Platform.OS === 'web') {
+
+        const response = await fetch(propertyData.uri)
         const blob = await response.blob()
-        imageBlob = blob
+
+        formData.append('image', blob, 'photo.jpg')
       } else {
-        imageBlob = propertyData.image
+
+        formData.append('image', {
+          uri: propertyData.uri,
+          name: 'photo.jpg',
+          type: 'image/jpeg'
+        } as any)
       }
 
-      if (!imageBlob) {
-        throw new Error('Invalid image')
-      }
-
-      formData.append('image', imageBlob)
       formData.append('property_id', propertyData.propertyId)
 
       const response = await fetch(`${INSTARENT_API_URL}/images/new`, {
@@ -72,12 +73,11 @@ const AddPictures = () => {
     setImages((prev) => prev.filter((img) => img.uri !== uri))
   }
 
-
   const handleAddImage = async () => {
     if (images.length >= 1) {
       try {
         for (const image of images) {
-          await addImage({ image: image, propertyId })
+          await addImage({ uri: image.uri, propertyId })
         }
 
         router.back()
