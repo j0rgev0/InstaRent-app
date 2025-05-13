@@ -19,6 +19,11 @@ type AppImage = {
   uri: string
 }
 
+const featuresOptions = [
+  { label: 'Rent', value: 'rent' },
+  { label: 'Sell', value: 'sell' }
+]
+
 const AddPictures = () => {
   const params = useLocalSearchParams()
 
@@ -105,10 +110,8 @@ const AddPictures = () => {
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
-        <View className="items-center border-b border-gray-300 pb-5">
-          <Text className="text-xl font-semibold text-gray-800 mb-2">
-            Add pictures for your property
-          </Text>
+        <View className="border-b border-gray-300 pb-5 mb-5">
+          <Text className="text-xl text-darkBlue font-bold mb-4">Pictures</Text>
 
           <ImageSelector
             onSelect={handleSelectImages}
@@ -117,7 +120,16 @@ const AddPictures = () => {
             disabled={disabledSelect}
           />
 
-          <ImageCarousel images={images} onRemove={handleRemoveImage} />
+          <View className="w-full items-center mt-3">
+            <ImageCarousel images={images} onRemove={handleRemoveImage} />
+          </View>
+        </View>
+
+        <View className="border-b border-gray-300 pb-5">
+          <Text className="text-xl text-darkBlue font-bold mb-4">Features</Text>
+          <View className="w-full items-center mt-3">
+
+          </View>
         </View>
       </ScrollView>
 
