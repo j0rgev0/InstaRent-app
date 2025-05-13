@@ -4,6 +4,8 @@ import { Text, TouchableOpacity, View } from 'react-native'
 
 import { Ionicons } from '@expo/vector-icons'
 
+import '@/global.css'
+
 type CounterProps = {
   label: string
   value: number

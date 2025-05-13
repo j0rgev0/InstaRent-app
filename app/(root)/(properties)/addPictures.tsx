@@ -13,15 +13,101 @@ import { router, useLocalSearchParams } from 'expo-router'
 
 import ImageCarousel from '@/components/selectImages/ImageCarousel'
 import ImageSelector from '@/components/selectImages/ImageSelector'
+import FeatureBox from '@/components/selectfeatures/FeatureBox'
+
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+
+import '@/global.css'
 
 type AppImage = {
   uri: string
 }
 
-const featuresOptions = [
-  { label: 'Rent', value: 'rent' },
-  { label: 'Sell', value: 'sell' }
+const interiorFeaturesOptions = [
+  { label: 'Living room', value: 'livingroom' },
+  { label: 'Dining room', value: 'diningroom' },
+  { label: 'Kitchen', value: 'kitchen' },
+  { label: 'Open-plan kitchen', value: 'openkitchen' },
+  { label: 'Fully furnished', value: 'fullyfurnished' },
+  { label: 'Partially furnished', value: 'partiallyfurnished' },
+  { label: 'Unfurnished', value: 'unfurnished' },
+  { label: 'Built-in wardrobes', value: 'builtinwardrobes' },
+  { label: 'Air conditioning', value: 'airconditioning' },
+  { label: 'Heating', value: 'heating' },
+  { label: 'Fireplace', value: 'fireplace' },
+  { label: 'Double-glazed windows', value: 'doubleglazedwindows' },
+  { label: 'Balcony', value: 'balcony' },
+  { label: 'Terrace', value: 'terrace' },
+  { label: 'Laundry room', value: 'laundryroom' },
+  { label: 'Storage room', value: 'storageroom' },
+  { label: 'Walk-in closet', value: 'walkincloset' },
+  { label: 'Smart home system', value: 'smarthomesystem' }
+]
+
+const buildingFeaturesOptions = [
+  { label: 'Elevator', value: 'elevator' },
+  { label: 'Doorman service', value: 'doormanservice' },
+  { label: 'Security system', value: 'securitysystem' },
+  { label: '24h surveillance', value: 'surveillance24h' },
+  { label: 'Concierge service', value: 'conciergeservice' },
+  { label: 'Gated community', value: 'gatedcommunity' },
+  { label: 'Wheelchair accessible', value: 'wheelchairaccessible' },
+  { label: 'Year built', value: 'yearbuilt' },
+  { label: 'Floor number', value: 'floornumber' },
+  { label: 'Orientation', value: 'orientation' },
+  { label: 'High ceilings', value: 'highceilings' }
+]
+
+const outdoorFeaturesOptions = [
+  { label: 'Private pool', value: 'privateswimmingpool' },
+  { label: 'Communal pool', value: 'communalswimmingpool' },
+  { label: 'Private garden', value: 'privategarden' },
+  { label: 'Communal garden', value: 'communalgarden' },
+  { label: 'Playground', value: 'playground' },
+  { label: 'Gym', value: 'gym' },
+  { label: 'Rooftop', value: 'rooftop' },
+  { label: 'Solarium', value: 'solarium' },
+  { label: 'Barbecue area', value: 'barbecuearea' },
+  { label: 'Sports facilities', value: 'sportsfacilities' },
+  { label: 'Clubhouse', value: 'clubhouse' },
+  { label: 'Community room', value: 'communityroom' }
+]
+
+const parkingTransportOptions = [
+  { label: 'Private parking', value: 'privateparking' },
+  { label: 'Communal parking', value: 'communalparking' },
+  { label: 'Underground garage', value: 'undergroundgarage' },
+  { label: 'Bicycle storage', value: 'bicyclestorage' },
+  { label: 'EV charging point', value: 'evchargingpoint' },
+  { label: 'Good public transport connection', value: 'goodpublictransport' },
+  { label: 'Near station or stop', value: 'nearstation' }
+]
+
+const locationOptions = [
+  { label: 'Quiet area', value: 'quietarea' },
+  { label: 'City center', value: 'citycenter' },
+  { label: 'Sea view', value: 'seaview' },
+  { label: 'Mountain view', value: 'mountainview' },
+  { label: 'Park view', value: 'parkview' },
+  { label: 'Beachfront', value: 'beachfront' },
+  { label: 'Near the beach', value: 'nearthebeach' },
+  { label: 'Near shops', value: 'nearshops' },
+  { label: 'Near schools', value: 'nearschools' },
+  { label: 'Near restaurants', value: 'nearrestaurants' },
+  { label: 'Good neighborhood', value: 'goodneighborhood' },
+  { label: 'Green areas nearby', value: 'greenareas' }
+]
+
+const conditionOptions = [
+  { label: 'Recently renovated', value: 'recentlyrenovated' },
+  { label: 'New construction', value: 'newconstruction' },
+  { label: 'Needs renovation', value: 'needsrenovation' },
+  { label: 'Ready to move in', value: 'readytomovein' },
+  { label: 'Energy-efficient', value: 'energyefficient' },
+  { label: 'Insulated', value: 'insulated' },
+  { label: 'Energy rating A', value: 'energyratinga' },
+  { label: 'Energy rating B', value: 'energyratingb' },
+  { label: 'Energy rating C', value: 'energyratingc' }
 ]
 
 const AddPictures = () => {
@@ -31,7 +117,7 @@ const AddPictures = () => {
 
   const propertyId = Array.isArray(params.propertyId)
     ? params.propertyId[0]
-    : params.propertyId || '' // '2e6436fb-4f77-4eaf-b135-032be2368618'
+    : params.propertyId || ''
 
   const [imagesAdded, setImagesAdded] = useState(0)
   const [images, setImages] = useState<AppImage[]>([])
@@ -125,10 +211,32 @@ const AddPictures = () => {
           </View>
         </View>
 
-        <View className="border-b border-gray-300 pb-5">
-          <Text className="text-xl text-darkBlue font-bold mb-4">Features</Text>
-          <View className="w-full items-center mt-3">
+        <View className="flex-1 h-full">
+          <View className="border-b border-gray-300 pb-5 mb-5">
+            <Text className="text-xl text-darkBlue font-bold mb-4">Interior Features</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {interiorFeaturesOptions.map((item) => (
+                <FeatureBox key={item.label} value={item.label} />
+              ))}
+            </View>
+          </View>
 
+          <View className="border-b border-gray-300 pb-5 mb-5">
+            <Text className="text-xl text-darkBlue font-bold mb-4">Building Features</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {buildingFeaturesOptions.map((item) => (
+                <FeatureBox key={item.label} value={item.label} />
+              ))}
+            </View>
+          </View>
+
+          <View className="border-b border-gray-300 pb-5">
+            <Text className="text-xl text-darkBlue font-bold mb-4">Outdoors Features</Text>
+            <View className="flex-row flex-wrap gap-2 w-full">
+              {outdoorFeaturesOptions.map((item) => (
+                <FeatureBox key={item.label} value={item.label} />
+              ))}
+            </View>
           </View>
         </View>
       </ScrollView>

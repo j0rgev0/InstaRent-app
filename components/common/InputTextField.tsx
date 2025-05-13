@@ -4,6 +4,8 @@ import { KeyboardType, Text, TextInput, TouchableOpacity, View } from 'react-nat
 
 import { Ionicons } from '@expo/vector-icons'
 
+import '@/global.css'
+
 interface InputTextFieldProps {
   subtitle?: string
   iconName?: keyof typeof Ionicons.glyphMap

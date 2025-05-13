@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { FlatList, Image, Pressable, ScrollView, Text, View } from 'react-native'
+import { FlatList, Image, Pressable, ScrollView, View } from 'react-native'
+
+import '@/global.css'
 
 type AppImage = {
   uri: string
@@ -44,7 +46,7 @@ const ImageCarousel: React.FC<Props> = ({ images, onRemove }) => {
                   <Pressable
                     onPress={() => onRemove(item.uri)}
                     className="absolute top-1 right-1 w-8 h-6 rounded-full bg-white/60 items-center justify-center">
-                    <Ionicons  name="trash-outline" color={'red'} />
+                    <Ionicons name="trash-outline" color={'red'} />
                   </Pressable>
                 </View>
               </View>

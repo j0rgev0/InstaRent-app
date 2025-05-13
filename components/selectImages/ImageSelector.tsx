@@ -3,6 +3,8 @@ import { Alert, Text, TouchableOpacity } from 'react-native'
 
 import * as ExpoImagePicker from 'expo-image-picker'
 
+import '@/global.css'
+
 type AppImage = {
   uri: string
 }
