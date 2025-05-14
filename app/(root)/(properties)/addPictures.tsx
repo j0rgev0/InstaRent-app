@@ -195,7 +195,6 @@ const AddPictures = () => {
         }
 
         for (const feature of selectedFeatures) {
-          console.log(feature)
           const featuresPayload = {
             property_id: propertyId,
             name: feature
