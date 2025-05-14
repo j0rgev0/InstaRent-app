@@ -35,12 +35,10 @@ const interiorFeaturesOptions = [
   { label: 'Air conditioning', value: 'airconditioning' },
   { label: 'Heating', value: 'heating' },
   { label: 'Fireplace', value: 'fireplace' },
-  { label: 'Double-glazed windows', value: 'doubleglazedwindows' },
   { label: 'Balcony', value: 'balcony' },
   { label: 'Terrace', value: 'terrace' },
   { label: 'Laundry room', value: 'laundryroom' },
   { label: 'Storage room', value: 'storageroom' },
-  { label: 'Walk-in closet', value: 'walkincloset' },
   { label: 'Smart home system', value: 'smarthomesystem' }
 ]
 
@@ -51,11 +49,7 @@ const buildingFeaturesOptions = [
   { label: '24h surveillance', value: 'surveillance24h' },
   { label: 'Concierge service', value: 'conciergeservice' },
   { label: 'Gated community', value: 'gatedcommunity' },
-  { label: 'Wheelchair accessible', value: 'wheelchairaccessible' },
-  { label: 'Year built', value: 'yearbuilt' },
-  { label: 'Floor number', value: 'floornumber' },
-  { label: 'Orientation', value: 'orientation' },
-  { label: 'High ceilings', value: 'highceilings' }
+  { label: 'Wheelchair accessible', value: 'wheelchairaccessible' }
 ]
 
 const outdoorFeaturesOptions = [
@@ -79,8 +73,8 @@ const parkingTransportOptions = [
   { label: 'Underground garage', value: 'undergroundgarage' },
   { label: 'Bicycle storage', value: 'bicyclestorage' },
   { label: 'EV charging point', value: 'evchargingpoint' },
-  { label: 'Good public transport connection', value: 'goodpublictransport' },
-  { label: 'Near station or stop', value: 'nearstation' }
+  { label: 'Near station or stop', value: 'nearstation' },
+  { label: 'Good public transport connection', value: 'goodpublictransport' }
 ]
 
 const locationOptions = [
@@ -98,18 +92,6 @@ const locationOptions = [
   { label: 'Green areas nearby', value: 'greenareas' }
 ]
 
-const conditionOptions = [
-  { label: 'Recently renovated', value: 'recentlyrenovated' },
-  { label: 'New construction', value: 'newconstruction' },
-  { label: 'Needs renovation', value: 'needsrenovation' },
-  { label: 'Ready to move in', value: 'readytomovein' },
-  { label: 'Energy-efficient', value: 'energyefficient' },
-  { label: 'Insulated', value: 'insulated' },
-  { label: 'Energy rating A', value: 'energyratinga' },
-  { label: 'Energy rating B', value: 'energyratingb' },
-  { label: 'Energy rating C', value: 'energyratingc' }
-]
-
 const AddPictures = () => {
   const params = useLocalSearchParams()
 
@@ -122,6 +104,8 @@ const AddPictures = () => {
   const [imagesAdded, setImagesAdded] = useState(0)
   const [images, setImages] = useState<AppImage[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
   const disabledSelect = images.length >= SELECTIONLIMIT
 
@@ -193,6 +177,12 @@ const AddPictures = () => {
     }
   }
 
+  const toggleFeature = (value: string ) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    )
+  }
+
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
@@ -216,7 +206,12 @@ const AddPictures = () => {
             <Text className="text-xl text-darkBlue font-bold mb-4">Interior Features</Text>
             <View className="flex-row flex-wrap gap-2">
               {interiorFeaturesOptions.map((item) => (
-                <FeatureBox key={item.label} value={item.label} />
+                <FeatureBox
+                  key={item.label}
+                  value={item.label}
+                  selected={selectedFeatures.includes(item.value)}
+                  onPress={() => toggleFeature(item.value)}
+                />
               ))}
             </View>
           </View>
@@ -225,23 +220,47 @@ const AddPictures = () => {
             <Text className="text-xl text-darkBlue font-bold mb-4">Building Features</Text>
             <View className="flex-row flex-wrap gap-2">
               {buildingFeaturesOptions.map((item) => (
-                <FeatureBox key={item.label} value={item.label} />
+                <FeatureBox
+                  key={item.label}
+                  value={item.label}
+                  selected={selectedFeatures.includes(item.value)}
+                  onPress={() => toggleFeature(item.value)}
+                />
               ))}
             </View>
           </View>
 
-          <View className="border-b border-gray-300 pb-5">
-            <Text className="text-xl text-darkBlue font-bold mb-4">Outdoors Features</Text>
-            <View className="flex-row flex-wrap gap-2 w-full">
+          <View className="border-b border-gray-300 pb-5 mb-5">
+            <Text className="text-xl text-darkBlue font-bold mb-4">Outdoor Features</Text>
+            <View className="flex-row flex-wrap gap-2">
               {outdoorFeaturesOptions.map((item) => (
-                <FeatureBox key={item.label} value={item.label} />
+                <FeatureBox
+                  key={item.label}
+                  value={item.label}
+                  selected={selectedFeatures.includes(item.value)}
+                  onPress={() => toggleFeature(item.value)}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View className="border-b border-gray-300 pb-5 mb-5">
+            <Text className="text-xl text-darkBlue font-bold mb-4">Parking & Transport</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {parkingTransportOptions.map((item) => (
+                <FeatureBox
+                  key={item.label}
+                  value={item.label}
+                  selected={selectedFeatures.includes(item.value)}
+                  onPress={() => toggleFeature(item.value)}
+                />
               ))}
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 pb-10">
+      <View className="bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 pb-10">
         <View className="flex-row justify-between">
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4"
