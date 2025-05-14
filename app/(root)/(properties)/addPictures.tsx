@@ -205,7 +205,8 @@ const AddPictures = () => {
           setFeaturesAdded((prev) => prev + 1)
         }
 
-        router.back()
+        Alert.alert('Images and features added')
+        router.replace('/(root)/(tabs)/profile')
       } catch (error) {
         console.log('Error adding feature')
         Alert.alert('Error adding feature. Please try again.')
@@ -318,7 +319,7 @@ const AddPictures = () => {
             {isLoading ? (
               <View className="flex-row items-center space-x-3">
                 <ActivityIndicator color="#fff" />
-                <View className="flex-col">
+                <View className="ml-2 flex-col">
                   <Text className="text-xs font-semibold text-white">
                     {imagesAdded} / {images.length} added images
                   </Text>
