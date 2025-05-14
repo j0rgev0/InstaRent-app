@@ -105,6 +105,7 @@ const AddPictures = () => {
   const [images, setImages] = useState<AppImage[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
+  const [featuresAdded, setFeaturesAdded] = useState(0)
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
   const disabledSelect = images.length >= SELECTIONLIMIT
@@ -148,6 +149,30 @@ const AddPictures = () => {
     }
   }
 
+  async function addFeature(propertyData: any) {
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/features/new`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        },
+        body: JSON.stringify(propertyData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error adding new feature')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error adding new feature', error)
+      throw error
+    }
+  }
+
   const handleSelectImages = (newImages: AppImage[]) => {
     const availableSlots = SELECTIONLIMIT - images.length
     const imagesToAdd = newImages.slice(0, availableSlots)
@@ -158,26 +183,39 @@ const AddPictures = () => {
     setImages((prev) => prev.filter((img) => img.uri !== uri))
   }
 
-  const handleAddImage = async () => {
+  const handleAddImageAndFeature = async () => {
     if (images.length >= 1) {
       setIsLoading(true)
       setImagesAdded(0)
+      setFeaturesAdded(0)
       try {
         for (const image of images) {
           await addImage({ uri: image.uri, propertyId })
           setImagesAdded((prev) => prev + 1)
         }
+
+        for (const feature of selectedFeatures) {
+          console.log(feature)
+          const featuresPayload = {
+            property_id: propertyId,
+            name: feature
+          }
+
+          await addFeature(featuresPayload)
+          setFeaturesAdded((prev) => prev + 1)
+        }
+
         router.back()
       } catch (error) {
-        console.log('Error adding images')
-        Alert.alert('Error adding images. Please try again.')
+        console.log('Error adding feature')
+        Alert.alert('Error adding feature. Please try again.')
       } finally {
         setIsLoading(false)
       }
     }
   }
 
-  const toggleFeature = (value: string ) => {
+  const toggleFeature = (value: string) => {
     setSelectedFeatures((prev) =>
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     )
@@ -271,19 +309,28 @@ const AddPictures = () => {
 
           <TouchableOpacity
             className={`w-[48%] h-16 flex-row items-center justify-center rounded-xl p-4 ${
-              images.length === 0 || isLoading ? 'bg-gray-400' : 'bg-darkBlue'
+              images.length === 0 || selectedFeatures.length === 0 || isLoading
+                ? 'bg-gray-400'
+                : 'bg-darkBlue'
             }`}
-            onPress={handleAddImage}
+            onPress={handleAddImageAndFeature}
             disabled={images.length === 0 || isLoading}>
             {isLoading ? (
-              <View className="flex-row items-center space-x-2">
+              <View className="flex-row items-center space-x-3">
                 <ActivityIndicator color="#fff" />
-                <Text className="ml-1 text-sm font-semibold text-white">
-                  {imagesAdded} / {images.length} added images
-                </Text>
+                <View className="flex-col">
+                  <Text className="text-xs font-semibold text-white">
+                    {imagesAdded} / {images.length} added images
+                  </Text>
+                  <Text className="text-xs font-semibold text-white">
+                    {featuresAdded} / {selectedFeatures.length} added features
+                  </Text>
+                </View>
               </View>
             ) : (
-              <Text className="text-base font-semibold text-white">Continue</Text>
+              <View className="flex-row items-center space-x-2">
+                <Text className="text-base font-semibold text-white">Continue</Text>
+              </View>
             )}
           </TouchableOpacity>
         </View>

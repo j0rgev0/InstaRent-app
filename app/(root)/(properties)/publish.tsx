@@ -652,26 +652,22 @@ const PublishPage = () => {
         <View className="flex-row justify-between">
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4"
-            // onPress={() => {
-            //   if (Platform.OS !== 'web') {
-            //     Alert.alert('Discard changes?', 'If you go back now, you will lose your changes.', [
-            //       {
-            //         text: 'Discard changes',
-            //         onPress: () => router.back(),
-            //         style: 'destructive'
-            //       },
-            //       {
-            //         text: 'Keep editing',
-            //         style: 'cancel'
-            //       }
-            //     ])
-            //   } else {
-            //     router.back()
-            //   }
-            // }}
-
             onPress={() => {
-              router.replace('/(root)/(properties)/addPictures')
+              if (Platform.OS !== 'web') {
+                Alert.alert('Discard changes?', 'If you go back now, you will lose your changes.', [
+                  {
+                    text: 'Discard changes',
+                    onPress: () => router.back(),
+                    style: 'destructive'
+                  },
+                  {
+                    text: 'Keep editing',
+                    style: 'cancel'
+                  }
+                ])
+              } else {
+                router.back()
+              }
             }}>
             <Text className="text-base font-semibold text-darkBlue">Cancel</Text>
           </TouchableOpacity>
