@@ -75,17 +75,23 @@ const AnimatedAction = ({
 const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
   <View className="relative w-56 h-full justify-center flex-row space-x-2">
     <AnimatedAction index={2} progress={progress}>
-      <Pressable className="bg-[#c21807] w-24 h-24 rounded-full shadow-sm items-center justify-center">
+      <Pressable
+        onPress={() => console.log('Delete')}
+        className="bg-red-500 w-24 h-24 rounded-full shadow-sm items-center justify-center">
         <Text className="text-white font-semibold text-sm">Delete</Text>
       </Pressable>
     </AnimatedAction>
     <AnimatedAction index={1} progress={progress}>
-      <Pressable className="bg-[#eab308] w-24 h-24 rounded-full shadow-sm items-center justify-center">
+      <Pressable
+        onPress={() => console.log('Edit')}
+        className="bg-[#eab308] w-24 h-24 rounded-full shadow-sm items-center justify-center">
         <Text className="text-white font-semibold text-sm">Edit</Text>
       </Pressable>
     </AnimatedAction>
     <AnimatedAction index={0} progress={progress}>
-      <Pressable className="bg-darkBlue w-24 h-24 rounded-full shadow-sm items-center justify-center">
+      <Pressable
+        onPress={() => console.log('View')}
+        className="bg-darkBlue w-24 h-24 rounded-full shadow-sm items-center justify-center">
         <Text className="text-white font-semibold text-sm">View</Text>
       </Pressable>
     </AnimatedAction>
