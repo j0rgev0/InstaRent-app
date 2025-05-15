@@ -7,9 +7,6 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 // @ts-ignore
 import MapComponent from '@/components/map/OldMapComponent'
 
-// @ts-ignore
-//import MapComponent from '@/components/map/MapComponent'
-
 export default function MapsScreen() {
   const navigation = useNavigation()
   const router = useRouter()

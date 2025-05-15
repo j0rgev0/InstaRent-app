@@ -77,21 +77,6 @@ const parkingTransportOptions = [
   { label: 'Good public transport connection', value: 'goodpublictransport' }
 ]
 
-const locationOptions = [
-  { label: 'Quiet area', value: 'quietarea' },
-  { label: 'City center', value: 'citycenter' },
-  { label: 'Sea view', value: 'seaview' },
-  { label: 'Mountain view', value: 'mountainview' },
-  { label: 'Park view', value: 'parkview' },
-  { label: 'Beachfront', value: 'beachfront' },
-  { label: 'Near the beach', value: 'nearthebeach' },
-  { label: 'Near shops', value: 'nearshops' },
-  { label: 'Near schools', value: 'nearschools' },
-  { label: 'Near restaurants', value: 'nearrestaurants' },
-  { label: 'Good neighborhood', value: 'goodneighborhood' },
-  { label: 'Green areas nearby', value: 'greenareas' }
-]
-
 const AddPictures = () => {
   const params = useLocalSearchParams()
 

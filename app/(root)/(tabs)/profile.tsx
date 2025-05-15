@@ -236,8 +236,7 @@ const ProfilePage = () => {
 
             <TouchableOpacity
               className="w-[48%] h-16 flex-row items-center justify-center rounded-md bg-darkBlue p-4"
-              // onPress={() => router.push('/(root)/my-flats')}
-            >
+              onPress={() => router.push('/(root)/(properties)/myProperties')}>
               <Ionicons name="home-outline" size={24} color="white" />
               <Text className="px-2 text-base font-semibold text-white">My Properties</Text>
             </TouchableOpacity>
