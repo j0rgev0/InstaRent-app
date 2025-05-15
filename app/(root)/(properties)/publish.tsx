@@ -560,7 +560,7 @@ const PublishPage = () => {
                   <TextInput
                     keyboardType="default"
                     className="border-l border-gray-400 pl-4 flex-1 text-lg h-full capitalize"
-                    placeholder="Letter"
+                    placeholder="Letter (optional)"
                     placeholderTextColor="gray"
                     maxLength={1}
                     autoCapitalize="characters"

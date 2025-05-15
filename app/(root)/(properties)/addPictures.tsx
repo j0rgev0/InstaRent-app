@@ -302,7 +302,27 @@ const AddPictures = () => {
         <View className="flex-row justify-between">
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center border-2 border-darkBlue justify-center rounded-xl bg-white p-4"
-            onPress={() => router.back()}
+            onPress={() => {
+              if (Platform.OS !== 'web') {
+                Alert.alert(
+                  'Skip for now?',
+                  'You can add photos and features later. Do you want to continue without them?',
+                  [
+                    {
+                      text: 'Skip for now',
+                      onPress: () => router.back(),
+                      style: 'default'
+                    },
+                    {
+                      text: 'Go back',
+                      style: 'cancel'
+                    }
+                  ]
+                )
+              } else {
+                router.back()
+              }
+            }}
             disabled={isLoading}>
             <Text className="text-base font-semibold text-darkBlue">Maybe later</Text>
           </TouchableOpacity>
