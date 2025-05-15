@@ -1,6 +1,8 @@
 import React, { useRef } from 'react'
-import { Animated, Image, Pressable, Text, View } from 'react-native'
+import { Alert, Animated, Image, Pressable, Text, View } from 'react-native'
 import { Swipeable } from 'react-native-gesture-handler'
+
+import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
 
@@ -72,12 +74,77 @@ const AnimatedAction = ({
   )
 }
 
-const renderRightActions =
-  (propertyid: string) => (progress: Animated.AnimatedInterpolation<number>) => (
+async function delProperty(propertyid: string) {
+  try {
+    const response = await fetch(`${INSTARENT_API_URL}/properties/delete/${propertyid}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${INSTARENT_API_KEY}`
+      }
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error deleting property')
+    }
+
+    return data
+  } catch (error) {
+    console.error('Error deleting property', error)
+    throw error
+  }
+}
+
+const PropertyPreview = ({
+  property,
+  swipeableRef,
+  onDelete
+}: {
+  property: Property
+  swipeableRef: React.MutableRefObject<Swipeable | null>
+  onDelete: () => void
+}) => {
+  const localRef = useRef<Swipeable>(null)
+
+  const handleSwipeStart = () => {
+    if (swipeableRef.current && swipeableRef.current !== localRef.current) {
+      swipeableRef.current.close()
+    }
+    swipeableRef.current = localRef.current
+  }
+
+  const handleDelete = async () => {
+    Alert.alert(
+      'Delete property',
+      'Are you sure you want to delete this property?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await delProperty(property.id)
+              onDelete()
+            } catch (error) {
+              console.error(error)
+            }
+          }
+        }
+      ],
+      { cancelable: true }
+    )
+  }
+  const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
     <View className="relative w-56 h-full justify-center flex-row space-x-2">
       <AnimatedAction index={2} progress={progress}>
         <Pressable
-          onPress={() => console.log('Delete ' + propertyid)}
+          onPress={handleDelete}
           className="bg-red-500 w-24 h-24 rounded-full shadow-sm items-center justify-center">
           <Text className="text-white font-semibold text-sm">Delete</Text>
         </Pressable>
@@ -99,26 +166,10 @@ const renderRightActions =
     </View>
   )
 
-const PropertyPreview = ({
-  property,
-  swipeableRef
-}: {
-  property: Property
-  swipeableRef: React.MutableRefObject<Swipeable | null>
-}) => {
-  const localRef = useRef<Swipeable>(null)
-
-  const handleSwipeStart = () => {
-    if (swipeableRef.current && swipeableRef.current !== localRef.current) {
-      swipeableRef.current.close()
-    }
-    swipeableRef.current = localRef.current
-  }
-
   return (
     <Swipeable
       ref={localRef}
-      renderRightActions={renderRightActions(property.id)}
+      renderRightActions={renderRightActions}
       onSwipeableWillOpen={handleSwipeStart}
       overshootRight={false}
       friction={2}>
@@ -132,7 +183,7 @@ const PropertyPreview = ({
                 ? { uri: property.images[0].url }
                 : require('../../assets/images/NotAvalibleImg3.png')
             }
-            className="w-full h-48 rounded-t-2xl "
+            className="w-full h-48 rounded-t-2xl"
             resizeMode="cover"
           />
           <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">

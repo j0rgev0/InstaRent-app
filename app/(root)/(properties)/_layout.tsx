@@ -1,4 +1,6 @@
-import { Stack } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { router, Stack } from 'expo-router'
+import { Text, TouchableOpacity } from 'react-native'
 
 export default function RootLayout() {
   return (
@@ -55,6 +57,21 @@ export default function RootLayout() {
           headerTitleAlign: 'center',
           headerTitle: 'Pictures & Features',
           headerLeft: () => ''
+        }}
+      />
+
+      <Stack.Screen
+        name="myProperties"
+        options={{
+          animation: 'none',
+          headerTitleAlign: 'center',
+          headerTitle: 'My Properties',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
         }}
       />
     </Stack>
