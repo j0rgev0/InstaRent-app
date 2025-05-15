@@ -72,31 +72,32 @@ const AnimatedAction = ({
   )
 }
 
-const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
-  <View className="relative w-56 h-full justify-center flex-row space-x-2">
-    <AnimatedAction index={2} progress={progress}>
-      <Pressable
-        onPress={() => console.log('Delete')}
-        className="bg-red-500 w-24 h-24 rounded-full shadow-sm items-center justify-center">
-        <Text className="text-white font-semibold text-sm">Delete</Text>
-      </Pressable>
-    </AnimatedAction>
-    <AnimatedAction index={1} progress={progress}>
-      <Pressable
-        onPress={() => console.log('Edit')}
-        className="bg-[#eab308] w-24 h-24 rounded-full shadow-sm items-center justify-center">
-        <Text className="text-white font-semibold text-sm">Edit</Text>
-      </Pressable>
-    </AnimatedAction>
-    <AnimatedAction index={0} progress={progress}>
-      <Pressable
-        onPress={() => console.log('View')}
-        className="bg-darkBlue w-24 h-24 rounded-full shadow-sm items-center justify-center">
-        <Text className="text-white font-semibold text-sm">View</Text>
-      </Pressable>
-    </AnimatedAction>
-  </View>
-)
+const renderRightActions =
+  (propertyid: string) => (progress: Animated.AnimatedInterpolation<number>) => (
+    <View className="relative w-56 h-full justify-center flex-row space-x-2">
+      <AnimatedAction index={2} progress={progress}>
+        <Pressable
+          onPress={() => console.log('Delete ' + propertyid)}
+          className="bg-red-500 w-24 h-24 rounded-full shadow-sm items-center justify-center">
+          <Text className="text-white font-semibold text-sm">Delete</Text>
+        </Pressable>
+      </AnimatedAction>
+      <AnimatedAction index={1} progress={progress}>
+        <Pressable
+          onPress={() => console.log('Edit')}
+          className="bg-[#eab308] w-24 h-24 rounded-full shadow-sm items-center justify-center">
+          <Text className="text-white font-semibold text-sm">Edit</Text>
+        </Pressable>
+      </AnimatedAction>
+      <AnimatedAction index={0} progress={progress}>
+        <Pressable
+          onPress={() => console.log('View')}
+          className="bg-darkBlue w-24 h-24 rounded-full shadow-sm items-center justify-center">
+          <Text className="text-white font-semibold text-sm">View</Text>
+        </Pressable>
+      </AnimatedAction>
+    </View>
+  )
 
 const PropertyPreview = ({
   property,
@@ -117,21 +118,27 @@ const PropertyPreview = ({
   return (
     <Swipeable
       ref={localRef}
-      renderRightActions={renderRightActions}
-      onSwipeableWillOpen={handleSwipeStart}>
-      <View key={property.id} className="bg-gray-200 rounded-2xl mb-6 shadow-sm">
-        {property.images[0] && (
-          <View>
-            <Image
-              source={{ uri: property.images[0].url }}
-              className="w-full h-48 rounded-t-2xl"
-              resizeMode="cover"
-            />
-            <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
-              {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
-            </Text>
-          </View>
-        )}
+      renderRightActions={renderRightActions(property.id)}
+      onSwipeableWillOpen={handleSwipeStart}
+      overshootRight={false}
+      friction={2}>
+      <View
+        key={property.id}
+        className="bg-gray-200 rounded-2xl mb-6 shadow-sm border-gray-400 border">
+        <View>
+          <Image
+            source={
+              property.images[0]?.url
+                ? { uri: property.images[0].url }
+                : require('../../assets/images/NotAvalibleImg3.png')
+            }
+            className="w-full h-48 rounded-t-2xl "
+            resizeMode="cover"
+          />
+          <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
+            {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
+          </Text>
+        </View>
 
         <View className="p-4">
           <Text className="text-lg font-semibold text-darkBlue capitalize">
