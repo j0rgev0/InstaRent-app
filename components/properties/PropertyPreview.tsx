@@ -187,7 +187,15 @@ const PropertyPreview = ({
         },
         {
           text: 'Change images & features',
-          onPress: () => {}
+          onPress: () => {
+            router.replace({
+              pathname: '/(root)/(properties)/addPictures',
+              params: {
+                propertyId: property.id,
+                edit: 'true'
+              }
+            })
+          }
         },
         {
           text: 'Edit general information',

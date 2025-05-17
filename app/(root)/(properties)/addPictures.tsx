@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,7 @@ import {
   View
 } from 'react-native'
 
-import { router, useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 
 import ImageCarousel from '@/components/selectImages/ImageCarousel'
 import ImageSelector from '@/components/selectImages/ImageSelector'
@@ -20,6 +20,10 @@ import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import '@/global.css'
 
 type AppImage = {
+  uri: string
+}
+
+type PrpertyImage = {
   uri: string
 }
 
@@ -78,9 +82,12 @@ const parkingTransportOptions = [
 ]
 
 const AddPictures = () => {
+  const navigation = useNavigation()
   const params = useLocalSearchParams()
 
   const SELECTIONLIMIT = 30
+
+  const edit = params.edit === 'true' ? true : false
 
   const propertyId = Array.isArray(params.propertyId)
     ? params.propertyId[0]
@@ -88,10 +95,12 @@ const AddPictures = () => {
 
   const [imagesAdded, setImagesAdded] = useState(0)
   const [images, setImages] = useState<AppImage[]>([])
+  const [propertyImages, setPropertyImages] = useState<PrpertyImage[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const [featuresAdded, setFeaturesAdded] = useState(0)
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
+  const [propertyFeatures, setPropertyFeatures] = useState<string[]>([])
 
   const disabledSelect = images.length >= SELECTIONLIMIT
 
@@ -158,6 +167,86 @@ const AddPictures = () => {
     }
   }
 
+  const fetchFeatures = async () => {
+    if (!propertyId) return
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/features?property=${propertyId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error getting properties')
+      }
+
+      const features = data.map((feature: { name: string }) => feature.name)
+      setPropertyFeatures(features)
+      setSelectedFeatures(features)
+    } catch (error) {
+      console.error('Error getting properties', error)
+    }
+  }
+
+  const fetchImages = async () => {
+    if (!propertyId) return
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/images?property=${propertyId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error getting images')
+      }
+
+      const imageUris = data.map((img: { url: string }) => ({ uri: img.url }))
+      const combined = data.map((img: { url: string; id: string }) => ({
+        uri: img.url,
+        id: img.id
+      }))
+
+      setPropertyImages(combined)
+      setImages(imageUris)
+    } catch (error) {
+      console.error('Error getting images', error)
+    }
+  }
+
+  const deleteImages = async (imagesId: string) => {
+    if (!propertyId) return
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/images/delete?${imagesId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error getting images')
+      }
+
+      const imageUris = data.map((img: { url: string }) => ({ uri: img.url }))
+      setPropertyImages(imageUris)
+      setImages(imageUris)
+    } catch (error) {
+      console.error('Error getting images', error)
+    }
+  }
+
   const handleSelectImages = (newImages: AppImage[]) => {
     const availableSlots = SELECTIONLIMIT - images.length
     const imagesToAdd = newImages.slice(0, availableSlots)
@@ -174,12 +263,19 @@ const AddPictures = () => {
       setImagesAdded(0)
       setFeaturesAdded(0)
       try {
-        for (const image of images) {
+        const propertyImageUris = propertyImages.map((img) => img.uri)
+        const newImagesToAdd = images.filter((img) => !propertyImageUris.includes(img.uri))
+
+        for (const image of newImagesToAdd) {
           await addImage({ uri: image.uri, propertyId })
           setImagesAdded((prev) => prev + 1)
         }
 
-        for (const feature of selectedFeatures) {
+        const uniqueFeaturesToAdd = selectedFeatures.filter(
+          (feature) => !propertyFeatures.includes(feature)
+        )
+
+        for (const feature of uniqueFeaturesToAdd) {
           const featuresPayload = {
             property_id: propertyId,
             name: feature
@@ -189,8 +285,11 @@ const AddPictures = () => {
           setFeaturesAdded((prev) => prev + 1)
         }
 
-        Alert.alert('Images and features added')
-        router.replace('/(root)/(tabs)/profile')
+        edit ? Alert.alert('Images and features updated') : Alert.alert('Images and features added')
+
+        edit
+          ? router.replace('/(root)/(properties)/myProperties')
+          : router.replace('/(root)/(tabs)/profile')
       } catch (error) {
         console.log('Error adding feature')
         Alert.alert('Error adding feature. Please try again.')
@@ -205,6 +304,20 @@ const AddPictures = () => {
       prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
     )
   }
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: !edit ? 'Pictures & Features' : 'Edit Pictures & Features',
+      headerTitleAlign: 'center'
+    })
+  }, [navigation, edit])
+
+  useEffect(() => {
+    if (edit && propertyId) {
+      fetchFeatures()
+      fetchImages()
+    }
+  }, [edit, propertyId])
 
   return (
     <View className="flex-1 bg-white">
@@ -314,7 +427,7 @@ const AddPictures = () => {
 
           <TouchableOpacity
             className={`w-[48%] h-16 flex-row items-center justify-center rounded-xl p-4 ${
-              images.length === 0 || selectedFeatures.length === 0 || isLoading
+              images.length === 0 || selectedFeatures.length === 0 || isLoading || !edit
                 ? 'bg-gray-400'
                 : 'bg-darkBlue'
             }`}
