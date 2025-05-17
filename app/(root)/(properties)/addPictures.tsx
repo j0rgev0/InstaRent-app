@@ -23,9 +23,14 @@ type AppImage = {
   uri: string
 }
 
-type PrpertyImage = {
+type PropertyImage = {
   id: string
   uri: string
+}
+
+type Feature = {
+  id: string
+  name: string
 }
 
 const interiorFeaturesOptions = [
@@ -96,12 +101,13 @@ const AddPictures = () => {
 
   const [imagesAdded, setImagesAdded] = useState(0)
   const [images, setImages] = useState<AppImage[]>([])
-  const [propertyImages, setPropertyImages] = useState<PrpertyImage[]>([])
+  const [propertyImages, setPropertyImages] = useState<PropertyImage[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const [featuresAdded, setFeaturesAdded] = useState(0)
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
-  const [propertyFeatures, setPropertyFeatures] = useState<string[]>([])
+
+  const [propertyFeatures, setPropertyFeatures] = useState<Feature[]>([])
 
   const disabledSelect = images.length >= SELECTIONLIMIT
 
@@ -186,10 +192,35 @@ const AddPictures = () => {
       }
 
       const features = data.map((feature: { name: string }) => feature.name)
-      setPropertyFeatures(features)
+      const combined = data.map((feature: { name: string; id: string }) => ({
+        name: feature.name,
+        id: feature.id
+      }))
+
+      setPropertyFeatures(combined)
       setSelectedFeatures(features)
     } catch (error) {
       console.error('Error getting properties', error)
+    }
+  }
+
+  const deleteFeatures = async (featureId: string) => {
+    if (!propertyId) return
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/features/delete/${featureId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error getting images')
+      }
+    } catch (error) {
+      console.error('Error getting images', error)
     }
   }
 
@@ -238,7 +269,6 @@ const AddPictures = () => {
       if (!response.ok) {
         throw new Error(data.error || 'Error getting images')
       }
-
     } catch (error) {
       console.error('Error getting images', error)
     }
@@ -267,7 +297,6 @@ const AddPictures = () => {
         const imagesToDelete = propertyImages.filter((img) => !imagesUri.includes(img.uri))
 
         for (const image of imagesToDelete) {
-          console.log(image.id)
           await deleteImages(image.id)
         }
 
@@ -276,9 +305,20 @@ const AddPictures = () => {
           setImagesAdded((prev) => prev + 1)
         }
 
+        const featuresName = propertyFeatures.map((feature) => feature.name)
+
         const uniqueFeaturesToAdd = selectedFeatures.filter(
-          (feature) => !propertyFeatures.includes(feature)
+          (feature) => !featuresName.includes(feature)
         )
+
+        const featuresToDelete = propertyFeatures.filter(
+          (feature) => !selectedFeatures.includes(feature.name)
+        )
+
+        for (const feature of featuresToDelete) {
+          console.log(feature.id)
+          await deleteFeatures(feature.id)
+        }
 
         for (const feature of uniqueFeaturesToAdd) {
           const featuresPayload = {
