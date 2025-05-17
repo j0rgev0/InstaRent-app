@@ -12,6 +12,9 @@ export default function MapsScreen() {
   const router = useRouter()
   const params = useLocalSearchParams()
 
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
+
   const {
     operationTypes,
     description,
@@ -45,7 +48,11 @@ export default function MapsScreen() {
           onPress={() => {
             router.replace({
               pathname: '/(root)/(properties)/publish',
-              params: sharedParams
+              params: {
+                ...sharedParams,
+                propertyid,
+                edit: edit ? 'true' : 'false'
+              }
             })
           }}>
           <Text className="px-4 text-lg text-blue-500">Cancel</Text>

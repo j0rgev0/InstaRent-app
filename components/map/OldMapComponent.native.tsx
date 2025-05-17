@@ -25,6 +25,9 @@ const INITIAL_DELTA = { latitudeDelta: 0.005, longitudeDelta: 0.005 }
 
 export default function MapComponent() {
   const params = useLocalSearchParams()
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
+
   const { operationTypes, description, housingTypes, bathrooms, bedrooms, price, size } = params
 
   const sharedParams = {
@@ -123,7 +126,9 @@ export default function MapComponent() {
       params: {
         ...sharedParams,
         latitude: coords.latitude,
-        longitude: coords.longitude
+        longitude: coords.longitude,
+        propertyid,
+        edit: edit ? 'true' : 'false'
       }
     })
   }

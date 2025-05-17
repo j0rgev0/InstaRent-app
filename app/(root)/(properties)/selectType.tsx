@@ -24,6 +24,9 @@ const SelectType = () => {
   const router = useRouter()
   const params = useLocalSearchParams()
 
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
+
   const {
     operationTypes,
     description,
@@ -51,7 +54,9 @@ const SelectType = () => {
     router.replace({
       pathname: '/(root)/(properties)/publish',
       params: {
-        housingTypes: type
+        housingTypes: type,
+        propertyid,
+        edit: edit ? 'true' : 'false'
       }
     })
   }
@@ -67,7 +72,9 @@ const SelectType = () => {
               pathname: '/(root)/(properties)/publish',
               params: {
                 ...sharedParams,
-                housingTypes
+                housingTypes,
+                propertyid,
+                edit: edit ? 'true' : 'false'
               }
             })
           }}>

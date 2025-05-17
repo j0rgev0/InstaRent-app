@@ -5,6 +5,7 @@ import { Swipeable } from 'react-native-gesture-handler'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
+import { router } from 'expo-router'
 
 const ACTION_WIDTH = 64
 
@@ -24,11 +25,27 @@ type ImageType = {
 type Property = {
   id: string
   type: string
-  street: string
-  locality: string
-  price: number
-  bedrooms: number
+  operation: string
   bathrooms: number
+  bedrooms: number
+  size: number
+  price: number
+  latitude: string
+  longitude: string
+  street: string
+  street_number: string
+  neighborhood: string
+  locality: string
+  province: string
+  state: string
+  country: string
+  postal_code: string
+  floor: number
+  letter: string
+  conservation: string
+  description: string
+  construction_year: number
+  user_id: string
   features: Feature[]
   images: ImageType[]
 }
@@ -108,6 +125,23 @@ const PropertyPreview = ({
 }) => {
   const localRef = useRef<Swipeable>(null)
 
+  const sharedParams = {
+    propertyid: property.id,
+    operationTypes: property.operation,
+    housingTypes: property.type,
+    description: property.description,
+    bathrooms: property.bathrooms,
+    bedrooms: property.bedrooms,
+    size: property.size,
+    price: property.price,
+    latitude: property.latitude,
+    longitude: property.longitude,
+    floor: property.floor,
+    letter: property.letter,
+    conservation: property.conservation,
+    constructionYear: property.construction_year
+  }
+
   const handleSwipeStart = () => {
     if (swipeableRef.current && swipeableRef.current !== localRef.current) {
       swipeableRef.current.close()
@@ -140,6 +174,37 @@ const PropertyPreview = ({
       { cancelable: true }
     )
   }
+
+  const handleEdit = () => {
+    Alert.alert(
+      'Edit property',
+      'What would you like to do?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Change images & features',
+          onPress: () => {}
+        },
+        {
+          text: 'Edit general information',
+          onPress: () => {
+            router.replace({
+              pathname: '/(root)/(properties)/publish',
+              params: {
+                ...sharedParams,
+                edit: 'true'
+              }
+            })
+          }
+        }
+      ],
+      { cancelable: true }
+    )
+  }
+
   const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
     <View className="relative w-56 h-full justify-center flex-row space-x-2">
       <AnimatedAction index={2} progress={progress}>
@@ -151,7 +216,7 @@ const PropertyPreview = ({
       </AnimatedAction>
       <AnimatedAction index={1} progress={progress}>
         <Pressable
-          onPress={() => console.log('Edit')}
+          onPress={handleEdit}
           className="bg-[#eab308] w-24 h-24 rounded-full shadow-sm items-center justify-center">
           <Text className="text-white font-semibold text-sm">Edit</Text>
         </Pressable>

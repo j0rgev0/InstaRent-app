@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useLayoutEffect, useState } from 'react'
 
 import {
   Alert,
@@ -34,6 +34,9 @@ const PublishPage = () => {
   const [showMarker, setShowMarker] = useState(false)
   const [hasFloorNumber, setHasFloorNumber] = useState(false)
   const [hasContructionYear, setHasContructionYear] = useState(false)
+
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
 
   const initialBathrooms = params.bathrooms ? Number(params.bathrooms) : 1
   const initialBedrooms = params.bedrooms ? Number(params.bedrooms) : 1
@@ -230,6 +233,30 @@ const PublishPage = () => {
     }
   }
 
+  async function editProperty(propertyData: any, token: string) {
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/properties/edit/${propertyid}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(propertyData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error editing property')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Error editing property:', error)
+      throw error
+    }
+  }
+
   const handleMarkerDragEnd = (e: any) => {
     const { latitude, longitude } = e.nativeEvent.coordinate
     setMarkerCoords({ latitude, longitude })
@@ -350,6 +377,28 @@ const PublishPage = () => {
     }
   }
 
+  const handleEdit = async () => {
+    if (!validatePropertyData()) {
+      return
+    }
+    try {
+      await editProperty(propertyPayload, INSTARENT_API_KEY)
+
+      Alert.alert('Property edited')
+      router.replace('/(root)/(properties)/myProperties')
+    } catch (error) {
+      console.error(error)
+      Alert.alert('Failed to edit property')
+    }
+  }
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: !edit ? 'Place your advert' : 'Edit Property',
+      headerTitleAlign: 'center'
+    })
+  }, [navigation, edit])
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
@@ -371,7 +420,9 @@ const PublishPage = () => {
                   latitude: markerCoords.latitude,
                   bedrooms,
                   price,
-                  size
+                  size,
+                  propertyid,
+                  edit: edit ? 'true' : 'false'
                 }
               })
             }>
@@ -395,7 +446,9 @@ const PublishPage = () => {
                   longitude: markerCoords.longitude,
                   latitude: markerCoords.latitude,
                   bedrooms,
-                  size
+                  size,
+                  propertyid,
+                  edit: edit ? 'true' : 'false'
                 }
               })
             }>
@@ -456,7 +509,9 @@ const PublishPage = () => {
                   latitude: markerCoords.latitude,
                   bedrooms,
                   price,
-                  size
+                  size,
+                  propertyid,
+                  edit: edit ? 'true' : 'false'
                 }
               })
             }>
@@ -521,7 +576,9 @@ const PublishPage = () => {
                     latitude: markerCoords.latitude,
                     bedrooms,
                     price,
-                    size
+                    size,
+                    propertyid,
+                    edit: edit ? 'true' : 'false'
                   }
                 })
               }
@@ -674,7 +731,7 @@ const PublishPage = () => {
 
           <TouchableOpacity
             className="w-[48%] h-16 flex-row items-center justify-center rounded-xl bg-darkBlue p-4"
-            onPress={handlePublish}>
+            onPress={!edit ? handlePublish : handleEdit}>
             <Text className="text-base font-semibold text-white">Continue</Text>
           </TouchableOpacity>
         </View>

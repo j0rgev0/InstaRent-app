@@ -19,6 +19,9 @@ const ConservationOperation = () => {
   const navigation = useNavigation()
   const params = useLocalSearchParams()
 
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
+
   const {
     operationTypes,
     conservation,
@@ -50,7 +53,9 @@ const ConservationOperation = () => {
       pathname: '/(root)/(properties)/publish',
       params: {
         ...sharedParams,
-        conservation: type
+        conservation: type,
+        propertyid,
+        edit: edit ? 'true' : 'false'
       }
     })
   }
@@ -64,7 +69,11 @@ const ConservationOperation = () => {
           onPress={() => {
             router.replace({
               pathname: '/(root)/(properties)/publish',
-              params: sharedParams
+              params: {
+                ...sharedParams,
+                propertyid,
+                edit: edit ? 'true' : 'false'
+              }
             })
           }}>
           <Text className="px-4 text-lg text-blue-500">Cancel</Text>

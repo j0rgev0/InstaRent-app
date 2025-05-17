@@ -15,6 +15,9 @@ const OperationType = () => {
   const navigation = useNavigation()
   const params = useLocalSearchParams()
 
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
+
   const {
     operationTypes,
     description,
@@ -42,7 +45,9 @@ const OperationType = () => {
       pathname: '/(root)/(properties)/publish',
       params: {
         ...sharedParams,
-        operationTypes: type
+        operationTypes: type,
+        propertyid,
+        edit: edit ? 'true' : 'false'
       }
     })
   }
@@ -56,7 +61,11 @@ const OperationType = () => {
           onPress={() => {
             router.replace({
               pathname: '/(root)/(properties)/publish',
-              params: sharedParams
+              params: {
+                ...sharedParams,
+                propertyid,
+                edit: edit ? 'true' : 'false'
+              }
             })
           }}>
           <Text className="px-4 text-lg text-blue-500">Cancel</Text>

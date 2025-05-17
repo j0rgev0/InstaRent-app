@@ -32,7 +32,6 @@ export default function MapComponent() {
 
   const bottom = useBottomTabOverflow()
   const [address, setAddress] = useState<string | null>(null)
-  const [locationConfirmed, setLocationConfirmed] = useState(false)
 
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<any[]>([])
@@ -45,6 +44,9 @@ export default function MapComponent() {
   const [zoom, setZoom] = useState<number>(15)
 
   const params = useLocalSearchParams()
+  const edit = params.edit === 'true' ? true : false
+  const propertyid = params.propertyid
+
   const { operationTypes, description, housingTypes, bathrooms, bedrooms, price, size } = params
 
   const sharedParams = {
@@ -78,7 +80,9 @@ export default function MapComponent() {
       params: {
         ...sharedParams,
         latitude: coords.latitude,
-        longitude: coords.longitude
+        longitude: coords.longitude,
+        propertyid,
+        edit: edit ? 'true' : 'false'
       }
     })
   }
@@ -127,7 +131,6 @@ export default function MapComponent() {
       setCoords(newCoords)
       fetchAddress(newCoords)
       setZoom(20)
-      setLocationConfirmed(false)
       ref.current?.setCameraPosition({
         coordinates: {
           latitude: newCoords.latitude,
