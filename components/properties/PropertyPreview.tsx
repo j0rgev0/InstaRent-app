@@ -1,10 +1,11 @@
 import React, { useRef } from 'react'
-import { Alert, Animated, Image, Pressable, Text, View } from 'react-native'
+import { Alert, Animated, Image, Pressable, Text, TouchableOpacity, View } from 'react-native'
 import { Swipeable } from 'react-native-gesture-handler'
 
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
+import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 
 const ACTION_WIDTH = 64
@@ -255,6 +256,12 @@ const PropertyPreview = ({
             {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
           </Text>
         </View>
+
+        <Pressable
+          onPress={() => localRef.current?.openRight()}
+          className="absolute top-1 right-1  bg-white/60 rounded-full text-darkBlue font-semibold">
+          <Ionicons name="ellipsis-horizontal-outline"  size={20}/>
+        </Pressable>
 
         <View className="p-4">
           <Text className="text-lg font-semibold text-darkBlue capitalize">
