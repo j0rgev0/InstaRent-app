@@ -24,6 +24,7 @@ type AppImage = {
 }
 
 type PrpertyImage = {
+  id: string
   uri: string
 }
 
@@ -225,10 +226,9 @@ const AddPictures = () => {
   const deleteImages = async (imagesId: string) => {
     if (!propertyId) return
     try {
-      const response = await fetch(`${INSTARENT_API_URL}/images/delete?${imagesId}`, {
-        method: 'GET',
+      const response = await fetch(`${INSTARENT_API_URL}/images/delete/${imagesId}`, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${INSTARENT_API_KEY}`
         }
       })
@@ -239,9 +239,6 @@ const AddPictures = () => {
         throw new Error(data.error || 'Error getting images')
       }
 
-      const imageUris = data.map((img: { url: string }) => ({ uri: img.url }))
-      setPropertyImages(imageUris)
-      setImages(imageUris)
     } catch (error) {
       console.error('Error getting images', error)
     }
@@ -264,7 +261,15 @@ const AddPictures = () => {
       setFeaturesAdded(0)
       try {
         const propertyImageUris = propertyImages.map((img) => img.uri)
+        const imagesUri = images.map((img) => img.uri)
         const newImagesToAdd = images.filter((img) => !propertyImageUris.includes(img.uri))
+
+        const imagesToDelete = propertyImages.filter((img) => !imagesUri.includes(img.uri))
+
+        for (const image of imagesToDelete) {
+          console.log(image.id)
+          await deleteImages(image.id)
+        }
 
         for (const image of newImagesToAdd) {
           await addImage({ uri: image.uri, propertyId })
