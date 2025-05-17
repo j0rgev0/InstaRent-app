@@ -188,7 +188,7 @@ const AddPictures = () => {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error getting properties')
+        throw new Error(data.error || 'Error getting features')
       }
 
       const features = data.map((feature: { name: string }) => feature.name)
@@ -200,7 +200,7 @@ const AddPictures = () => {
       setPropertyFeatures(combined)
       setSelectedFeatures(features)
     } catch (error) {
-      console.error('Error getting properties', error)
+      console.error('Error getting features', error)
     }
   }
 
@@ -217,10 +217,10 @@ const AddPictures = () => {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error getting images')
+        throw new Error(data.error || 'Error deleting feature')
       }
     } catch (error) {
-      console.error('Error getting images', error)
+      console.error('Error deleting feature', error)
     }
   }
 
@@ -267,10 +267,10 @@ const AddPictures = () => {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error getting images')
+        throw new Error(data.error || 'Error deleting images')
       }
     } catch (error) {
-      console.error('Error getting images', error)
+      console.error('Error deleting images', error)
     }
   }
 
