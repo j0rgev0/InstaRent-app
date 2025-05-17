@@ -316,7 +316,6 @@ const AddPictures = () => {
         )
 
         for (const feature of featuresToDelete) {
-          console.log(feature.id)
           await deleteFeatures(feature.id)
         }
 
