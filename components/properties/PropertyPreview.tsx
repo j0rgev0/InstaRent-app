@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { Alert, Animated, Image, Pressable, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Animated, Image, Pressable, Text, View } from 'react-native'
 import { Swipeable } from 'react-native-gesture-handler'
 
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
@@ -259,8 +259,8 @@ const PropertyPreview = ({
 
         <Pressable
           onPress={() => localRef.current?.openRight()}
-          className="absolute top-1 right-1  bg-white/60 rounded-full text-darkBlue font-semibold">
-          <Ionicons name="ellipsis-horizontal-outline"  size={20}/>
+          className="absolute top-1 right-1 px-2 bg-white/60 rounded-lg text-darkBlue font-semibold">
+          <Ionicons name="ellipsis-horizontal" color={'#353949'} size={20} />
         </Pressable>
 
         <View className="p-4">
