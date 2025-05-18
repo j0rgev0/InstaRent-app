@@ -229,13 +229,15 @@ const PropertyPreview = ({
   }
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setEditModalVisible(false)
+    if (Platform.OS === 'web') {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setEditModalVisible(false)
+      }
+      if (editModalVisible) {
+        window.addEventListener('keydown', handleKeyDown)
+      }
+      return () => window.removeEventListener('keydown', handleKeyDown)
     }
-    if (editModalVisible) {
-      window.addEventListener('keydown', handleKeyDown)
-    }
-    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [editModalVisible])
 
   const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
