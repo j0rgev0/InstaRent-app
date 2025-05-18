@@ -1,52 +1,15 @@
-import PropertyPreview from '@/components/properties/PropertyPreview'
-import { authClient } from '@/lib/auth-client'
-import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import React, { useEffect, useRef, useState } from 'react'
 import { RefreshControl, ScrollView } from 'react-native'
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 
+import { authClient } from '@/lib/auth-client'
+
+import PropertyPreview from '@/components/properties/PropertyPreview'
+
+import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+import { Property } from '@/utils/types'
+
 import '@/global.css'
-
-type Feature = {
-  id: string
-  property_id: string
-  name: string
-}
-
-type ImageType = {
-  id: string
-  property_id: string
-  url: string
-  public_id: string
-}
-
-type Property = {
-  id: string
-  type: string
-  operation: string
-  bathrooms: number
-  bedrooms: number
-  size: number
-  price: number
-  latitude: string
-  longitude: string
-  street: string
-  street_number: string
-  neighborhood: string
-  locality: string
-  province: string
-  state: string
-  country: string
-  postal_code: string
-  floor: number
-  letter: string
-  conservation: string
-  description: string
-  construction_year: number
-  user_id: string
-  features: Feature[]
-  images: ImageType[]
-}
 
 const MyProperties = () => {
   const { data: session } = authClient.useSession()

@@ -8,51 +8,11 @@ import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+import { Property } from '@/utils/types'
 
 import '@/global.css'
 
 const ACTION_WIDTH = 64
-
-type Feature = {
-  id: string
-  property_id: string
-  name: string
-}
-
-type ImageType = {
-  id: string
-  property_id: string
-  url: string
-  public_id: string
-}
-
-type Property = {
-  id: string
-  type: string
-  operation: string
-  bathrooms: number
-  bedrooms: number
-  size: number
-  price: number
-  latitude: string
-  longitude: string
-  street: string
-  street_number: string
-  neighborhood: string
-  locality: string
-  province: string
-  state: string
-  country: string
-  postal_code: string
-  floor: number
-  letter: string
-  conservation: string
-  description: string
-  construction_year: number
-  user_id: string
-  features: Feature[]
-  images: ImageType[]
-}
 
 const AnimatedAction = ({
   children,
@@ -199,7 +159,7 @@ const PropertyPreview = ({
           {
             text: 'Change images & features',
             onPress: () => {
-              router.replace({
+              router.push({
                 pathname: '/(root)/(properties)/addPictures',
                 params: {
                   propertyId: property.id,
@@ -211,7 +171,7 @@ const PropertyPreview = ({
           {
             text: 'Edit general information',
             onPress: () => {
-              router.replace({
+              router.push({
                 pathname: '/(root)/(properties)/publish',
                 params: {
                   ...sharedParams,
@@ -226,6 +186,15 @@ const PropertyPreview = ({
     } else {
       setEditModalVisible(true)
     }
+  }
+
+  const handleViewProperty = () => {
+    router.push({
+      pathname: '/(root)/(properties)/propertyView',
+      params: {
+        propertyId: property.id
+      }
+    })
   }
 
   useEffect(() => {
@@ -273,7 +242,8 @@ const PropertyPreview = ({
       onSwipeableWillOpen={handleSwipeStart}
       overshootRight={false}
       friction={2}>
-      <View
+      <Pressable
+        onPress={handleViewProperty}
         key={property.id}
         className="bg-gray-200 rounded-2xl mb-6  shadow-sm border-gray-400 border">
         <View className="items-center">
@@ -363,7 +333,7 @@ const PropertyPreview = ({
             </View>
           </View>
         )}
-      </View>
+      </Pressable>
     </Swipeable>
   )
 }
