@@ -1,12 +1,14 @@
-import React, { useRef } from 'react'
-import { Alert, Animated, Image, Pressable, Text, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { Alert, Animated, Image, Platform, Pressable, Text, View } from 'react-native'
 import { Swipeable } from 'react-native-gesture-handler'
+
+import { router } from 'expo-router'
+
+import { Ionicons } from '@expo/vector-icons'
 
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
-import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
 
 const ACTION_WIDTH = 64
 
@@ -125,6 +127,7 @@ const PropertyPreview = ({
   onDelete: () => void
 }) => {
   const localRef = useRef<Swipeable>(null)
+  const [editModalVisible, setEditModalVisible] = useState(false)
 
   const sharedParams = {
     propertyid: property.id,
@@ -151,68 +154,88 @@ const PropertyPreview = ({
   }
 
   const handleDelete = async () => {
-    Alert.alert(
-      'Delete property',
-      'Are you sure you want to delete this property?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await delProperty(property.id)
-              onDelete()
-            } catch (error) {
-              console.error(error)
+    if (Platform.OS !== 'web') {
+      Alert.alert(
+        'Delete property',
+        'Are you sure you want to delete this property?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await delProperty(property.id)
+                onDelete()
+              } catch (error) {
+                console.error(error)
+              }
             }
           }
+        ],
+        { cancelable: true }
+      )
+    } else {
+      const confirmed = window.confirm('Are you sure you want to delete this property?')
+      if (confirmed) {
+        try {
+          await delProperty(property.id)
+          onDelete()
+        } catch (error) {
+          console.error(error)
         }
-      ],
-      { cancelable: true }
-    )
+      }
+    }
   }
 
   const handleEdit = () => {
-    Alert.alert(
-      'Edit property',
-      'What would you like to do?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Change images & features',
-          onPress: () => {
-            router.replace({
-              pathname: '/(root)/(properties)/addPictures',
-              params: {
-                propertyId: property.id,
-                edit: 'true'
-              }
-            })
+    if (Platform.OS !== 'web') {
+      Alert.alert(
+        'Edit property',
+        'What would you like to do?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Change images & features',
+            onPress: () => {
+              router.replace({
+                pathname: '/(root)/(properties)/addPictures',
+                params: {
+                  propertyId: property.id,
+                  edit: 'true'
+                }
+              })
+            }
+          },
+          {
+            text: 'Edit general information',
+            onPress: () => {
+              router.replace({
+                pathname: '/(root)/(properties)/publish',
+                params: {
+                  ...sharedParams,
+                  edit: 'true'
+                }
+              })
+            }
           }
-        },
-        {
-          text: 'Edit general information',
-          onPress: () => {
-            router.replace({
-              pathname: '/(root)/(properties)/publish',
-              params: {
-                ...sharedParams,
-                edit: 'true'
-              }
-            })
-          }
-        }
-      ],
-      { cancelable: true }
-    )
+        ],
+        { cancelable: true }
+      )
+    } else {
+      setEditModalVisible(true)
+    }
   }
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setEditModalVisible(false)
+    }
+    if (editModalVisible) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [editModalVisible])
 
   const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
     <View className="relative w-56 h-full justify-center flex-row space-x-2">
@@ -250,7 +273,7 @@ const PropertyPreview = ({
       <View
         key={property.id}
         className="bg-gray-200 rounded-2xl mb-6 shadow-sm border-gray-400 border">
-        <View>
+        <View className="items-center">
           <Image
             source={
               property.images[0]?.url
@@ -259,6 +282,9 @@ const PropertyPreview = ({
             }
             className="w-full h-48 rounded-t-2xl"
             resizeMode="cover"
+            style={
+              Platform.OS === 'web' ? { maxWidth: 600, maxHeight: 200, width: '100%' } : undefined
+            }
           />
           <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
             {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
@@ -267,7 +293,7 @@ const PropertyPreview = ({
 
         <Pressable
           onPress={() => localRef.current?.openRight()}
-          className="absolute top-1 right-1 px-2 bg-white/60 rounded-lg text-darkBlue font-semibold">
+          className="absolute top-1 right-1 px-2 bg-white/60 rounded-lg">
           <Ionicons name="ellipsis-horizontal" color={'#353949'} size={20} />
         </Pressable>
 
@@ -292,6 +318,45 @@ const PropertyPreview = ({
           )}
         </View>
       </View>
+
+      {editModalVisible && (
+        <View className="absolute top-0 left-0 w-full h-full bg-black/40 z-50 items-center justify-center">
+          <View className="bg-white rounded-2xl p-6 w-[90%] max-w-md space-y-4">
+            <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+            <Pressable
+              onPress={() => {
+                router.replace({
+                  pathname: '/(root)/(properties)/addPictures',
+                  params: {
+                    propertyId: property.id,
+                    edit: 'true'
+                  }
+                })
+              }}
+              className="bg-yellow-500 p-3 rounded-lg">
+              <Text className="text-white text-center font-semibold">Change images & features</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                router.replace({
+                  pathname: '/(root)/(properties)/publish',
+                  params: {
+                    ...sharedParams,
+                    edit: 'true'
+                  }
+                })
+              }}
+              className="bg-darkBlue p-3 rounded-lg">
+              <Text className="text-white text-center font-semibold">Edit general information</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setEditModalVisible(false)}
+              className="mt-2 p-2 rounded-lg border border-gray-300">
+              <Text className="text-center text-darkBlue">Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </Swipeable>
   )
 }

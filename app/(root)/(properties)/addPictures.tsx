@@ -471,12 +471,12 @@ const AddPictures = () => {
 
           <TouchableOpacity
             className={`w-[48%] h-16 flex-row items-center justify-center rounded-xl p-4 ${
-              images.length === 0 || selectedFeatures.length === 0 || isLoading || !edit
+              images.length === 0 || selectedFeatures.length === 0 || isLoading
                 ? 'bg-gray-400'
                 : 'bg-darkBlue'
             }`}
             onPress={handleAddImageAndFeature}
-            disabled={images.length === 0 || isLoading}>
+            disabled={images.length === 0 || selectedFeatures.length === 0 || isLoading}>
             {isLoading ? (
               <View className="flex-row items-center space-x-3">
                 <ActivityIndicator color="#fff" />
