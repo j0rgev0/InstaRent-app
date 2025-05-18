@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+
 import { Alert, Animated, Image, Platform, Pressable, Text, View } from 'react-native'
 import { Swipeable } from 'react-native-gesture-handler'
 
@@ -280,10 +281,10 @@ const PropertyPreview = ({
                 ? { uri: property.images[0].url }
                 : require('../../assets/images/NotAvalibleImg3.png')
             }
-            className="w-full h-48 rounded-t-2xl"
+            className={Platform.OS !== 'web' ? 'w-full h-48 rounded-t-2xl' : 'w-full h-72 '}
             resizeMode="cover"
             style={
-              Platform.OS === 'web' ? { maxWidth: 600, maxHeight: 200, width: '100%' } : undefined
+              Platform.OS === 'web' ? { maxWidth: 500, maxHeight: 300, width: '100%' } : undefined
             }
           />
           <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
