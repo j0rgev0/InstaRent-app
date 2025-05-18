@@ -277,7 +277,9 @@ const PropertyPreview = ({
             {property.street}, {property.locality}
           </Text>
           <Text className="text-sm text-gray-500 mt-1 mb-3">
-            {property.price} €/month · {property.bedrooms} bed · {property.bathrooms} bath
+            {property.price}
+            {property.operation === 'sell' ? '€' : '€/month'} · {property.bedrooms} bed ·{' '}
+            {property.bathrooms} bath
           </Text>
 
           {property.features.length > 0 && (

@@ -564,6 +564,7 @@ const PublishPage = () => {
               initialLatitude={Number(latitude) || 40.4168}
               initialLongitude={Number(longitude) || -3.7038}
               showMarker={showMarker}
+              move={false}
               onPress={() =>
                 router.replace({
                   pathname: '/(root)/(properties)/maps',

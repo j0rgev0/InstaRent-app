@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
-import { Text, View } from 'react-native'
-import MapView, { Callout, Marker } from 'react-native-maps'
+import { View } from 'react-native'
+import MapView, { Marker } from 'react-native-maps'
 
 import { router } from 'expo-router'
 
@@ -11,6 +11,9 @@ interface MapViewComponentProps {
   initialLatitude: number
   initialLongitude: number
   showMarker: boolean
+  description: string
+  move: boolean
+  title: string
   onPress?: () => void
 }
 
@@ -18,6 +21,9 @@ const MapViewComponent = ({
   initialLatitude,
   initialLongitude,
   showMarker,
+  move,
+  title,
+  description,
   onPress
 }: MapViewComponentProps) => {
   const [markerCoords, setMarkerCoords] = useState({
@@ -45,10 +51,10 @@ const MapViewComponent = ({
     <View>
       <MapView
         style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 16 }}
-        scrollEnabled={false}
-        zoomEnabled={false}
-        pitchEnabled={false}
-        rotateEnabled={false}
+        scrollEnabled={move}
+        zoomEnabled={move}
+        pitchEnabled={move}
+        rotateEnabled={move}
         onPress={handlePress}
         region={{
           latitude: markerCoords.latitude,
@@ -64,8 +70,8 @@ const MapViewComponent = ({
               longitude: markerCoords.longitude
             }}
             draggable
-            title="Propiedad seleccionada"
-            description="Esta es la propiedad que has elegido">
+            title={title}
+            description={description}>
             <View className="items-center -mb-1">
               <View className="p-[1.5px] bg-white rounded-full shadow-md shadow-black/30">
                 <View className="bg-red-500 w-8 h-8 rounded-full items-center justify-center">
@@ -74,14 +80,6 @@ const MapViewComponent = ({
               </View>
               <View className="w-2 h-2 bg-red-500 rounded-full mt-1 shadow-sm shadow-black/30" />
             </View>
-
-            <Callout>
-              <View className="p-2">
-                <Text className="font-bold">Propiedad seleccionada</Text>
-                <Text>Lat: {markerCoords.latitude.toFixed(4)}</Text>
-                <Text>Lng: {markerCoords.longitude.toFixed(4)}</Text>
-              </View>
-            </Callout>
           </Marker>
         )}
       </MapView>
