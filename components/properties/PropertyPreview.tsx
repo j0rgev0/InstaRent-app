@@ -275,7 +275,7 @@ const PropertyPreview = ({
       friction={2}>
       <View
         key={property.id}
-        className="bg-gray-200 rounded-2xl mb-6 shadow-sm border-gray-400 border">
+        className="bg-gray-200 rounded-2xl mb-6  shadow-sm border-gray-400 border">
         <View className="items-center">
           <Image
             source={
@@ -320,46 +320,50 @@ const PropertyPreview = ({
             </View>
           )}
         </View>
-      </View>
 
-      {editModalVisible && (
-        <View className="absolute top-0 left-0 w-full h-full bg-black/40 z-50 items-center justify-center">
-          <View className="bg-white rounded-2xl p-6 w-[90%] max-w-md space-y-4">
-            <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
-            <Pressable
-              onPress={() => {
-                router.replace({
-                  pathname: '/(root)/(properties)/addPictures',
-                  params: {
-                    propertyId: property.id,
-                    edit: 'true'
-                  }
-                })
-              }}
-              className="bg-yellow-500 p-3 rounded-lg">
-              <Text className="text-white text-center font-semibold">Change images & features</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                router.replace({
-                  pathname: '/(root)/(properties)/publish',
-                  params: {
-                    ...sharedParams,
-                    edit: 'true'
-                  }
-                })
-              }}
-              className="bg-darkBlue p-3 rounded-lg">
-              <Text className="text-white text-center font-semibold">Edit general information</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setEditModalVisible(false)}
-              className="mt-2 p-2 rounded-lg border border-gray-300">
-              <Text className="text-center text-darkBlue">Cancel</Text>
-            </Pressable>
+        {editModalVisible && (
+          <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+            <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+              <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+              <Pressable
+                onPress={() => {
+                  router.replace({
+                    pathname: '/(root)/(properties)/addPictures',
+                    params: {
+                      propertyId: property.id,
+                      edit: 'true'
+                    }
+                  })
+                }}
+                className="bg-yellow-500 p-3 rounded-lg">
+                <Text className="text-white text-center font-semibold">
+                  Change images & features
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  router.replace({
+                    pathname: '/(root)/(properties)/publish',
+                    params: {
+                      ...sharedParams,
+                      edit: 'true'
+                    }
+                  })
+                }}
+                className="bg-darkBlue p-3 rounded-lg">
+                <Text className="text-white text-center font-semibold">
+                  Edit general information
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setEditModalVisible(false)}
+                className="mt-2 p-2 rounded-lg border border-gray-300">
+                <Text className="text-center text-darkBlue">Cancel</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </View>
     </Swipeable>
   )
 }
