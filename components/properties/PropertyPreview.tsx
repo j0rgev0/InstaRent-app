@@ -252,7 +252,7 @@ const PropertyPreview = ({
       <AnimatedAction index={1} progress={progress}>
         <Pressable
           onPress={handleEdit}
-          className="bg-[#eab308] w-24 h-24 rounded-full shadow-sm items-center justify-center">
+          className="bg-yellow-500 w-24 h-24 rounded-full shadow-sm items-center justify-center">
           <Text className="text-white font-semibold text-sm">Edit</Text>
         </Pressable>
       </AnimatedAction>
