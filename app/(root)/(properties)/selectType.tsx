@@ -1,6 +1,6 @@
 import React, { useCallback, useLayoutEffect } from 'react'
 
-import { FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Platform, Text, TouchableOpacity, View } from 'react-native'
 
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 
@@ -83,6 +83,14 @@ const SelectType = () => {
       )
     })
   }, [navigation, sharedParams, housingTypes])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Select Type'
+      }
+    }, [])
+  )
 
   useFocusEffect(
     useCallback(() => {

@@ -399,6 +399,14 @@ const PublishPage = () => {
     })
   }, [navigation, edit])
 
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Publish'
+      }
+    }, [])
+  )
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"

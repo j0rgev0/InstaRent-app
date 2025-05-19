@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,7 @@ import {
   View
 } from 'react-native'
 
-import { router, useLocalSearchParams, useNavigation } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
 
 import ImageCarousel from '@/components/selectImages/ImageCarousel'
 import ImageSelector from '@/components/selectImages/ImageSelector'
@@ -362,6 +362,14 @@ const AddPictures = () => {
       fetchImages()
     }
   }, [edit, propertyId])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Images & Features'
+      }
+    }, [])
+  )
 
   return (
     <View className="flex-1 bg-white">

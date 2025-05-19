@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import {
   Alert,
@@ -14,6 +14,7 @@ import InputTextField from '@/components/common/InputTextField'
 import { authClient } from '@/lib/auth-client'
 
 import '@/global.css'
+import { useFocusEffect } from 'expo-router'
 
 const changeEmailPage = () => {
   const [errorMessage, setErrorMessage] = useState('')
@@ -47,6 +48,14 @@ const changeEmailPage = () => {
       setLoading(false)
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Change Email'
+      }
+    }, [])
+  )
 
   return (
     <TouchableWithoutFeedback

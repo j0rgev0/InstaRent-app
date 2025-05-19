@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
-import { router } from 'expo-router'
+import { router, useFocusEffect, useNavigation } from 'expo-router'
 import {
   Alert,
   Image,
@@ -24,6 +24,7 @@ import '@/global.css'
 
 const ProfilePage = () => {
   const { data: session } = authClient.useSession()
+  const navigation = useNavigation()
 
   const [refreshing, setRefreshing] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined)
@@ -172,6 +173,14 @@ const ProfilePage = () => {
       console.error('Error picking image:', error)
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Profile'
+      }
+    }, [])
+  )
 
   return (
     <View className="bg-white h-full" style={{ paddingTop: Platform.OS === 'web' ? 15 : 50 }}>

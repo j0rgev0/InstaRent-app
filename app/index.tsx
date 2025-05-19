@@ -1,9 +1,9 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
-import { Text, View } from 'react-native'
+import { Platform, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 
 import Button from '@/components/common/Button'
 
@@ -11,6 +11,15 @@ import '@/global.css'
 
 const IndexPage = () => {
   const router = useRouter()
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Instarent'
+      }
+    }, [])
+  )
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 p-6">

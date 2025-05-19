@@ -1,8 +1,8 @@
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
 import { Ionicons } from '@expo/vector-icons'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Animated,
@@ -107,6 +107,14 @@ const PropertyView = () => {
       headerTitle: 'Property Details'
     })
   }, [navigation])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Property Details'
+      }
+    }, [])
+  )
 
   if (!property) {
     return (

@@ -237,6 +237,14 @@ const EdituserPage = () => {
     }
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Edit Profile'
+      }
+    }, [])
+  )
+
   return (
     <ScrollView className="bg-white">
       <View className="items-center border-b border-gray-200 bg-white p-5">

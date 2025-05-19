@@ -1,6 +1,6 @@
 import React, { useCallback, useLayoutEffect } from 'react'
 
-import { FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Platform, Text, TouchableOpacity, View } from 'react-native'
 
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
 
@@ -84,6 +84,14 @@ const OperationType = () => {
         if (parent) {
           parent.setOptions({ gestureEnabled: true })
         }
+      }
+    }, [])
+  )
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Select Operation'
       }
     }, [])
   )

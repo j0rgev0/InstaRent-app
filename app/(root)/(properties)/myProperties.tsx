@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { RefreshControl, ScrollView } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Platform, RefreshControl, ScrollView } from 'react-native'
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 
 import { authClient } from '@/lib/auth-client'
@@ -10,6 +10,7 @@ import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
 
 import '@/global.css'
+import { useFocusEffect } from 'expo-router'
 
 const MyProperties = () => {
   const { data: session } = authClient.useSession()
@@ -50,6 +51,14 @@ const MyProperties = () => {
   useEffect(() => {
     fetchProperties()
   }, [userid])
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'My Properties'
+      }
+    }, [])
+  )
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

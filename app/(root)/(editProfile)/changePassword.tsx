@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import {
   Alert,
@@ -10,7 +10,7 @@ import {
   View
 } from 'react-native'
 
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 
 import InputTextField from '@/components/common/InputTextField'
 import { authClient } from '@/lib/auth-client'
@@ -61,6 +61,14 @@ const changePasswordPage = () => {
       setLoading(false)
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'Change Password'
+      }
+    }, [])
+  )
 
   return (
     <TouchableWithoutFeedback

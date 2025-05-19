@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Alert, Keyboard, Platform, Text, TouchableWithoutFeedback, View } from 'react-native'
 
-import { Link, useRouter } from 'expo-router'
+import { Link, useFocusEffect, useRouter } from 'expo-router'
 
 import Button from '@/components/common/Button'
 import InputTextField from '@/components/common/InputTextField'
@@ -51,6 +51,14 @@ export default function SignUpPage() {
     console.log(res)
     setLoading(false)
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'web') {
+        document.title = 'SignUp'
+      }
+    }, [])
+  )
 
   return (
     <TouchableWithoutFeedback
