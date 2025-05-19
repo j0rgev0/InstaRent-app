@@ -8,34 +8,37 @@ import {
   Animated,
   Dimensions,
   Image,
+  Platform,
   RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
+  useWindowDimensions
 } from 'react-native'
 
 // @ts-ignore
 import MapPreview from '@/components/map/MapPreview'
-
-const { width } = Dimensions.get('window')
 
 const VISIBLE_DOTS = 5
 const DOT_SIZE = 8
 const DOT_SPACING = 4
 const DOT_CONTAINER_WIDTH = VISIBLE_DOTS * (DOT_SIZE + DOT_SPACING)
 
+const screenWidth = Dimensions.get('window').width
+
 const PropertyView = () => {
   const navigation = useNavigation()
   const params = useLocalSearchParams()
+  const { width } = useWindowDimensions()
 
-  const propertyId = params.propertyId
-  const [property, setProperty] = useState<Property>()
+  const propertyId = params.propertyId as string | undefined
+  const [property, setProperty] = useState<Property | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const imageScrollRef = useRef<ScrollView>(null)
 
   const scrollX = useRef(new Animated.Value(0)).current
-
-  // Para mover la vista de puntos
   const dotsScrollX = useRef(new Animated.Value(0)).current
 
   const fetchProperty = async () => {
@@ -50,10 +53,10 @@ const PropertyView = () => {
       })
 
       const data = await response.json()
-
       if (!response.ok) throw new Error(data.error || 'Error getting property')
 
       setProperty(data)
+      setCurrentIndex(0)
       dotsScrollX.setValue(0)
     } catch (error) {
       console.error('Error getting property', error)
@@ -69,8 +72,9 @@ const PropertyView = () => {
   const onScroll = (event: any) => {
     const offsetX = event.nativeEvent.contentOffset.x
     const index = Math.round(offsetX / width)
+    setCurrentIndex(index)
 
-    if (property) {
+    if (property?.images?.length) {
       const startIndex = Math.max(
         0,
         Math.min(index - Math.floor(VISIBLE_DOTS / 2), property.images.length - VISIBLE_DOTS)
@@ -83,6 +87,14 @@ const PropertyView = () => {
         tension: 40
       }).start()
     }
+  }
+
+  const goToImage = (index: number) => {
+    if (!property || !imageScrollRef.current) return
+
+    const validIndex = Math.max(0, Math.min(index, property.images.length - 1))
+    setCurrentIndex(validIndex)
+    imageScrollRef.current.scrollTo({ x: validIndex * width, animated: true })
   }
 
   useEffect(() => {
@@ -107,23 +119,70 @@ const PropertyView = () => {
   return (
     <ScrollView
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      className="bg-white">
+      className="bg-white"
+      contentContainerStyle={{ paddingBottom: 20 }}>
       <View>
-        <Animated.FlatList
-          data={property.images}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item.url }} style={{ width, height: 300 }} resizeMode="cover" />
-          )}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
-            useNativeDriver: false,
-            listener: onScroll
-          })}
-          scrollEventThrottle={16}
-        />
+        {Platform.OS === 'web' ? (
+          <ScrollView
+            ref={imageScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+              useNativeDriver: false,
+              listener: onScroll
+            })}
+            onMomentumScrollEnd={(event) => {
+              const offsetX = event.nativeEvent.contentOffset.x
+              const pageIndex = Math.round(offsetX / width)
+              imageScrollRef.current?.scrollTo({ x: pageIndex * width, animated: true })
+            }}
+            contentContainerStyle={{
+              alignItems: 'center'
+            }}>
+            {property.images.map((item) => (
+              <View
+                key={item.id}
+                style={{
+                  width,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingVertical: 10
+                }}>
+                <Image
+                  source={{ uri: item.url }}
+                  style={{
+                    width: '100%',
+                    maxWidth: 800,
+                    aspectRatio: 16 / 9,
+                    resizeMode: 'contain'
+                  }}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          // Vista móvil: carrusel paginado
+          <ScrollView
+            ref={imageScrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+              useNativeDriver: false,
+              listener: onScroll
+            })}>
+            {property.images.map((item) => (
+              <Image
+                key={item.id}
+                source={{ uri: item.url }}
+                style={{ width: screenWidth, height: 300 }}
+                resizeMode="cover"
+              />
+            ))}
+          </ScrollView>
+        )}
 
         <View
           className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-1 rounded-full"
@@ -174,6 +233,23 @@ const PropertyView = () => {
             })}
           </Animated.View>
         </View>
+
+        {Platform.OS === 'web' && (
+          <View className="flex-row justify-between items-center px-4 mt-2">
+            <TouchableOpacity
+              className="bg-[#353949] px-4 py-2 rounded-lg disabled:opacity-50"
+              disabled={currentIndex === 0}
+              onPress={() => goToImage(currentIndex - 1)}>
+              <Text className="text-white">Previous</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="bg-[#353949] px-4 py-2 rounded-lg disabled:opacity-50"
+              disabled={property && currentIndex === property.images.length - 1}
+              onPress={() => goToImage(currentIndex + 1)}>
+              <Text className="text-white">Next</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <View className="p-4">
@@ -225,7 +301,7 @@ const PropertyView = () => {
           />
         )}
 
-        <TouchableOpacity className="bg-[#353949] rounded-xl p-4 items-center">
+        <TouchableOpacity className="bg-[#353949] rounded-xl p-4 items-center mt-4">
           <Text className="text-white text-base font-medium">Contact Owner</Text>
         </TouchableOpacity>
       </View>
