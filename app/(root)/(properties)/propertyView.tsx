@@ -353,7 +353,8 @@ const PropertyView = () => {
           </Text>
 
           <Text className="text-gray-600 mb-2 capitalize">
-            {property.street}, {property.street_number}, {property.neighborhood ? property.neighborhood + ', ' : ''}
+            {property.street}, {property.street_number},{' '}
+            {property.neighborhood ? property.neighborhood + ', ' : ''}
             {property.postal_code} {property.locality}, {property.province}, {property.country}
           </Text>
 
@@ -402,9 +403,13 @@ const PropertyView = () => {
               ''
             )}
 
-            <Text className="text-sm text-gray-500 capitalize">
-              Neighborhood: {property.neighborhood}
-            </Text>
+            {property.neighborhood.length > 1 ? (
+              <Text className="text-sm text-gray-500 capitalize">
+                Neighborhood: {property.neighborhood}
+              </Text>
+            ) : (
+              ''
+            )}
             <Text className="text-sm text-gray-500 capitalize">Province: {property.province}</Text>
             <Text className="text-sm text-gray-500 capitalize">
               Postal Code: {property.postal_code}
