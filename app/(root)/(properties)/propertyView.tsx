@@ -394,9 +394,6 @@ const PropertyView = () => {
               Floor: {property.floor > 0 ? property.floor : 'N/A'}
               {property.letter ? `, ${property.letter}` : ''}
             </Text>
-            <Text className="text-sm text-gray-500 capitalize">
-              Conservation: {property.conservation}
-            </Text>
             {property.construction_year > 0 ? (
               <Text className="text-sm text-gray-500">Built in: {property.construction_year}</Text>
             ) : (
@@ -410,9 +407,8 @@ const PropertyView = () => {
             ) : (
               ''
             )}
-            <Text className="text-sm text-gray-500 capitalize">Province: {property.province}</Text>
             <Text className="text-sm text-gray-500 capitalize">
-              Postal Code: {property.postal_code}
+              Conservation: {property.conservation}
             </Text>
           </View>
 
