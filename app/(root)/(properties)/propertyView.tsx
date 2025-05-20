@@ -8,6 +8,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  Linking,
   Platform,
   RefreshControl,
   ScrollView,
@@ -97,6 +98,18 @@ const PropertyView = () => {
     imageScrollRef.current.scrollTo({ x: validIndex * width, animated: true })
   }
 
+  const openInGoogleMaps = () => {
+    const lat = property?.latitude
+    const lng = property?.longitude
+    const label = encodeURIComponent(`${property?.street}, ${property?.locality}`)
+    const url = Platform.select({
+      ios: `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`,
+      android: `geo:${lat},${lng}?q=${label}`,
+      web: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    })
+    if (url) Linking.openURL(url)
+  }
+
   useEffect(() => {
     fetchProperty()
   }, [propertyId])
@@ -125,253 +138,303 @@ const PropertyView = () => {
   }
 
   return (
-    <ScrollView
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      className="bg-white"
-      contentContainerStyle={{ paddingBottom: 20 }}>
-      <View>
-        {Platform.OS === 'web' ? (
-          <ScrollView
-            ref={imageScrollRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
-              useNativeDriver: false,
-              listener: onScroll
-            })}
-            onMomentumScrollEnd={(event) => {
-              const offsetX = event.nativeEvent.contentOffset.x
-              const pageIndex = Math.round(offsetX / width)
-              imageScrollRef.current?.scrollTo({ x: pageIndex * width, animated: true })
-            }}
-            contentContainerStyle={{
-              alignItems: 'center'
-            }}>
-            {property.images.map((item) => (
-              <View
-                key={item.id}
-                style={{
-                  width,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  paddingVertical: 10
-                }}>
-                <Image
-                  source={{ uri: item.url }}
-                  style={{
-                    width: '100%',
-                    maxWidth: 800,
-                    aspectRatio: 16 / 9,
-                    resizeMode: 'contain'
+    <View className="flex-1 bg-white">
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingBottom: 20 }}>
+        <View>
+          {property.images && property.images.length > 0 ? (
+            <View>
+              {Platform.OS === 'web' ? (
+                <ScrollView
+                  ref={imageScrollRef}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  scrollEventThrottle={16}
+                  onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+                    useNativeDriver: false,
+                    listener: onScroll
+                  })}
+                  onMomentumScrollEnd={(event) => {
+                    const offsetX = event.nativeEvent.contentOffset.x
+                    const pageIndex = Math.round(offsetX / width)
+                    imageScrollRef.current?.scrollTo({ x: pageIndex * width, animated: true })
                   }}
-                />
-              </View>
-            ))}
-          </ScrollView>
-        ) : (
-          <ScrollView
-            ref={imageScrollRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
-              useNativeDriver: false,
-              listener: onScroll
-            })}>
-            {property.images.map((item) => (
-              <Image
-                key={item.id}
-                source={{ uri: item.url }}
-                style={{ width: screenWidth, height: 300 }}
-                resizeMode="cover"
-              />
-            ))}
-          </ScrollView>
-        )}
+                  contentContainerStyle={{ alignItems: 'center' }}>
+                  {property.images.map((item) => (
+                    <View
+                      key={item.id}
+                      style={{
+                        width,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingVertical: 10
+                      }}>
+                      <Image
+                        source={{ uri: item.url }}
+                        style={{
+                          width: '100%',
+                          maxWidth: 800,
+                          aspectRatio: 16 / 9,
+                          resizeMode: 'contain'
+                        }}
+                      />
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : (
+                <ScrollView
+                  ref={imageScrollRef}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  scrollEventThrottle={16}
+                  onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+                    useNativeDriver: false,
+                    listener: onScroll
+                  })}>
+                  {property.images.map((item) => (
+                    <Image
+                      key={item.id}
+                      source={{ uri: item.url }}
+                      style={{ width: screenWidth, height: 300 }}
+                      resizeMode="cover"
+                    />
+                  ))}
+                </ScrollView>
+              )}
 
-        {Platform.OS === 'web' ? (
-          <View className="flex-row justify-center items-center mt-2 space-x-2">
-            <TouchableOpacity
-              className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
-              disabled={currentIndex === 0}
-              onPress={() => goToImage(currentIndex - 1)}>
-              <Ionicons name="chevron-back" size={16} color="white" />
-            </TouchableOpacity>
+              {Platform.OS === 'web' ? (
+                <View className="flex-row justify-center items-center mt-2 space-x-2">
+                  <TouchableOpacity
+                    className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                    disabled={currentIndex === 0}
+                    onPress={() => goToImage(currentIndex - 1)}>
+                    <Ionicons name="chevron-back" size={16} color="white" />
+                  </TouchableOpacity>
 
-            <View
-              className="overflow-hidden justify-center align-middle bg-black/50 rounded-full"
-              style={{
-                height: DOT_SIZE * 3,
-                width:
-                  property.images.length < VISIBLE_DOTS
-                    ? property.images.length * (DOT_SIZE + DOT_SPACING)
-                    : DOT_CONTAINER_WIDTH
-              }}>
-              <Animated.View
-                style={{
-                  flexDirection: 'row',
-                  transform: [
-                    {
-                      translateX: dotsScrollX.interpolate({
-                        inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
-                        outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
+                  <View
+                    className="overflow-hidden justify-center align-middle bg-black/50 rounded-full"
+                    style={{
+                      height: DOT_SIZE * 3,
+                      width:
+                        property.images.length < VISIBLE_DOTS
+                          ? property.images.length * (DOT_SIZE + DOT_SPACING)
+                          : DOT_CONTAINER_WIDTH
+                    }}>
+                    <Animated.View
+                      style={{
+                        flexDirection: 'row',
+                        transform: [
+                          {
+                            translateX: dotsScrollX.interpolate({
+                              inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
+                              outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
+                              extrapolate: 'clamp'
+                            })
+                          }
+                        ]
+                      }}>
+                      {property.images.map((_, index) => {
+                        const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
+                        const scaleAnim = scrollX.interpolate({
+                          inputRange,
+                          outputRange: [0.5, 0.8, 0.5],
+                          extrapolate: 'clamp'
+                        })
+                        const colorAnim = scrollX.interpolate({
+                          inputRange,
+                          outputRange: ['#bbb', '#fff', '#bbb'],
+                          extrapolate: 'clamp'
+                        })
+
+                        return (
+                          <Animated.View
+                            key={index}
+                            style={{
+                              height: DOT_SIZE,
+                              width: DOT_SIZE,
+                              borderRadius: DOT_SIZE / 2,
+                              backgroundColor: colorAnim,
+                              marginHorizontal: DOT_SPACING / 2,
+                              transform: [{ scale: scaleAnim }]
+                            }}
+                          />
+                        )
+                      })}
+                    </Animated.View>
+                  </View>
+
+                  <TouchableOpacity
+                    className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                    disabled={currentIndex === property.images.length - 1}
+                    onPress={() => goToImage(currentIndex + 1)}>
+                    <Ionicons name="chevron-forward" size={16} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View
+                  className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-1 rounded-full"
+                  style={{
+                    height: DOT_SIZE * 3,
+                    width:
+                      property.images.length < VISIBLE_DOTS
+                        ? property.images.length * (DOT_SIZE + DOT_SPACING)
+                        : DOT_CONTAINER_WIDTH,
+                    left:
+                      property.images.length < VISIBLE_DOTS
+                        ? (width - property.images.length * (DOT_SIZE + DOT_SPACING)) / 2
+                        : (width - DOT_CONTAINER_WIDTH) / 2
+                  }}>
+                  <Animated.View
+                    style={{
+                      flexDirection: 'row',
+                      transform: [
+                        {
+                          translateX: dotsScrollX.interpolate({
+                            inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
+                            outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
+                            extrapolate: 'clamp'
+                          })
+                        }
+                      ]
+                    }}>
+                    {property.images.map((_, index) => {
+                      const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
+                      const scaleAnim = scrollX.interpolate({
+                        inputRange,
+                        outputRange: [0.5, 0.8, 0.5],
                         extrapolate: 'clamp'
                       })
-                    }
-                  ]
-                }}>
-                {property.images.map((_, index) => {
-                  const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-                  const scaleAnim = scrollX.interpolate({
-                    inputRange,
-                    outputRange: [0.5, 0.8, 0.5],
-                    extrapolate: 'clamp'
-                  })
-                  const colorAnim = scrollX.interpolate({
-                    inputRange,
-                    outputRange: ['#bbb', '#fff', '#bbb'],
-                    extrapolate: 'clamp'
-                  })
+                      const colorAnim = scrollX.interpolate({
+                        inputRange,
+                        outputRange: ['#bbb', '#fff', '#bbb'],
+                        extrapolate: 'clamp'
+                      })
 
-                  return (
-                    <Animated.View
-                      key={index}
-                      style={{
-                        height: DOT_SIZE,
-                        width: DOT_SIZE,
-                        borderRadius: DOT_SIZE / 2,
-                        backgroundColor: colorAnim,
-                        marginHorizontal: DOT_SPACING / 2,
-                        transform: [{ scale: scaleAnim }]
-                      }}
-                    />
-                  )
-                })}
-              </Animated.View>
+                      return (
+                        <Animated.View
+                          key={index}
+                          style={{
+                            height: DOT_SIZE,
+                            width: DOT_SIZE,
+                            borderRadius: DOT_SIZE / 2,
+                            backgroundColor: colorAnim,
+                            marginHorizontal: DOT_SPACING / 2,
+                            transform: [{ scale: scaleAnim }]
+                          }}
+                        />
+                      )
+                    })}
+                  </Animated.View>
+                </View>
+              )}
             </View>
-
-            <TouchableOpacity
-              className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
-              disabled={property && currentIndex === property.images.length - 1}
-              onPress={() => goToImage(currentIndex + 1)}>
-              <Ionicons name="chevron-forward" size={16} color="white" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View
-            className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-1 rounded-full"
-            style={{
-              height: DOT_SIZE * 3,
-              width:
-                property.images.length < VISIBLE_DOTS
-                  ? property.images.length * (DOT_SIZE + DOT_SPACING)
-                  : DOT_CONTAINER_WIDTH,
-              left:
-                property.images.length < VISIBLE_DOTS
-                  ? (width - property.images.length * (DOT_SIZE + DOT_SPACING)) / 2
-                  : (width - DOT_CONTAINER_WIDTH) / 2
-            }}>
-            <Animated.View
-              style={{
-                flexDirection: 'row',
-                transform: [
-                  {
-                    translateX: dotsScrollX.interpolate({
-                      inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
-                      outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
-                      extrapolate: 'clamp'
-                    })
-                  }
-                ]
-              }}>
-              {property.images.map((_, index) => {
-                const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-                const scaleAnim = scrollX.interpolate({
-                  inputRange,
-                  outputRange: [0.5, 0.8, 0.5],
-                  extrapolate: 'clamp'
-                })
-                const colorAnim = scrollX.interpolate({
-                  inputRange,
-                  outputRange: ['#bbb', '#fff', '#bbb'],
-                  extrapolate: 'clamp'
-                })
-
-                return (
-                  <Animated.View
-                    key={index}
-                    style={{
-                      height: DOT_SIZE,
-                      width: DOT_SIZE,
-                      borderRadius: DOT_SIZE / 2,
-                      backgroundColor: colorAnim,
-                      marginHorizontal: DOT_SPACING / 2,
-                      transform: [{ scale: scaleAnim }]
-                    }}
-                  />
-                )
-              })}
-            </Animated.View>
-          </View>
-        )}
-      </View>
-
-      <View className="p-4">
-        <Text className="text-xl font-bold text-black mb-1 capitalize">
-          {property.type}
-          <Text className="normal-case"> in </Text>
-          {property.street} {property.street_number}, {property.locality}
-        </Text>
-        <Text className="text-lg text-[#353949] font-semibold mb-2">
-          €{property.price.toLocaleString()} {property.operation === 'sell' ? '' : '/ month'}
-        </Text>
-
-        <View className="flex-row flex-wrap gap-4 mb-4">
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="bed-outline" size={18} color="#555" />
-            <Text>{property.bedrooms} Beds</Text>
-          </View>
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="water-outline" size={18} color="#555" />
-            <Text>{property.bathrooms} Baths</Text>
-          </View>
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="resize-outline" size={18} color="#555" />
-            <Text>{property.size} m²</Text>
-          </View>
+          ) : (
+            <View className="w-full h-60 bg-gray-200 justify-center items-center mb-4">
+              <Image
+                source={require('@/assets/images/NotAvalibleImg3.png')}
+                style={{ maxWidth: 500, maxHeight: 300, width: '100%' }}
+              />
+            </View>
+          )}
         </View>
 
-        <Text className="text-gray-700 mb-6">{property.description}</Text>
+        <View className="p-4">
+          <Text
+            className="text-xl font-bold text-black mb-1 capitalize"
+            numberOfLines={2}
+            ellipsizeMode="tail">
+            {property.type}
+            <Text className="normal-case">
+              {property.operation === 'rent' ? 'for rent on' : 'for sale in'}{' '}
+            </Text>
+            {property.street} {property.street_number}, {property.locality}
+          </Text>
 
-        {property.features.length > 0 && (
-          <View className="flex-row flex-wrap gap-2 mb-6">
-            {property.features.map((feature) => (
-              <View key={feature.id} className="bg-darkBlue px-3 py-1 rounded-lg">
-                <Text className="text-white text-xs">{feature.name}</Text>
-              </View>
-            ))}
+          <Text className="text-gray-600 mb-2 capitalize">
+            {property.street}, {property.street_number}, {property.neighborhood ? property.neighborhood + ', ' : ''}
+            {property.postal_code} {property.locality}, {property.province}, {property.country}
+          </Text>
+
+          <Text className="text-lg text-[#353949] font-semibold mb-2">
+            €{property.price.toLocaleString()} {property.operation === 'sell' ? '' : '/ month'}
+          </Text>
+
+          <View className="flex-row flex-wrap gap-4 mb-4">
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="bed-outline" size={18} color="#555" />
+              <Text>{property.bedrooms} Beds</Text>
+            </View>
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="water-outline" size={18} color="#555" />
+              <Text>{property.bathrooms} Baths</Text>
+            </View>
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="resize-outline" size={18} color="#555" />
+              <Text>{property.size} m²</Text>
+            </View>
           </View>
-        )}
 
-        {property.latitude && property.longitude && (
-          <MapPreview
-            initialLatitude={Number(property.latitude)}
-            initialLongitude={Number(property.longitude)}
-            showMarker={true}
-            move={true}
-            title={'Address'}
-            description={`${property.street}, ${property.locality}`}
-            onPress={() => {}}
-          />
-        )}
+          <Text className="text-gray-700 mb-6">{property.description}</Text>
 
+          {property.features.length > 0 && (
+            <View className="flex-row flex-wrap gap-2 mb-6">
+              {property.features.map((feature) => (
+                <View key={feature.id} className="bg-darkBlue px-3 py-1 rounded-lg">
+                  <Text className="text-white text-xs">{feature.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <View className="mb-4">
+            <Text className="text-sm text-gray-500">
+              Floor: {property.floor > 0 ? property.floor : 'N/A'}
+              {property.letter ? `, ${property.letter}` : ''}
+            </Text>
+            <Text className="text-sm text-gray-500 capitalize">
+              Conservation: {property.conservation}
+            </Text>
+            {property.construction_year > 0 ? (
+              <Text className="text-sm text-gray-500">Built in: {property.construction_year}</Text>
+            ) : (
+              ''
+            )}
+
+            <Text className="text-sm text-gray-500 capitalize">
+              Neighborhood: {property.neighborhood}
+            </Text>
+            <Text className="text-sm text-gray-500 capitalize">Province: {property.province}</Text>
+            <Text className="text-sm text-gray-500 capitalize">
+              Postal Code: {property.postal_code}
+            </Text>
+          </View>
+
+          {property.latitude && property.longitude && (
+            <>
+              <MapPreview
+                initialLatitude={Number(property.latitude)}
+                initialLongitude={Number(property.longitude)}
+                showMarker={true}
+                move={true}
+                title={'Address'}
+                description={`${property.street}, ${property.locality}`}
+                onPress={() => {}}
+              />
+            </>
+          )}
+          <TouchableOpacity className="mt-2" onPress={openInGoogleMaps}>
+            <Text className="text-blue-600 underline text-sm">View in Google Maps</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <View className="bg-white border-t border-gray-200 px-4 py-3 pb-10">
         <TouchableOpacity className="bg-[#353949] rounded-xl p-4 items-center mt-4">
           <Text className="text-white text-base font-medium">Contact Owner</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   )
 }
 
