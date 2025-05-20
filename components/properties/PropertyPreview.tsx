@@ -277,7 +277,7 @@ const PropertyPreview = ({
       </AnimatedAction>
       <AnimatedAction index={0} progress={progress}>
         <Pressable
-          onPress={() => console.log('View')}
+          onPress={handleViewProperty}
           className="bg-darkBlue w-24 h-24 rounded-full shadow-sm items-center justify-center">
           <Text className="text-white font-semibold text-sm">View</Text>
         </Pressable>
