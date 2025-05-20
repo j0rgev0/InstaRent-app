@@ -197,7 +197,7 @@ const PropertyView = () => {
               className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
               disabled={currentIndex === 0}
               onPress={() => goToImage(currentIndex - 1)}>
-              <Ionicons name="chevron-back" size={24} color="white" />
+              <Ionicons name="chevron-back" size={16} color="white" />
             </TouchableOpacity>
 
             <View
@@ -256,7 +256,7 @@ const PropertyView = () => {
               className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
               disabled={property && currentIndex === property.images.length - 1}
               onPress={() => goToImage(currentIndex + 1)}>
-              <Ionicons name="chevron-forward" size={24} color="white" />
+              <Ionicons name="chevron-forward" size={16} color="white" />
             </TouchableOpacity>
           </View>
         ) : (
@@ -316,23 +316,6 @@ const PropertyView = () => {
             </Animated.View>
           </View>
         )}
-
-        {/* {Platform.OS === 'web' && (
-          <View className="flex-row justify-between items-center px-4 mt-2">
-            <TouchableOpacity
-              className="bg-[#353949] px-4 py-2 rounded-lg disabled:opacity-50"
-              disabled={currentIndex === 0}
-              onPress={() => goToImage(currentIndex - 1)}>
-              <Text className="text-white">Previous</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="bg-[#353949] px-4 py-2 rounded-lg disabled:opacity-50"
-              disabled={property && currentIndex === property.images.length - 1}
-              onPress={() => goToImage(currentIndex + 1)}>
-              <Text className="text-white">Next</Text>
-            </TouchableOpacity>
-          </View>
-        )} */}
       </View>
 
       <View className="p-4">

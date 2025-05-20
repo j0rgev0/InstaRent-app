@@ -83,8 +83,10 @@ const PropertyPreview = ({
   onDelete: () => void
 }) => {
   const localRef = useRef<Swipeable>(null)
-  const [editModalVisible, setEditModalVisible] = useState(false)
   const [mouseDownPosition, setMouseDownPosition] = useState<{ x: number; y: number } | null>(null)
+
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
 
   const sharedParams = {
     propertyid: property.id,
@@ -128,15 +130,7 @@ const PropertyPreview = ({
         }
       ])
     } else {
-      const confirmed = window.confirm('Are you sure you want to delete this property?')
-      if (confirmed) {
-        try {
-          await delProperty(property.id)
-          onDelete()
-        } catch (error) {
-          console.error(error)
-        }
-      }
+      setDeleteModalVisible(true)
     }
   }
 
@@ -183,17 +177,87 @@ const PropertyPreview = ({
     })
   }
 
+  const DeleteModal = () => (
+    <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+      <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+        <Text className="text-lg font-bold text-darkBlue">Delete property</Text>
+        <Text>Are you sure you want to delete this property?</Text>
+        <View className="flex-row justify-between space-x-4">
+          <Pressable
+            onPress={() => setDeleteModalVisible(false)}
+            className="flex-1 border border-gray-300 rounded-lg p-3">
+            <Text className="text-center text-darkBlue font-semibold">Cancel</Text>
+          </Pressable>
+          <Pressable
+            onPress={async () => {
+              try {
+                await delProperty(property.id)
+                onDelete()
+                setDeleteModalVisible(false)
+              } catch (error) {
+                console.error(error)
+              }
+            }}
+            className="flex-1 bg-red-500 rounded-lg p-3">
+            <Text className="text-center text-white font-semibold">Delete</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  )
+
+  const EditModal = () => (
+    <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+      <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+        <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+        <Pressable
+          onPress={() => {
+            router.replace({
+              pathname: '/(root)/(properties)/addPictures',
+              params: {
+                propertyId: property.id,
+                edit: 'true'
+              }
+            })
+          }}
+          className="bg-yellow-500 p-3 rounded-lg">
+          <Text className="text-white text-center font-semibold">Change images & features</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            router.replace({
+              pathname: '/(root)/(properties)/publish',
+              params: {
+                ...sharedParams,
+                edit: 'true'
+              }
+            })
+          }}
+          className="bg-darkBlue p-3 rounded-lg">
+          <Text className="text-white text-center font-semibold">Edit general information</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setEditModalVisible(false)}
+          className="mt-2 p-2 rounded-lg border border-gray-300">
+          <Text className="text-center text-darkBlue">Cancel</Text>
+        </Pressable>
+      </View>
+    </View>
+  )
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') setEditModalVisible(false)
+        if (e.key === 'Escape') {
+          setEditModalVisible(false)
+          setDeleteModalVisible(false)
+        }
       }
-      if (editModalVisible) {
+      if (editModalVisible || deleteModalVisible) {
         window.addEventListener('keydown', handleKeyDown)
       }
       return () => window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [editModalVisible])
+  }, [editModalVisible, deleteModalVisible])
 
   const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
     <View className="relative w-56 h-full justify-center flex-row space-x-2">
@@ -292,48 +356,8 @@ const PropertyPreview = ({
             )}
           </View>
 
-          {editModalVisible && (
-            <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
-              <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
-                <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
-                <Pressable
-                  onPress={() => {
-                    router.replace({
-                      pathname: '/(root)/(properties)/addPictures',
-                      params: {
-                        propertyId: property.id,
-                        edit: 'true'
-                      }
-                    })
-                  }}
-                  className="bg-yellow-500 p-3 rounded-lg">
-                  <Text className="text-white text-center font-semibold">
-                    Change images & features
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    router.replace({
-                      pathname: '/(root)/(properties)/publish',
-                      params: {
-                        ...sharedParams,
-                        edit: 'true'
-                      }
-                    })
-                  }}
-                  className="bg-darkBlue p-3 rounded-lg">
-                  <Text className="text-white text-center font-semibold">
-                    Edit general information
-                  </Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => setEditModalVisible(false)}
-                  className="mt-2 p-2 rounded-lg border border-gray-300">
-                  <Text className="text-center text-darkBlue">Cancel</Text>
-                </Pressable>
-              </View>
-            </View>
-          )}
+          {deleteModalVisible && <DeleteModal />}
+          {editModalVisible && <EditModal />}
         </View>
       ) : (
         <Pressable
