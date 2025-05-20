@@ -1,16 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
-
-import { Alert, Animated, Image, Platform, Pressable, Text, View } from 'react-native'
-import { Swipeable } from 'react-native-gesture-handler'
-
-import { router } from 'expo-router'
-
-import { Ionicons } from '@expo/vector-icons'
-
+import '@/global.css'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
-
-import '@/global.css'
+import { Ionicons } from '@expo/vector-icons'
+import { router } from 'expo-router'
+import React, { useEffect, useRef, useState } from 'react'
+import { Alert, Animated, Image, Platform, Pressable, Text, View } from 'react-native'
+import { Swipeable } from 'react-native-gesture-handler'
 
 const ACTION_WIDTH = 64
 
@@ -89,6 +84,7 @@ const PropertyPreview = ({
 }) => {
   const localRef = useRef<Swipeable>(null)
   const [editModalVisible, setEditModalVisible] = useState(false)
+  const [mouseDownPosition, setMouseDownPosition] = useState<{ x: number; y: number } | null>(null)
 
   const sharedParams = {
     propertyid: property.id,
@@ -116,26 +112,21 @@ const PropertyPreview = ({
 
   const handleDelete = async () => {
     if (Platform.OS !== 'web') {
-      Alert.alert(
-        'Delete property',
-        'Are you sure you want to delete this property?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await delProperty(property.id)
-                onDelete()
-              } catch (error) {
-                console.error(error)
-              }
+      Alert.alert('Delete property', 'Are you sure you want to delete this property?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await delProperty(property.id)
+              onDelete()
+            } catch (error) {
+              console.error(error)
             }
           }
-        ],
-        { cancelable: true }
-      )
+        }
+      ])
     } else {
       const confirmed = window.confirm('Are you sure you want to delete this property?')
       if (confirmed) {
@@ -151,38 +142,33 @@ const PropertyPreview = ({
 
   const handleEdit = () => {
     if (Platform.OS !== 'web') {
-      Alert.alert(
-        'Edit property',
-        'What would you like to do?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Change images & features',
-            onPress: () => {
-              router.push({
-                pathname: '/(root)/(properties)/addPictures',
-                params: {
-                  propertyId: property.id,
-                  edit: 'true'
-                }
-              })
-            }
-          },
-          {
-            text: 'Edit general information',
-            onPress: () => {
-              router.push({
-                pathname: '/(root)/(properties)/publish',
-                params: {
-                  ...sharedParams,
-                  edit: 'true'
-                }
-              })
-            }
+      Alert.alert('Edit property', 'What would you like to do?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Change images & features',
+          onPress: () => {
+            router.push({
+              pathname: '/(root)/(properties)/addPictures',
+              params: {
+                propertyId: property.id,
+                edit: 'true'
+              }
+            })
           }
-        ],
-        { cancelable: true }
-      )
+        },
+        {
+          text: 'Edit general information',
+          onPress: () => {
+            router.push({
+              pathname: '/(root)/(properties)/publish',
+              params: {
+                ...sharedParams,
+                edit: 'true'
+              }
+            })
+          }
+        }
+      ])
     } else {
       setEditModalVisible(true)
     }
@@ -242,100 +228,206 @@ const PropertyPreview = ({
       onSwipeableWillOpen={handleSwipeStart}
       overshootRight={false}
       friction={2}>
-      <Pressable
-        onPress={handleViewProperty}
-        key={property.id}
-        className="bg-gray-200 rounded-2xl mb-6  shadow-sm border-gray-400 border">
-        <View className="items-center">
-          <Image
-            source={
-              property.images[0]?.url
-                ? { uri: property.images[0].url }
-                : require('../../assets/images/NotAvalibleImg3.png')
+      {Platform.OS === 'web' ? (
+        <View
+          onStartShouldSetResponder={() => true}
+          onResponderGrant={(e) =>
+            setMouseDownPosition({ x: e.nativeEvent.pageX, y: e.nativeEvent.pageY })
+          }
+          onResponderRelease={(e) => {
+            if (
+              mouseDownPosition &&
+              Math.abs(e.nativeEvent.pageX - mouseDownPosition.x) < 5 &&
+              Math.abs(e.nativeEvent.pageY - mouseDownPosition.y) < 5
+            ) {
+              handleViewProperty()
             }
-            className={Platform.OS !== 'web' ? 'w-full h-48 rounded-t-2xl' : 'w-full h-72 '}
-            resizeMode="cover"
-            style={
-              Platform.OS === 'web' ? { maxWidth: 500, maxHeight: 300, width: '100%' } : undefined
-            }
-          />
-          <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
-            {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
-          </Text>
-        </View>
+            setMouseDownPosition(null)
+          }}
+          key={property.id}
+          className="bg-gray-200 rounded-2xl mb-6 shadow-sm border-gray-400 border"
+          style={{ cursor: 'pointer' }}>
+          <View className="items-center">
+            <Image
+              source={
+                property.images[0]?.url
+                  ? { uri: property.images[0].url }
+                  : require('../../assets/images/NotAvalibleImg3.png')
+              }
+              className="w-full h-72"
+              resizeMode="cover"
+              style={{ maxWidth: 500, maxHeight: 300, width: '100%' }}
+            />
+            <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
+              {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
+            </Text>
+          </View>
 
-        <Pressable
-          onPress={() => localRef.current?.openRight()}
-          className="absolute top-1 right-1 px-2 bg-white/60 rounded-lg">
-          <Ionicons name="ellipsis-horizontal" color={'#353949'} size={20} />
-        </Pressable>
+          <Pressable
+            onPress={() => localRef.current?.openRight()}
+            className="absolute top-1 right-1 px-2 bg-white/60 rounded-lg">
+            <Ionicons name="ellipsis-horizontal" color={'#353949'} size={20} />
+          </Pressable>
 
-        <View className="p-4">
-          <Text className="text-lg font-semibold text-darkBlue capitalize">
-            {property.type}
-            <Text className="normal-case"> in </Text>
-            {property.street}, {property.locality}
-          </Text>
-          <Text className="text-sm text-gray-500 mt-1 mb-3">
-            {property.price}
-            {property.operation === 'sell' ? '€' : '€/month'} · {property.bedrooms} bed ·{' '}
-            {property.bathrooms} bath
-          </Text>
+          <View className="p-4">
+            <Text className="text-lg font-semibold text-darkBlue capitalize">
+              {property.type}
+              <Text className="normal-case"> in </Text>
+              {property.street}, {property.locality}
+            </Text>
+            <Text className="text-sm text-gray-500 mt-1 mb-3">
+              {property.price}
+              {property.operation === 'sell' ? '€' : '€/month'} · {property.bedrooms} bed ·{' '}
+              {property.bathrooms} bath
+            </Text>
 
-          {property.features.length > 0 && (
-            <View className="flex-row flex-wrap gap-2">
-              {property.features.map((feature) => (
-                <View key={feature.id} className="bg-darkBlue px-3 py-1 rounded-lg">
-                  <Text className="text-white text-xs">{feature.name}</Text>
-                </View>
-              ))}
+            {property.features.length > 0 && (
+              <View className="flex-row flex-wrap gap-2">
+                {property.features.map((feature) => (
+                  <View key={feature.id} className="bg-darkBlue px-3 py-1 rounded-lg">
+                    <Text className="text-white text-xs">{feature.name}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {editModalVisible && (
+            <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+              <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+                <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+                <Pressable
+                  onPress={() => {
+                    router.replace({
+                      pathname: '/(root)/(properties)/addPictures',
+                      params: {
+                        propertyId: property.id,
+                        edit: 'true'
+                      }
+                    })
+                  }}
+                  className="bg-yellow-500 p-3 rounded-lg">
+                  <Text className="text-white text-center font-semibold">
+                    Change images & features
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    router.replace({
+                      pathname: '/(root)/(properties)/publish',
+                      params: {
+                        ...sharedParams,
+                        edit: 'true'
+                      }
+                    })
+                  }}
+                  className="bg-darkBlue p-3 rounded-lg">
+                  <Text className="text-white text-center font-semibold">
+                    Edit general information
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setEditModalVisible(false)}
+                  className="mt-2 p-2 rounded-lg border border-gray-300">
+                  <Text className="text-center text-darkBlue">Cancel</Text>
+                </Pressable>
+              </View>
             </View>
           )}
         </View>
-
-        {editModalVisible && (
-          <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
-            <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
-              <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
-              <Pressable
-                onPress={() => {
-                  router.replace({
-                    pathname: '/(root)/(properties)/addPictures',
-                    params: {
-                      propertyId: property.id,
-                      edit: 'true'
-                    }
-                  })
-                }}
-                className="bg-yellow-500 p-3 rounded-lg">
-                <Text className="text-white text-center font-semibold">
-                  Change images & features
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  router.replace({
-                    pathname: '/(root)/(properties)/publish',
-                    params: {
-                      ...sharedParams,
-                      edit: 'true'
-                    }
-                  })
-                }}
-                className="bg-darkBlue p-3 rounded-lg">
-                <Text className="text-white text-center font-semibold">
-                  Edit general information
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setEditModalVisible(false)}
-                className="mt-2 p-2 rounded-lg border border-gray-300">
-                <Text className="text-center text-darkBlue">Cancel</Text>
-              </Pressable>
-            </View>
+      ) : (
+        <Pressable
+          onPress={handleViewProperty}
+          key={property.id}
+          className="bg-gray-200 rounded-2xl mb-6 shadow-sm border-gray-400 border">
+          <View className="items-center">
+            <Image
+              source={
+                property.images[0]?.url
+                  ? { uri: property.images[0].url }
+                  : require('../../assets/images/NotAvalibleImg3.png')
+              }
+              className={'w-full h-48 rounded-t-2xl'}
+              resizeMode="cover"
+            />
+            <Text className="absolute bottom-1 right-1 p-2 bg-white/60 rounded-xl text-darkBlue font-semibold">
+              {property.images.length} {property.images.length > 1 ? 'images' : 'image'}
+            </Text>
           </View>
-        )}
-      </Pressable>
+
+          <Pressable
+            onPress={() => localRef.current?.openRight()}
+            className="absolute top-1 right-1 px-2 bg-white/60 rounded-lg">
+            <Ionicons name="ellipsis-horizontal" color={'#353949'} size={20} />
+          </Pressable>
+
+          <View className="p-4">
+            <Text className="text-lg font-semibold text-darkBlue capitalize">
+              {property.type}
+              <Text className="normal-case"> in </Text>
+              {property.street}, {property.locality}
+            </Text>
+            <Text className="text-sm text-gray-500 mt-1 mb-3">
+              {property.price}
+              {property.operation === 'sell' ? '€' : '€/month'} · {property.bedrooms} bed ·{' '}
+              {property.bathrooms} bath
+            </Text>
+
+            {property.features.length > 0 && (
+              <View className="flex-row flex-wrap gap-2">
+                {property.features.map((feature) => (
+                  <View key={feature.id} className="bg-darkBlue px-3 py-1 rounded-lg">
+                    <Text className="text-white text-xs">{feature.name}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {editModalVisible && (
+            <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+              <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+                <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+                <Pressable
+                  onPress={() => {
+                    router.replace({
+                      pathname: '/(root)/(properties)/addPictures',
+                      params: {
+                        propertyId: property.id,
+                        edit: 'true'
+                      }
+                    })
+                  }}
+                  className="bg-yellow-500 p-3 rounded-lg">
+                  <Text className="text-white text-center font-semibold">
+                    Change images & features
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    router.replace({
+                      pathname: '/(root)/(properties)/publish',
+                      params: {
+                        ...sharedParams,
+                        edit: 'true'
+                      }
+                    })
+                  }}
+                  className="bg-darkBlue p-3 rounded-lg">
+                  <Text className="text-white text-center font-semibold">
+                    Edit general information
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setEditModalVisible(false)}
+                  className="mt-2 p-2 rounded-lg border border-gray-300">
+                  <Text className="text-center text-darkBlue">Cancel</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </Pressable>
+      )}
     </Swipeable>
   )
 }
