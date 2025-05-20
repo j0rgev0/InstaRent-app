@@ -170,7 +170,6 @@ const PropertyView = () => {
             ))}
           </ScrollView>
         ) : (
-          // Vista móvil: carrusel paginado
           <ScrollView
             ref={imageScrollRef}
             horizontal
@@ -192,57 +191,133 @@ const PropertyView = () => {
           </ScrollView>
         )}
 
-        <View
-          className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-1 rounded-full"
-          style={{
-            height: DOT_SIZE * 3,
-            width: DOT_CONTAINER_WIDTH,
-            left: (width - DOT_CONTAINER_WIDTH) / 2
-          }}>
-          <Animated.View
-            style={{
-              flexDirection: 'row',
-              transform: [
-                {
-                  translateX: dotsScrollX.interpolate({
-                    inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
-                    outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
+        {Platform.OS === 'web' ? (
+          <View className="flex-row justify-center items-center mt-2 space-x-2">
+            <TouchableOpacity
+              className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+              disabled={currentIndex === 0}
+              onPress={() => goToImage(currentIndex - 1)}>
+              <Ionicons name="chevron-back" size={24} color="white" />
+            </TouchableOpacity>
+
+            <View
+              className="overflow-hidden justify-center align-middle bg-black/50 rounded-full"
+              style={{
+                height: DOT_SIZE * 3,
+                width:
+                  property.images.length < VISIBLE_DOTS
+                    ? property.images.length * (DOT_SIZE + DOT_SPACING)
+                    : DOT_CONTAINER_WIDTH
+              }}>
+              <Animated.View
+                style={{
+                  flexDirection: 'row',
+                  transform: [
+                    {
+                      translateX: dotsScrollX.interpolate({
+                        inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
+                        outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
+                        extrapolate: 'clamp'
+                      })
+                    }
+                  ]
+                }}>
+                {property.images.map((_, index) => {
+                  const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
+                  const scaleAnim = scrollX.interpolate({
+                    inputRange,
+                    outputRange: [0.5, 0.8, 0.5],
                     extrapolate: 'clamp'
                   })
-                }
-              ]
+                  const colorAnim = scrollX.interpolate({
+                    inputRange,
+                    outputRange: ['#bbb', '#fff', '#bbb'],
+                    extrapolate: 'clamp'
+                  })
+
+                  return (
+                    <Animated.View
+                      key={index}
+                      style={{
+                        height: DOT_SIZE,
+                        width: DOT_SIZE,
+                        borderRadius: DOT_SIZE / 2,
+                        backgroundColor: colorAnim,
+                        marginHorizontal: DOT_SPACING / 2,
+                        transform: [{ scale: scaleAnim }]
+                      }}
+                    />
+                  )
+                })}
+              </Animated.View>
+            </View>
+
+            <TouchableOpacity
+              className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+              disabled={property && currentIndex === property.images.length - 1}
+              onPress={() => goToImage(currentIndex + 1)}>
+              <Ionicons name="chevron-forward" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View
+            className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-1 rounded-full"
+            style={{
+              height: DOT_SIZE * 3,
+              width:
+                property.images.length < VISIBLE_DOTS
+                  ? property.images.length * (DOT_SIZE + DOT_SPACING)
+                  : DOT_CONTAINER_WIDTH,
+              left:
+                property.images.length < VISIBLE_DOTS
+                  ? (width - property.images.length * (DOT_SIZE + DOT_SPACING)) / 2
+                  : (width - DOT_CONTAINER_WIDTH) / 2
             }}>
-            {property.images.map((_, index) => {
-              const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-              const scaleAnim = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.5, 0.8, 0.5],
-                extrapolate: 'clamp'
-              })
-              const colorAnim = scrollX.interpolate({
-                inputRange,
-                outputRange: ['#bbb', '#fff', '#bbb'],
-                extrapolate: 'clamp'
-              })
+            <Animated.View
+              style={{
+                flexDirection: 'row',
+                transform: [
+                  {
+                    translateX: dotsScrollX.interpolate({
+                      inputRange: [0, property.images.length * (DOT_SIZE + DOT_SPACING)],
+                      outputRange: [0, -property.images.length * (DOT_SIZE + DOT_SPACING)],
+                      extrapolate: 'clamp'
+                    })
+                  }
+                ]
+              }}>
+              {property.images.map((_, index) => {
+                const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
+                const scaleAnim = scrollX.interpolate({
+                  inputRange,
+                  outputRange: [0.5, 0.8, 0.5],
+                  extrapolate: 'clamp'
+                })
+                const colorAnim = scrollX.interpolate({
+                  inputRange,
+                  outputRange: ['#bbb', '#fff', '#bbb'],
+                  extrapolate: 'clamp'
+                })
 
-              return (
-                <Animated.View
-                  key={index}
-                  style={{
-                    height: DOT_SIZE,
-                    width: DOT_SIZE,
-                    borderRadius: DOT_SIZE / 2,
-                    backgroundColor: colorAnim,
-                    marginHorizontal: DOT_SPACING / 2,
-                    transform: [{ scale: scaleAnim }]
-                  }}
-                />
-              )
-            })}
-          </Animated.View>
-        </View>
+                return (
+                  <Animated.View
+                    key={index}
+                    style={{
+                      height: DOT_SIZE,
+                      width: DOT_SIZE,
+                      borderRadius: DOT_SIZE / 2,
+                      backgroundColor: colorAnim,
+                      marginHorizontal: DOT_SPACING / 2,
+                      transform: [{ scale: scaleAnim }]
+                    }}
+                  />
+                )
+              })}
+            </Animated.View>
+          </View>
+        )}
 
-        {Platform.OS === 'web' && (
+        {/* {Platform.OS === 'web' && (
           <View className="flex-row justify-between items-center px-4 mt-2">
             <TouchableOpacity
               className="bg-[#353949] px-4 py-2 rounded-lg disabled:opacity-50"
@@ -257,7 +332,7 @@ const PropertyView = () => {
               <Text className="text-white">Next</Text>
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
       </View>
 
       <View className="p-4">
