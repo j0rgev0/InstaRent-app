@@ -366,7 +366,7 @@ const AddPictures = () => {
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === 'web') {
-        document.title = 'Images & Features'
+        document.title = 'Pictures & Features'
       }
     }, [])
   )

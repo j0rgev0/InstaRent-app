@@ -402,7 +402,7 @@ const PublishPage = () => {
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === 'web') {
-        document.title = 'Publish'
+        !edit ? (document.title = 'Publish') : (document.title = 'Edit Property')
       }
     }, [])
   )
