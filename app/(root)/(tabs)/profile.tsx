@@ -7,6 +7,7 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
+  StatusBar,
   Text,
   TouchableOpacity,
   View
@@ -176,6 +177,8 @@ const ProfilePage = () => {
 
   useFocusEffect(
     useCallback(() => {
+      StatusBar.setBarStyle('dark-content', true)
+
       if (Platform.OS === 'web') {
         document.title = 'Profile'
       }
