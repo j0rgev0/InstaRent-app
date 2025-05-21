@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   Dimensions,
   FlatList,
@@ -13,6 +13,7 @@ import {
 
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
+import Ionicons from '@expo/vector-icons/build/Ionicons'
 
 const { height, width } = Dimensions.get('window')
 
@@ -43,10 +44,6 @@ const HomePage = () => {
     }
   }
 
-  useEffect(() => {
-    fetchProperties()
-  }, [])
-
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle('light-content', true)
@@ -54,6 +51,7 @@ const HomePage = () => {
       if (Platform.OS === 'web') {
         document.title = 'Home'
       }
+      fetchProperties()
     }, [])
   )
 
@@ -69,7 +67,7 @@ const HomePage = () => {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => {
         const isExpanded = expandedDescriptions.includes(item.id)
-        const maxLength = 100
+        const maxLength = 70
         const description = item.description
 
         return (
@@ -83,10 +81,28 @@ const HomePage = () => {
               />
 
               <View className={`p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}>
-                <Text className="text-white text-2xl font-semibold capitalize">{item.type}</Text>
+                <Text className="text-white text-2xl font-semibold capitalize">
+                  {item.type}
+                  <Text className="normal-case">
+                    {item.operation === 'sell' ? ' for sale' : ' for rent'}
+                  </Text>
+                </Text>
+
                 <Text className="text-white mt-1 text-base capitalize">
                   {item.street} {item.street_number}, {item.locality}
                 </Text>
+
+                <View className="flex-row flex-wrap gap-4">
+                  <View className="flex-row items-center gap-1">
+                    <Text className="text-white text-base">
+                      €{item.price.toLocaleString()} {item.operation === 'sell' ? '' : '/ month'} 
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center gap-1">
+                    <Ionicons name="resize-outline" size={18} color="white" />
+                    <Text className="text-white">{item.size} m²</Text>
+                  </View>
+                </View>
 
                 <Text className="text-white mt-1 text-lg font-bold">
                   {isExpanded
