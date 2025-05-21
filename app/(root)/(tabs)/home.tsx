@@ -19,7 +19,6 @@ const { height, width } = Dimensions.get('window')
 const HomePage = () => {
   const [properties, setProperties] = useState<Property[]>([])
 
-  // Estado para controlar descripciones expandidas, guardamos los ids
   const [expandedDescriptions, setExpandedDescriptions] = useState<string[]>([])
 
   const fetchProperties = async () => {
@@ -58,7 +57,6 @@ const HomePage = () => {
     }, [])
   )
 
-  // Función para alternar el estado expandido de la descripción
   const toggleDescription = (id: string) => {
     setExpandedDescriptions((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
