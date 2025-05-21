@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
-import { router, useFocusEffect, useNavigation } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import {
   Alert,
   Image,
@@ -25,7 +25,6 @@ import '@/global.css'
 
 const ProfilePage = () => {
   const { data: session } = authClient.useSession()
-  const navigation = useNavigation()
 
   const [refreshing, setRefreshing] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined)
