@@ -17,6 +17,8 @@ import { Property } from '@/utils/types'
 import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { Picker } from '@react-native-picker/picker'
 
+import '@/global.css'
+
 const { height, width } = Dimensions.get('window')
 
 const HomePage = () => {
@@ -99,10 +101,23 @@ const HomePage = () => {
           <Picker
             selectedValue={filters.operation}
             onValueChange={(value: string) => setFilters((prev) => ({ ...prev, operation: value }))}
-            style={{ color: 'white', backgroundColor: '#1f1f1f', marginBottom: 8 }}>
-            <Picker.Item label="All" value="" />
-            <Picker.Item label="Rent" value="rent" />
-            <Picker.Item label="Sell" value="sell" />
+            className="bg-neutral-900"
+            style={{ color: 'white' }}>
+            <Picker.Item
+              color={Platform.OS === 'android' ? 'black' : 'white'}
+              label="All"
+              value=""
+            />
+            <Picker.Item
+              color={Platform.OS === 'android' ? 'black' : 'white'}
+              label="Rent"
+              value="rent"
+            />
+            <Picker.Item
+              color={Platform.OS === 'android' ? 'black' : 'white'}
+              label="Sell"
+              value="sell"
+            />
           </Picker>
 
           <Text className="text-white mb-1">Type</Text>
@@ -130,7 +145,6 @@ const HomePage = () => {
       )}
 
       <FlatList
-        contentContainerStyle={{ paddingTop: showFilters ? 300 : 0 }}
         data={properties}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
