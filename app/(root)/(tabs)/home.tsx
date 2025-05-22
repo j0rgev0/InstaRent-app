@@ -23,7 +23,6 @@ const HomePage = () => {
   const [properties, setProperties] = useState<Property[]>([])
   const [expandedDescriptions, setExpandedDescriptions] = useState<string[]>([])
 
-
   const [filters, setFilters] = useState({
     operation: '',
     type: '',
@@ -78,7 +77,6 @@ const HomePage = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'black' }}>
-
       <View style={{ position: 'absolute', top: 40, left: 0, right: 0, zIndex: 20 }}>
         <TouchableOpacity onPress={() => setShowFilters(!showFilters)} className="bg-gray-800 py-2">
           <Text className="text-white font-bold text-center">
@@ -86,7 +84,6 @@ const HomePage = () => {
           </Text>
         </TouchableOpacity>
       </View>
-
 
       {showFilters && (
         <View
