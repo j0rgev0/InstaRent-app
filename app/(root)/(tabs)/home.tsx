@@ -5,6 +5,7 @@ import {
   FlatList,
   Image,
   Platform,
+  RefreshControl,
   StatusBar,
   Text,
   TextInput,
@@ -24,6 +25,8 @@ const { height, width } = Dimensions.get('window')
 const HomePage = () => {
   const [properties, setProperties] = useState<Property[]>([])
   const [expandedDescriptions, setExpandedDescriptions] = useState<string[]>([])
+
+  const [refreshing, setRefreshing] = useState(false)
 
   const [filters, setFilters] = useState({
     operation: '',
@@ -57,10 +60,18 @@ const HomePage = () => {
         throw new Error(data.error || 'Error getting properties')
       }
 
-      setProperties(data)
+      // Asegurar que data sea un array
+      setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error getting properties', error)
+      setProperties([]) // Limpiar propiedades para evitar estado inconsistente
     }
+  }
+
+  const onRefresh = async () => {
+    setRefreshing(true)
+    await fetchProperties()
+    setRefreshing(false)
   }
 
   useFocusEffect(
@@ -78,14 +89,15 @@ const HomePage = () => {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'black' }}>
-      <View style={{ position: 'absolute', top: 60, left: 0, zIndex: 20 }}>
+    <View className={`flex-1 bg-black ${refreshing ? 'pt-10' : ''}`}>
+      <View style={{ position: 'absolute', top: 55, left: 0, zIndex: 20 }}>
         <TouchableOpacity
           onPress={() => setShowFilters(!showFilters)}
-          className="bg-white/55 p-2 rounded-2xl left-2">
-          <Text className="text-white font-bold text-center">
+          className="bg-white/60 px-4 py-2 rounded-2xl flex-row items-center space-x-2 self-start mx-2 shadow-sm">
+          <Text className="text-white text-lg font-semibold">
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </Text>
+          <Ionicons name={showFilters ? 'chevron-up' : 'chevron-down'} size={20} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -146,23 +158,48 @@ const HomePage = () => {
         </View>
       )}
 
+      {properties.length === 0 && !refreshing && (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-white text-xl">No properties found with current filters.</Text>
+        </View>
+      )}
+
       <FlatList
         data={properties}
         keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#FFFFFF']}
+            tintColor="#FFFFFF"
+          />
+        }
         renderItem={({ item }) => {
           const isExpanded = expandedDescriptions.includes(item.id)
           const maxLength = 70
           const description = item.description
 
+          // Validar que haya imágenes para evitar errores
+          const imageUrl = item.images && item.images.length > 0 ? item.images[0].url : null
+
           return (
             <View style={{ height }}>
               <View className="h-full w-full bg-black justify-end">
-                <Image
-                  source={{ uri: item.images[0]?.url }}
-                  style={{ height, width }}
-                  className="absolute"
-                  resizeMode="contain"
-                />
+                {imageUrl ? (
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={{ height, width }}
+                    className="absolute"
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <View
+                    style={{ height, width }}
+                    className="absolute bg-gray-800 justify-center items-center">
+                    <Text className="text-gray-400">No Image</Text>
+                  </View>
+                )}
 
                 <View className={`p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}>
                   <Text className="text-white text-2xl font-semibold capitalize">
