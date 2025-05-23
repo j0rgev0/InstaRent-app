@@ -1,6 +1,7 @@
 import { useFocusEffect } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import {
+  Animated,
   Dimensions,
   FlatList,
   Image,
@@ -88,9 +89,20 @@ export const provincesOfSpain = [
   { label: 'Zaragoza', value: 'zaragoza' }
 ]
 
+const VISIBLE_DOTS = 5
+const DOT_SIZE = 8
+const DOT_SPACING = 4
+const DOT_CONTAINER_WIDTH = VISIBLE_DOTS * (DOT_SIZE + DOT_SPACING)
+
 const HomePage = () => {
   const [properties, setProperties] = useState<Property[]>([])
   const [expandedDescriptions, setExpandedDescriptions] = useState<string[]>([])
+
+  const imageScrollRef = useRef<ScrollView>(null)
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const scrollX = useRef(new Animated.Value(0)).current
+  const dotsScrollX = useRef(new Animated.Value(0)).current
 
   const [refreshing, setRefreshing] = useState(false)
 
@@ -138,6 +150,34 @@ const HomePage = () => {
       // console.error('Error getting properties', error)
       setProperties([])
     }
+  }
+
+  const onScroll = (event: any, property: Property) => {
+    const offsetX = event.nativeEvent.contentOffset.x
+    const index = Math.round(offsetX / width)
+    setCurrentIndex(index)
+
+    if (property?.images?.length) {
+      const startIndex = Math.max(
+        0,
+        Math.min(index - Math.floor(VISIBLE_DOTS / 2), property.images.length - VISIBLE_DOTS)
+      )
+
+      Animated.spring(dotsScrollX, {
+        toValue: startIndex * (DOT_SIZE + DOT_SPACING),
+        useNativeDriver: true,
+        friction: 10,
+        tension: 40
+      }).start()
+    }
+  }
+
+  const goToImage = (index: number, property: Property) => {
+    if (!property || !imageScrollRef.current) return
+
+    const validIndex = Math.max(0, Math.min(index, property.images.length - 1))
+    setCurrentIndex(validIndex)
+    imageScrollRef.current.scrollTo({ x: validIndex * width, animated: true })
   }
 
   const onRefresh = async () => {
@@ -311,28 +351,229 @@ const HomePage = () => {
           const maxLength = 70
           const description = item.description
 
-          const imageUrl = item.images && item.images.length > 0 ? item.images[0].url : null
-
           return (
             <View style={{ height }}>
               <View className="h-full w-full bg-black justify-end">
-                {imageUrl ? (
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={{ height, width }}
-                    className="absolute"
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <Image
-                    source={require('@/assets/images/NotAvalibleImg3.png')}
-                    style={{ height, width }}
-                    className="absolute"
-                    resizeMode="contain"
-                  />
-                )}
+                <View>
+                  {item.images && item.images.length > 0 ? (
+                    <View>
+                      {Platform.OS === 'web' ? (
+                        <ScrollView
+                          ref={imageScrollRef}
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          scrollEventThrottle={16}
+                          onScroll={Animated.event(
+                            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                            {
+                              useNativeDriver: false,
+                              listener: (event: any) => onScroll(event, item)
+                            }
+                          )}
+                          onMomentumScrollEnd={(event) => {
+                            const offsetX = event.nativeEvent.contentOffset.x
+                            const pageIndex = Math.round(offsetX / width)
+                            imageScrollRef.current?.scrollTo({
+                              x: pageIndex * width,
+                              animated: true
+                            })
+                          }}
+                          contentContainerStyle={{ alignItems: 'center' }}>
+                          {item.images.map((item) => (
+                            <View key={item.id} style={{ width: width, height: height }}>
+                              <Image
+                                source={{ uri: item.url }}
+                                style={{
+                                  width: width,
+                                  height: height,
+                                  resizeMode: 'contain'
+                                }}
+                              />
+                            </View>
+                          ))}
+                        </ScrollView>
+                      ) : (
+                        <ScrollView
+                          ref={imageScrollRef}
+                          horizontal
+                          pagingEnabled
+                          showsHorizontalScrollIndicator={false}
+                          scrollEventThrottle={16}
+                          onScroll={Animated.event(
+                            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                            {
+                              useNativeDriver: false,
+                              listener: (event: any) => onScroll(event, item)
+                            }
+                          )}>
+                          {item.images.map((item) => (
+                            <Image
+                              key={item.id}
+                              source={{ uri: item.url }}
+                              style={{ width: width, height: height, resizeMode: 'contain' }}
+                            />
+                          ))}
+                        </ScrollView>
+                      )}
 
-                <View className={`p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}>
+                      {Platform.OS === 'web' ? (
+                        <View className="flex-row justify-center items-center mt-2 space-x-2">
+                          <TouchableOpacity
+                            className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                            disabled={currentIndex === 0}
+                            onPress={() => goToImage(currentIndex - 1, item)}>
+                            <Ionicons name="chevron-back" size={16} color="white" />
+                          </TouchableOpacity>
+
+                          <View
+                            className="overflow-hidden justify-center align-middle bg-black/50 rounded-full"
+                            style={{
+                              height: DOT_SIZE * 3,
+                              width:
+                                item.images.length < VISIBLE_DOTS
+                                  ? item.images.length * (DOT_SIZE + DOT_SPACING)
+                                  : DOT_CONTAINER_WIDTH
+                            }}>
+                            <Animated.View
+                              style={{
+                                flexDirection: 'row',
+                                transform: [
+                                  {
+                                    translateX: dotsScrollX.interpolate({
+                                      inputRange: [
+                                        0,
+                                        item.images.length * (DOT_SIZE + DOT_SPACING)
+                                      ],
+                                      outputRange: [
+                                        0,
+                                        -item.images.length * (DOT_SIZE + DOT_SPACING)
+                                      ],
+                                      extrapolate: 'clamp'
+                                    })
+                                  }
+                                ]
+                              }}>
+                              {item.images.map((_, index) => {
+                                const inputRange = [
+                                  (index - 1) * width,
+                                  index * width,
+                                  (index + 1) * width
+                                ]
+                                const scaleAnim = scrollX.interpolate({
+                                  inputRange,
+                                  outputRange: [0.5, 0.8, 0.5],
+                                  extrapolate: 'clamp'
+                                })
+                                const colorAnim = scrollX.interpolate({
+                                  inputRange,
+                                  outputRange: ['#bbb', '#fff', '#bbb'],
+                                  extrapolate: 'clamp'
+                                })
+
+                                return (
+                                  <Animated.View
+                                    key={index}
+                                    style={{
+                                      height: DOT_SIZE,
+                                      width: DOT_SIZE,
+                                      borderRadius: DOT_SIZE / 2,
+                                      backgroundColor: colorAnim,
+                                      marginHorizontal: DOT_SPACING / 2,
+                                      transform: [{ scale: scaleAnim }]
+                                    }}
+                                  />
+                                )
+                              })}
+                            </Animated.View>
+                          </View>
+
+                          <TouchableOpacity
+                            className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                            disabled={currentIndex === item.images.length - 1}
+                            onPress={() => goToImage(currentIndex + 1, item)}>
+                            <Ionicons name="chevron-forward" size={16} color="white" />
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <View
+                          className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-64 rounded-full"
+                          style={{
+                            height: DOT_SIZE * 3,
+                            width:
+                              item.images.length < VISIBLE_DOTS
+                                ? item.images.length * (DOT_SIZE + DOT_SPACING)
+                                : DOT_CONTAINER_WIDTH,
+                            left:
+                              item.images.length < VISIBLE_DOTS
+                                ? (width - item.images.length * (DOT_SIZE + DOT_SPACING)) / 2
+                                : (width - DOT_CONTAINER_WIDTH) / 2
+                          }}>
+                          <Animated.View
+                            style={{
+                              flexDirection: 'row',
+                              transform: [
+                                {
+                                  translateX: dotsScrollX.interpolate({
+                                    inputRange: [0, item.images.length * (DOT_SIZE + DOT_SPACING)],
+                                    outputRange: [
+                                      0,
+                                      -item.images.length * (DOT_SIZE + DOT_SPACING)
+                                    ],
+                                    extrapolate: 'clamp'
+                                  })
+                                }
+                              ]
+                            }}>
+                            {item.images.map((_, index) => {
+                              const inputRange = [
+                                (index - 1) * width,
+                                index * width,
+                                (index + 1) * width
+                              ]
+                              const scaleAnim = scrollX.interpolate({
+                                inputRange,
+                                outputRange: [0.5, 0.8, 0.5],
+                                extrapolate: 'clamp'
+                              })
+                              const colorAnim = scrollX.interpolate({
+                                inputRange,
+                                outputRange: ['#bbb', '#fff', '#bbb'],
+                                extrapolate: 'clamp'
+                              })
+
+                              return (
+                                <Animated.View
+                                  key={index}
+                                  style={{
+                                    height: DOT_SIZE,
+                                    width: DOT_SIZE,
+                                    borderRadius: DOT_SIZE / 2,
+                                    backgroundColor: colorAnim,
+                                    marginHorizontal: DOT_SPACING / 2,
+                                    transform: [{ scale: scaleAnim }]
+                                  }}
+                                />
+                              )
+                            })}
+                          </Animated.View>
+                        </View>
+                      )}
+                    </View>
+                  ) : (
+                    <View className="justify-center items-center">
+                      <Image
+                        source={require('@/assets/images/NotAvalibleImg3.png')}
+                        style={{
+                          width: width,
+                          height: height,
+                          resizeMode: 'contain'
+                        }}
+                      />
+                    </View>
+                  )}
+                </View>
+
+                <View className={`absolute p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}>
                   <Text className="text-white text-2xl font-semibold capitalize">
                     {item.type}
                     <Text className="normal-case">
