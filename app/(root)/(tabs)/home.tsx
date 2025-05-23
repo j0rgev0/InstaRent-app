@@ -5,7 +5,9 @@ import {
   FlatList,
   Image,
   Platform,
+  Pressable,
   RefreshControl,
+  ScrollView,
   StatusBar,
   Text,
   TextInput,
@@ -22,6 +24,19 @@ import '@/global.css'
 
 const { height, width } = Dimensions.get('window')
 
+const propertyTypes = [
+  'ruralproperty',
+  'groundfloor',
+  'townhouse',
+  'apartment',
+  'penthouse',
+  'chalet',
+  'duplex',
+  'studio',
+  'loft',
+  'other'
+]
+
 const HomePage = () => {
   const [properties, setProperties] = useState<Property[]>([])
   const [expandedDescriptions, setExpandedDescriptions] = useState<string[]>([])
@@ -30,18 +45,24 @@ const HomePage = () => {
 
   const [filters, setFilters] = useState({
     operation: '',
-    type: '',
+    type: [] as string[],
     locality: ''
   })
 
   const [showFilters, setShowFilters] = useState(false)
+  const [showOperationFilter, setShowOperationFilter] = useState(false)
+  const [showTypesFilter, setShowTypesFilter] = useState(false)
 
   const fetchProperties = async () => {
     try {
       const queryParams = new URLSearchParams()
 
       Object.entries(filters).forEach(([key, value]) => {
-        if (value !== '') queryParams.append(key, value)
+        if (Array.isArray(value)) {
+          value.forEach((v) => queryParams.append(key, v))
+        } else if (value !== '') {
+          queryParams.append(key, value)
+        }
       })
 
       const url = `${INSTARENT_API_URL}/properties?${queryParams.toString()}`
@@ -62,7 +83,7 @@ const HomePage = () => {
 
       setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('Error getting properties', error)
+      // console.error('Error getting properties', error)
       setProperties([])
     }
   }
@@ -101,7 +122,7 @@ const HomePage = () => {
       </View>
 
       {showFilters && (
-        <View
+        <ScrollView
           className="bg-gray-900 px-4 pt-4 pb-6"
           style={{
             position: 'absolute',
@@ -110,37 +131,79 @@ const HomePage = () => {
             right: 0,
             zIndex: 10
           }}>
-          <Text className="text-white mb-1">Operation</Text>
-          <Picker
-            selectedValue={filters.operation}
-            onValueChange={(value: string) => setFilters((prev) => ({ ...prev, operation: value }))}
-            className="bg-neutral-900"
-            style={{ color: 'white' }}>
-            <Picker.Item
-              color={Platform.OS === 'android' ? 'black' : 'white'}
-              label="All"
-              value=""
+          <Pressable
+            onPress={() => setShowOperationFilter(!showOperationFilter)}
+            className="flex-row items-center ">
+            <Text className="text-white text-lg">Operation</Text>
+            <Ionicons
+              name={showOperationFilter ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color="white"
             />
-            <Picker.Item
-              color={Platform.OS === 'android' ? 'black' : 'white'}
-              label="Rent"
-              value="rent"
-            />
-            <Picker.Item
-              color={Platform.OS === 'android' ? 'black' : 'white'}
-              label="Sell"
-              value="sell"
-            />
-          </Picker>
+          </Pressable>
 
-          <Text className="text-white mb-1">Type</Text>
-          <TextInput
-            placeholder="e.g. apartment, house"
-            placeholderTextColor="#aaa"
-            value={filters.type}
-            onChangeText={(text) => setFilters((prev) => ({ ...prev, type: text }))}
-            className="text-white border border-gray-700 p-2 rounded mb-2"
-          />
+          {showOperationFilter && (
+            <Picker
+              selectedValue={filters.operation}
+              onValueChange={(value: string) =>
+                setFilters((prev) => ({ ...prev, operation: value }))
+              }
+              className="bg-neutral-900"
+              style={{ color: 'white' }}>
+              <Picker.Item
+                color={Platform.OS === 'android' ? 'black' : 'white'}
+                label="All"
+                value=""
+              />
+              <Picker.Item
+                color={Platform.OS === 'android' ? 'black' : 'white'}
+                label="Rent"
+                value="rent"
+              />
+              <Picker.Item
+                color={Platform.OS === 'android' ? 'black' : 'white'}
+                label="Sell"
+                value="sell"
+              />
+            </Picker>
+          )}
+
+          <Pressable
+            onPress={() => setShowTypesFilter(!showTypesFilter)}
+            className="flex-row items-center py-2">
+            <Text className="text-white text-lg">Type</Text>
+            <Ionicons
+              name={showTypesFilter ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color="white"
+            />
+          </Pressable>
+
+          {showTypesFilter &&
+            propertyTypes.map((type) => {
+              const isSelected = filters.type.includes(type)
+              return (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => {
+                    setFilters((prev) => {
+                      const newTypes = isSelected
+                        ? prev.type.filter((t) => t !== type)
+                        : [...prev.type, type]
+                      return { ...prev, type: newTypes }
+                    })
+                  }}
+                  className="flex-row items-center mb-2">
+                  <Ionicons
+                    name={isSelected ? 'checkbox' : 'square-outline'}
+                    size={20}
+                    color="white"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text className="text-white capitalize">{type}</Text>
+                </TouchableOpacity>
+              )
+            })}
 
           <Text className="text-white mb-1">Locality</Text>
           <TextInput
@@ -150,11 +213,10 @@ const HomePage = () => {
             onChangeText={(text) => setFilters((prev) => ({ ...prev, locality: text }))}
             className="text-white border border-gray-700 p-2 rounded mb-4"
           />
-
           <TouchableOpacity onPress={fetchProperties} className="bg-blue-600 p-3 rounded">
             <Text className="text-white text-center font-bold">Apply Filters</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       )}
 
       {properties.length === 0 && !refreshing && (
