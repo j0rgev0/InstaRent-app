@@ -10,7 +10,6 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native'
@@ -33,8 +32,60 @@ const propertyTypes = [
   'chalet',
   'duplex',
   'studio',
-  'loft',
-  'other'
+  'loft'
+]
+
+export const provincesOfSpain = [
+  { label: 'Álava', value: 'alava' },
+  { label: 'Albacete', value: 'albacete' },
+  { label: 'Alicante', value: 'alicante' },
+  { label: 'Almería', value: 'almeria' },
+  { label: 'Asturias', value: 'asturias' },
+  { label: 'Ávila', value: 'avila' },
+  { label: 'Badajoz', value: 'badajoz' },
+  { label: 'Barcelona', value: 'barcelona' },
+  { label: 'Burgos', value: 'burgos' },
+  { label: 'Cáceres', value: 'caceres' },
+  { label: 'Cádiz', value: 'cadiz' },
+  { label: 'Cantabria', value: 'cantabria' },
+  { label: 'Castellón', value: 'castellon' },
+  { label: 'Ciudad Real', value: 'ciudad real' },
+  { label: 'Córdoba', value: 'cordoba' },
+  { label: 'Cuenca', value: 'cuenca' },
+  { label: 'Girona', value: 'girona' },
+  { label: 'Granada', value: 'granada' },
+  { label: 'Guadalajara', value: 'guadalajara' },
+  { label: 'Guipúzcoa', value: 'guipuzcoa' },
+  { label: 'Huelva', value: 'huelva' },
+  { label: 'Huesca', value: 'huesca' },
+  { label: 'Illes Balears', value: 'illes balears' },
+  { label: 'Jaén', value: 'jaen' },
+  { label: 'A Coruña', value: 'a coruna' },
+  { label: 'La Rioja', value: 'la rioja' },
+  { label: 'Las Palmas', value: 'las palmas' },
+  { label: 'León', value: 'leon' },
+  { label: 'Lleida', value: 'lleida' },
+  { label: 'Lugo', value: 'lugo' },
+  { label: 'Madrid', value: 'madrid' },
+  { label: 'Málaga', value: 'malaga' },
+  { label: 'Murcia', value: 'murcia' },
+  { label: 'Navarra', value: 'navarra' },
+  { label: 'Ourense', value: 'ourense' },
+  { label: 'Palencia', value: 'palencia' },
+  { label: 'Pontevedra', value: 'pontevedra' },
+  { label: 'Salamanca', value: 'salamanca' },
+  { label: 'Santa Cruz de Tenerife', value: 'santa cruz de tenerife' },
+  { label: 'Segovia', value: 'segovia' },
+  { label: 'Sevilla', value: 'sevilla' },
+  { label: 'Soria', value: 'soria' },
+  { label: 'Tarragona', value: 'tarragona' },
+  { label: 'Teruel', value: 'teruel' },
+  { label: 'Toledo', value: 'toledo' },
+  { label: 'Valencia', value: 'valencia' },
+  { label: 'Valladolid', value: 'valladolid' },
+  { label: 'Vizcaya', value: 'vizcaya' },
+  { label: 'Zamora', value: 'zamora' },
+  { label: 'Zaragoza', value: 'zaragoza' }
 ]
 
 const HomePage = () => {
@@ -46,13 +97,13 @@ const HomePage = () => {
   const [filters, setFilters] = useState({
     operation: '',
     type: [] as string[],
-    locality: ''
+    province: [] as string[]
   })
 
   const [showFilters, setShowFilters] = useState(false)
   const [showOperationFilter, setShowOperationFilter] = useState(false)
   const [showTypesFilter, setShowTypesFilter] = useState(false)
-  const [showLocalityFilter, setShowLocalityFilter] = useState(false)
+  const [showProvinceFilter, setShowProvinceFilter] = useState(false)
 
   const fetchProperties = async () => {
     try {
@@ -95,6 +146,12 @@ const HomePage = () => {
     setRefreshing(false)
   }
 
+  const handleApplyFilters = () => {
+    fetchProperties().then(() => {
+      setShowFilters(false)
+    })
+  }
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle('light-content', true)
@@ -111,11 +168,11 @@ const HomePage = () => {
 
   return (
     <View className={`flex-1 bg-black ${refreshing ? 'pt-10' : ''}`}>
-      <View style={{ position: 'absolute', top: 55, left: 0, zIndex: 20 }}>
+      <View style={{ position: 'absolute', top: 45, left: 0, zIndex: 20 }}>
         <TouchableOpacity
           onPress={() => setShowFilters(!showFilters)}
-          className="bg-white/60 px-4 py-2 rounded-2xl flex-row items-center space-x-2 self-start mx-2 shadow-sm">
-          <Text className="text-white text-lg font-semibold">
+          className="px-4 py-2 rounded-2xl flex-row items-center space-x-2 self-start mx-2 shadow-sm">
+          <Text className="text-white text-2xl font-bold">
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </Text>
           <Ionicons name={showFilters ? 'chevron-up' : 'chevron-down'} size={20} color="white" />
@@ -124,23 +181,19 @@ const HomePage = () => {
 
       {showFilters && (
         <ScrollView
-          className="bg-gray-900 px-4 pt-4 pb-6"
+          className="bg-white/60 p-4 pb-6 rounded-2xl m-4"
           style={{
             position: 'absolute',
-            top: 100,
-            left: 0,
-            right: 0,
+            top: 85,
+            left: 10,
+            right: 10,
             zIndex: 10
           }}>
           <Pressable
             onPress={() => setShowOperationFilter(!showOperationFilter)}
             className="flex-row items-center pb-2">
-            <Text className="text-white text-lg">Operation</Text>
-            <Ionicons
-              name={showOperationFilter ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color="white"
-            />
+            <Text className="text-lg">Operation</Text>
+            <Ionicons name={showOperationFilter ? 'chevron-up' : 'chevron-down'} size={20} />
           </Pressable>
 
           {showOperationFilter && (
@@ -149,84 +202,88 @@ const HomePage = () => {
               onValueChange={(value: string) =>
                 setFilters((prev) => ({ ...prev, operation: value }))
               }
-              className="bg-neutral-900"
-              style={{ color: 'white' }}>
-              <Picker.Item
-                color={Platform.OS === 'android' ? 'black' : 'white'}
-                label="All"
-                value=""
-              />
-              <Picker.Item
-                color={Platform.OS === 'android' ? 'black' : 'white'}
-                label="Rent"
-                value="rent"
-              />
-              <Picker.Item
-                color={Platform.OS === 'android' ? 'black' : 'white'}
-                label="Sell"
-                value="sell"
-              />
+              style={{ color: 'black' }}>
+              <Picker.Item color="black" label="All" value="" />
+              <Picker.Item color="black" label="Rent" value="rent" />
+              <Picker.Item color="black" label="Sell" value="sell" />
             </Picker>
           )}
 
           <Pressable
             onPress={() => setShowTypesFilter(!showTypesFilter)}
             className="flex-row items-center pb-2">
-            <Text className="text-white text-lg">Type</Text>
-            <Ionicons
-              name={showTypesFilter ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color="white"
-            />
+            <Text className="text-lg">Type</Text>
+            <Ionicons name={showTypesFilter ? 'chevron-up' : 'chevron-down'} size={20} />
           </Pressable>
 
-          {showTypesFilter &&
-            propertyTypes.map((type) => {
-              const isSelected = filters.type.includes(type)
-              return (
-                <TouchableOpacity
-                  key={type}
-                  onPress={() => {
-                    setFilters((prev) => {
-                      const newTypes = isSelected
-                        ? prev.type.filter((t) => t !== type)
-                        : [...prev.type, type]
-                      return { ...prev, type: newTypes }
-                    })
-                  }}
-                  className="flex-row items-center mb-2">
-                  <Ionicons
-                    name={isSelected ? 'checkbox' : 'square-outline'}
-                    size={20}
-                    color="white"
-                    style={{ marginRight: 8 }}
-                  />
-                  <Text className="text-white capitalize">{type}</Text>
-                </TouchableOpacity>
-              )
-            })}
+          {showTypesFilter && (
+            <View style={{ maxHeight: 176 }}>
+              <ScrollView>
+                {propertyTypes.map((type) => {
+                  const isSelected = filters.type.includes(type)
+                  return (
+                    <TouchableOpacity
+                      key={type}
+                      onPress={() => {
+                        setFilters((prev) => {
+                          const newTypes = isSelected
+                            ? prev.type.filter((t) => t !== type)
+                            : [...prev.type, type]
+                          return { ...prev, type: newTypes }
+                        })
+                      }}
+                      className="flex-row items-center mb-2">
+                      <Ionicons
+                        name={isSelected ? 'checkbox' : 'square-outline'}
+                        size={20}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text className="capitalize">{type}</Text>
+                    </TouchableOpacity>
+                  )
+                })}
+              </ScrollView>
+            </View>
+          )}
 
           <Pressable
-            onPress={() => setShowLocalityFilter(!showLocalityFilter)}
+            onPress={() => setShowProvinceFilter(!showProvinceFilter)}
             className="flex-row items-center pb-2">
-            <Text className="text-white text-lg">Locality</Text>
-            <Ionicons
-              name={showLocalityFilter ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color="white"
-            />
+            <Text className="text-lg">Province</Text>
+            <Ionicons name={showProvinceFilter ? 'chevron-up' : 'chevron-down'} size={20} />
           </Pressable>
 
-          {showLocalityFilter && (
-            <TextInput
-              placeholder="e.g. Madrid, Barcelona"
-              placeholderTextColor="#aaa"
-              value={filters.locality}
-              onChangeText={(text) => setFilters((prev) => ({ ...prev, locality: text }))}
-              className="text-white border border-gray-700 p-2 rounded mb-4"
-            />
+          {showProvinceFilter && (
+            <View style={{ maxHeight: 176 }}>
+              <ScrollView>
+                {provincesOfSpain.map(({ label, value }) => {
+                  const isSelected = filters.province.includes(value)
+                  return (
+                    <TouchableOpacity
+                      key={value}
+                      onPress={() => {
+                        setFilters((prev) => {
+                          const newProvince = isSelected
+                            ? prev.province.filter((t) => t !== value)
+                            : [...prev.province, value]
+                          return { ...prev, province: newProvince }
+                        })
+                      }}
+                      className="flex-row items-center mb-2">
+                      <Ionicons
+                        name={isSelected ? 'checkbox' : 'square-outline'}
+                        size={20}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text className="capitalize">{label}</Text>
+                    </TouchableOpacity>
+                  )
+                })}
+              </ScrollView>
+            </View>
           )}
-          <TouchableOpacity onPress={fetchProperties} className="bg-blue-600 p-3 rounded">
+
+          <TouchableOpacity onPress={handleApplyFilters} className="bg-darkBlue p-3 rounded-2xl">
             <Text className="text-white text-center font-bold">Apply Filters</Text>
           </TouchableOpacity>
         </ScrollView>
