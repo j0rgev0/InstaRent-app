@@ -52,6 +52,7 @@ const HomePage = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [showOperationFilter, setShowOperationFilter] = useState(false)
   const [showTypesFilter, setShowTypesFilter] = useState(false)
+  const [showLocalityFilter, setShowLocalityFilter] = useState(false)
 
   const fetchProperties = async () => {
     try {
@@ -133,7 +134,7 @@ const HomePage = () => {
           }}>
           <Pressable
             onPress={() => setShowOperationFilter(!showOperationFilter)}
-            className="flex-row items-center ">
+            className="flex-row items-center pb-2">
             <Text className="text-white text-lg">Operation</Text>
             <Ionicons
               name={showOperationFilter ? 'chevron-up' : 'chevron-down'}
@@ -170,7 +171,7 @@ const HomePage = () => {
 
           <Pressable
             onPress={() => setShowTypesFilter(!showTypesFilter)}
-            className="flex-row items-center py-2">
+            className="flex-row items-center pb-2">
             <Text className="text-white text-lg">Type</Text>
             <Ionicons
               name={showTypesFilter ? 'chevron-up' : 'chevron-down'}
@@ -205,14 +206,26 @@ const HomePage = () => {
               )
             })}
 
-          <Text className="text-white mb-1">Locality</Text>
-          <TextInput
-            placeholder="e.g. Madrid, Barcelona"
-            placeholderTextColor="#aaa"
-            value={filters.locality}
-            onChangeText={(text) => setFilters((prev) => ({ ...prev, locality: text }))}
-            className="text-white border border-gray-700 p-2 rounded mb-4"
-          />
+          <Pressable
+            onPress={() => setShowLocalityFilter(!showLocalityFilter)}
+            className="flex-row items-center pb-2">
+            <Text className="text-white text-lg">Locality</Text>
+            <Ionicons
+              name={showLocalityFilter ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color="white"
+            />
+          </Pressable>
+
+          {showLocalityFilter && (
+            <TextInput
+              placeholder="e.g. Madrid, Barcelona"
+              placeholderTextColor="#aaa"
+              value={filters.locality}
+              onChangeText={(text) => setFilters((prev) => ({ ...prev, locality: text }))}
+              className="text-white border border-gray-700 p-2 rounded mb-4"
+            />
+          )}
           <TouchableOpacity onPress={fetchProperties} className="bg-blue-600 p-3 rounded">
             <Text className="text-white text-center font-bold">Apply Filters</Text>
           </TouchableOpacity>
