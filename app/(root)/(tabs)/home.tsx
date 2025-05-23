@@ -79,8 +79,10 @@ const HomePage = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'black' }}>
-      <View style={{ position: 'absolute', top: 40, left: 0, right: 0, zIndex: 20 }}>
-        <TouchableOpacity onPress={() => setShowFilters(!showFilters)} className="bg-gray-800 py-2">
+      <View style={{ position: 'absolute', top: 60, left: 0, zIndex: 20 }}>
+        <TouchableOpacity
+          onPress={() => setShowFilters(!showFilters)}
+          className="bg-white/55 p-2 rounded-2xl left-2">
           <Text className="text-white font-bold text-center">
             {showFilters ? 'Hide Filters' : 'Show Filters'}
           </Text>
@@ -92,7 +94,7 @@ const HomePage = () => {
           className="bg-gray-900 px-4 pt-4 pb-6"
           style={{
             position: 'absolute',
-            top: 80,
+            top: 100,
             left: 0,
             right: 0,
             zIndex: 10
