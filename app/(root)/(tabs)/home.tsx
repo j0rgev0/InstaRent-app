@@ -60,11 +60,10 @@ const HomePage = () => {
         throw new Error(data.error || 'Error getting properties')
       }
 
-      // Asegurar que data sea un array
       setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error getting properties', error)
-      setProperties([]) // Limpiar propiedades para evitar estado inconsistente
+      setProperties([])
     }
   }
 
@@ -180,7 +179,6 @@ const HomePage = () => {
           const maxLength = 70
           const description = item.description
 
-          // Validar que haya imágenes para evitar errores
           const imageUrl = item.images && item.images.length > 0 ? item.images[0].url : null
 
           return (
@@ -194,11 +192,12 @@ const HomePage = () => {
                     resizeMode="contain"
                   />
                 ) : (
-                  <View
+                  <Image
+                    source={require('@/assets/images/NotAvalibleImg3.png')}
                     style={{ height, width }}
-                    className="absolute bg-gray-800 justify-center items-center">
-                    <Text className="text-gray-400">No Image</Text>
-                  </View>
+                    className="absolute"
+                    resizeMode="contain"
+                  />
                 )}
 
                 <View className={`p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}>
