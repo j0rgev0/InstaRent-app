@@ -11,6 +11,7 @@ import {
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   TouchableOpacity,
   View
 } from 'react-native'
@@ -109,13 +110,15 @@ const HomePage = () => {
   const [filters, setFilters] = useState({
     operation: '',
     type: [] as string[],
-    province: [] as string[]
+    province: [] as string[],
+    locality: ''
   })
 
   const [showFilters, setShowFilters] = useState(false)
   const [showOperationFilter, setShowOperationFilter] = useState(false)
   const [showTypesFilter, setShowTypesFilter] = useState(false)
   const [showProvinceFilter, setShowProvinceFilter] = useState(false)
+  const [showLocalityFilter, setShowLocalityFilter] = useState(false)
 
   const fetchProperties = async () => {
     try {
@@ -321,6 +324,22 @@ const HomePage = () => {
                 })}
               </ScrollView>
             </View>
+          )}
+
+          <Pressable
+            onPress={() => setShowLocalityFilter(!showLocalityFilter)}
+            className="flex-row items-center pb-2">
+            <Text className="text-lg">Locality</Text>
+            <Ionicons name={showLocalityFilter ? 'chevron-up' : 'chevron-down'} size={20} />
+          </Pressable>
+
+          {showLocalityFilter && (
+            <TextInput
+              className="mb-2 px-4 py-2 border border-gray-300 rounded-2xl bg-gray-100 text-base capitalize"
+              placeholder="Enter your locality"
+              placeholderTextColor="#999"
+              onChangeText={(value: string) => setFilters((prev) => ({ ...prev, locality: value }))}
+            />
           )}
 
           <TouchableOpacity onPress={handleApplyFilters} className="bg-darkBlue p-3 rounded-2xl">
