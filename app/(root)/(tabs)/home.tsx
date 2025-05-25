@@ -22,6 +22,7 @@ import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { Picker } from '@react-native-picker/picker'
 
 import '@/global.css'
+import { interiorFeaturesOptions } from '@/utils/features'
 
 const { height, width } = Dimensions.get('window')
 
@@ -357,17 +358,17 @@ const HomePage = () => {
             <View style={{ maxHeight: 176 }}>
               <ScrollView>
                 <View className="flex-row flex-wrap gap-2">
-                  {provincesOfSpain.map(({ label, value }) => {
+                  {interiorFeaturesOptions.map(({ label, value }) => {
                     const isSelected = filters.province.includes(value)
                     return (
                       <TouchableOpacity
                         key={value}
                         onPress={() => {
                           setFilters((prev) => {
-                            const newProvince = isSelected
-                              ? prev.province.filter((t) => t !== value)
-                              : [...prev.province, value]
-                            return { ...prev, province: newProvince }
+                            const newFeature = isSelected
+                              ? prev.features.filter((t) => t !== value)
+                              : [...prev.features, value]
+                            return { ...prev, features: newFeature }
                           })
                         }}
                         className={`border rounded-2xl px-4 py-2 shadow-sm ${
