@@ -17,7 +17,7 @@ import {
   View
 } from 'react-native'
 
-import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
 import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { Picker } from '@react-native-picker/picker'
@@ -48,7 +48,7 @@ const HomePage = () => {
   const [currentAddress, setCurrentAddress] = useState<string>('')
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const lastGeocodeTime = useRef<number>(0)
-  const GEOCODE_COOLDOWN = 2000 // 2 segundos entre solicitudes
+  const GEOCODE_COOLDOWN = 2000
 
   const imageScrollRef = useRef<ScrollView>(null)
   const [currentIndexes, setCurrentIndexes] = useState<{ [key: string]: number }>({})
@@ -74,7 +74,7 @@ const HomePage = () => {
   const [showFeaturesFilter, setShowFeaturesFilter] = useState(false)
   const [showLocationFilters, setShowLocationFilters] = useState(false)
 
-  const MAX_DISPLAY_LENGTH = 'Santa Cruz de Tenerife'.length + 3 // +3 para los puntos suspensivos
+  const MAX_DISPLAY_LENGTH = 'Santa Cruz de Tenerife'.length + 3
 
   const fetchProperties = async () => {
     try {
@@ -213,18 +213,31 @@ const HomePage = () => {
       }
 
       try {
-        const [address] = await Location.reverseGeocodeAsync({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude
-        })
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.coords.latitude},${location.coords.longitude}&key=${GOOGLE_MAPS_API_KEY}&language=en`
+        )
+        const data = await response.json()
 
-        console.log(address)
+        if (data.results && data.results.length > 0) {
+          const result = data.results[0]
+          let province = ''
 
-        if (address) {
-          const province = address.region?.toLowerCase() || ''
-          setCurrentAddress(province)
-          setFilters((prev) => ({ ...prev, province: [province] }))
-          lastGeocodeTime.current = now
+          for (const component of result.address_components) {
+            if (component.types.includes('administrative_area_level_2')) {
+              province = component.long_name.toLowerCase()
+              break
+            }
+          }
+
+          if (province) {
+            setCurrentAddress(province)
+            setFilters((prev) => ({ ...prev, province: [province] }))
+            lastGeocodeTime.current = now
+          } else {
+            setCurrentAddress('Location not found')
+          }
+        } else {
+          setCurrentAddress('Location not found')
         }
       } catch (geocodeError) {
         console.log('Geocoding error:', geocodeError)

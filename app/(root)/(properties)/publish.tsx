@@ -1,3 +1,4 @@
+import * as Location from 'expo-location'
 import React, { useCallback, useLayoutEffect, useState } from 'react'
 
 import {
@@ -24,6 +25,7 @@ import AddressAutocomplete from '@/components/map/MapComponent.web'
 import MapPreview from '@/components/map/MapPreview'
 
 import '@/global.css'
+import { Ionicons } from '@expo/vector-icons'
 
 const PublishPage = () => {
   const params = useLocalSearchParams()
@@ -34,6 +36,7 @@ const PublishPage = () => {
   const [showMarker, setShowMarker] = useState(false)
   const [hasFloorNumber, setHasFloorNumber] = useState(false)
   const [hasContructionYear, setHasContructionYear] = useState(false)
+  const [locationPermission, setLocationPermission] = useState<boolean>(false)
 
   const edit = params.edit === 'true' ? true : false
   const propertyid = params.propertyid
@@ -274,12 +277,50 @@ const PublishPage = () => {
     }
   }
 
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      setLocationPermission(status === 'granted')
+
+      if (status !== 'granted') {
+        Alert.alert(
+          'Location Permission Required',
+          'Please enable location services to continue.',
+          [{ text: 'OK' }]
+        )
+        return
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High
+      })
+
+      const newCoords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      }
+
+      setMarkerCoords(newCoords)
+      setShowMarker(true)
+      await fetchAddressFromCoords(newCoords.latitude, newCoords.longitude)
+    } catch (error) {
+      console.error('Error getting location:', error)
+      Alert.alert(
+        'Location Error',
+        'Unable to get your current location. Please try again or select a location manually.',
+        [{ text: 'OK' }]
+      )
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       const parent = navigation.getParent()
       if (parent) {
         parent.setOptions({ gestureEnabled: false })
       }
+
+      getCurrentLocation()
 
       if (latitude && longitude) {
         const parsedLat = Number(latitude)
@@ -326,13 +367,24 @@ const PublishPage = () => {
     if (!addressComponents.street) errors.address = 'Address is required'
     if (!addressComponents.streetNumber) errors.address = 'Street number is required'
     if (!addressComponents.locality) errors.address = 'City is required'
-    if (!addressComponents.country) errors.address = 'Address is required'
+    if (!addressComponents.country) errors.address = 'Country is required'
     if (!description) errors.description = 'Description is required'
 
     if (!markerCoords.latitude || !markerCoords.longitude) {
       errors.location = 'Please select a location'
     } else if (markerCoords.latitude === 40.4168 && markerCoords.longitude === -3.7038) {
-      errors.location = 'Please select a location'
+      errors.location = 'Please select a valid location'
+    } else if (
+      markerCoords.latitude < -90 ||
+      markerCoords.latitude > 90 ||
+      markerCoords.longitude < -180 ||
+      markerCoords.longitude > 180
+    ) {
+      errors.location = 'Invalid coordinates'
+    }
+
+    if (!addressComponents.formattedAddress) {
+      errors.address = 'Please select a valid address'
     }
 
     if (size && (size <= 0 || size > 99999)) errors.size = 'Size must be between 1 and 99999'
@@ -546,11 +598,21 @@ const PublishPage = () => {
             <Text className="text-red-500 text-sm mb-2">{validationErrors.address}</Text>
           )}
 
+          <View className="flex-row items-center space-x-2 mb-4">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={getCurrentLocation}
+              className="flex-row items-center bg-darkBlue px-4 py-2 rounded-xl">
+              <Ionicons name="location" size={20} color="white" />
+              <Text className="text-white ml-2">Use Current Location</Text>
+            </TouchableOpacity>
+          </View>
+
           {Platform.OS === 'web' ? (
             <AddressAutocomplete
               onPlaceSelected={(place) => {
                 if (!place.geometry || !place.geometry.location) {
-                  console.warn('La ubicación no está disponible para este lugar.')
+                  console.warn('Location not available for this place.')
                   return
                 }
 
@@ -560,17 +622,16 @@ const PublishPage = () => {
                 if (lat !== undefined && lng !== undefined) {
                   setMarkerCoords({ latitude: lat, longitude: lng })
                   setShowMarker(true)
-                  console.log('Coordenadas:', { lat, lng })
                   fetchAddressFromCoords(lat, lng)
                 } else {
-                  console.warn('No se pudieron obtener lat/lng.')
+                  console.warn('Could not get lat/lng.')
                 }
               }}
             />
           ) : (
             <MapPreview
-              initialLatitude={Number(latitude) || 40.4168}
-              initialLongitude={Number(longitude) || -3.7038}
+              initialLatitude={markerCoords.latitude}
+              initialLongitude={markerCoords.longitude}
               showMarker={showMarker}
               move={false}
               onPress={() =>

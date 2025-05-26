@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { View } from 'react-native'
 import MapView, { Marker } from 'react-native-maps'
@@ -11,9 +11,9 @@ interface MapViewComponentProps {
   initialLatitude: number
   initialLongitude: number
   showMarker: boolean
-  description: string
+  description?: string
   move: boolean
-  title: string
+  title?: string
   onPress?: () => void
 }
 
@@ -30,6 +30,13 @@ const MapViewComponent = ({
     latitude: initialLatitude,
     longitude: initialLongitude
   })
+
+  useEffect(() => {
+    setMarkerCoords({
+      latitude: initialLatitude,
+      longitude: initialLongitude
+    })
+  }, [initialLatitude, initialLongitude])
 
   const handleMarkerDragEnd = (e: any) => {
     const { latitude, longitude } = e.nativeEvent.coordinate
