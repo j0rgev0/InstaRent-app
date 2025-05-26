@@ -72,6 +72,7 @@ const HomePage = () => {
   const [showProvinceFilter, setShowProvinceFilter] = useState(false)
   const [showLocalityFilter, setShowLocalityFilter] = useState(false)
   const [showFeaturesFilter, setShowFeaturesFilter] = useState(false)
+  const [showLocationFilters, setShowLocationFilters] = useState(false)
 
   const MAX_DISPLAY_LENGTH = 'Santa Cruz de Tenerife'.length + 3 // +3 para los puntos suspensivos
 
@@ -287,22 +288,116 @@ const HomePage = () => {
     <View className={`flex-1 bg-black ${refreshing ? 'pt-10' : ''}`}>
       <View style={{ position: 'absolute', top: 45, left: 0, zIndex: 20 }}>
         <TouchableOpacity
-          onPress={() => setShowFilters(!showFilters)}
+          activeOpacity={0.8}
+          onPress={() => {
+            setShowFilters(!showFilters)
+            if (!showFilters) setShowLocationFilters(false)
+          }}
           className="px-4 py-2 rounded-2xl flex-row items-center space-x-2 self-start mx-2 shadow-sm">
           <Text className="text-white text-2xl font-bold">
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
+            {showFilters ? 'Filters' : 'Filters'}
           </Text>
           <Ionicons name={showFilters ? 'chevron-up' : 'chevron-down'} size={20} color="white" />
         </TouchableOpacity>
       </View>
 
-      {currentAddress && (
-        <View style={{ position: 'absolute', top: 45, right: 10, zIndex: 20 }}>
-          <View className="px-3 py-2 rounded-2xl flex-row items-center space-x-2 bg-white/80">
-            <Ionicons name="location" size={20} color="black" />
-            <Text className="text-black text-base capitalize">{currentAddress}</Text>
-          </View>
-        </View>
+      <View style={{ position: 'absolute', top: 45, right: 10, zIndex: 20 }}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            setShowLocationFilters(!showLocationFilters)
+            if (!showLocationFilters) setShowFilters(false)
+          }}
+          className="px-3 py-2 rounded-2xl flex-row items-center space-x-2 bg-white/80">
+          <Ionicons name="location-sharp" size={20} color="black" />
+          <Text className="text-black text-base capitalize">
+            {currentAddress || 'No location selected'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {showLocationFilters && (
+        <ScrollView
+          className="bg-white/80 p-4 pb-6 rounded-2xl mx-4"
+          style={{
+            position: 'absolute',
+            top: 85,
+            right: 10,
+            left: 10,
+            zIndex: 10
+          }}>
+          <Pressable
+            onPress={() => setShowProvinceFilter(!showProvinceFilter)}
+            className="flex-row items-center pb-2">
+            <Text className="text-lg">Province</Text>
+            <Ionicons name={showProvinceFilter ? 'chevron-up' : 'chevron-down'} size={20} />
+          </Pressable>
+
+          {showProvinceFilter && (
+            <View>
+              <View style={{ maxHeight: 176 }}>
+                <ScrollView>
+                  <View className="flex-row flex-wrap gap-2">
+                    {provincesOfSpain.map(({ label, value }) => {
+                      const isSelected = filters.province.includes(value)
+                      return (
+                        <TouchableOpacity
+                          key={value}
+                          onPress={() => updateSelectedProvince(value, isSelected)}
+                          className={`border rounded-2xl px-4 py-2 shadow-sm ${
+                            isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
+                          }`}>
+                          <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
+                            {label}
+                          </Text>
+                        </TouchableOpacity>
+                      )
+                    })}
+                  </View>
+                </ScrollView>
+              </View>
+              <TouchableOpacity
+                onPress={getCurrentLocation}
+                disabled={isLoadingLocation}
+                className="flex-row items-center space-x-2 mt-2">
+                <Ionicons name="location" size={20} color={isLoadingLocation ? '#999' : '#000'} />
+                <Text style={{ color: isLoadingLocation ? '#999' : '#000' }}>
+                  {isLoadingLocation ? 'Getting location...' : 'Use current province'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <Pressable
+            onPress={() => setShowLocalityFilter(!showLocalityFilter)}
+            className="flex-row items-center pb-2">
+            <Text className="text-lg">Locality</Text>
+            <Ionicons name={showLocalityFilter ? 'chevron-up' : 'chevron-down'} size={20} />
+          </Pressable>
+
+          {showLocalityFilter && (
+            <View>
+              <TextInput
+                className="mb-2 px-4 py-2 border border-gray-300 rounded-2xl bg-gray-100 text-base capitalize"
+                placeholder="Enter your locality"
+                placeholderTextColor="#999"
+                value={filters.locality}
+                onChangeText={(value: string) =>
+                  setFilters((prev) => ({ ...prev, locality: value }))
+                }
+              />
+            </View>
+          )}
+
+          <TouchableOpacity
+            onPress={() => {
+              handleApplyFilters()
+              setShowLocationFilters(false)
+            }}
+            className="bg-darkBlue p-3 rounded-2xl mt-2">
+            <Text className="text-white text-center font-bold">Apply Location Filters</Text>
+          </TouchableOpacity>
+        </ScrollView>
       )}
 
       {showFilters && (
@@ -370,69 +465,6 @@ const HomePage = () => {
                   })}
                 </View>
               </ScrollView>
-            </View>
-          )}
-
-          <Pressable
-            onPress={() => setShowProvinceFilter(!showProvinceFilter)}
-            className="flex-row items-center pb-2">
-            <Text className="text-lg">Province</Text>
-            <Ionicons name={showProvinceFilter ? 'chevron-up' : 'chevron-down'} size={20} />
-          </Pressable>
-
-          {showProvinceFilter && (
-            <View>
-              <View style={{ maxHeight: 176 }}>
-                <ScrollView>
-                  <View className="flex-row flex-wrap gap-2">
-                    {provincesOfSpain.map(({ label, value }) => {
-                      const isSelected = filters.province.includes(value)
-                      return (
-                        <TouchableOpacity
-                          key={value}
-                          onPress={() => updateSelectedProvince(value, isSelected)}
-                          className={`border rounded-2xl px-4 py-2 shadow-sm ${
-                            isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
-                          }`}>
-                          <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
-                            {label}
-                          </Text>
-                        </TouchableOpacity>
-                      )
-                    })}
-                  </View>
-                </ScrollView>
-              </View>
-              <TouchableOpacity
-                onPress={getCurrentLocation}
-                disabled={isLoadingLocation}
-                className="flex-row items-center space-x-2 mt-2">
-                <Ionicons name="location" size={20} color={isLoadingLocation ? '#999' : '#000'} />
-                <Text style={{ color: isLoadingLocation ? '#999' : '#000' }}>
-                  {isLoadingLocation ? 'Getting location...' : 'Use current province'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <Pressable
-            onPress={() => setShowLocalityFilter(!showLocalityFilter)}
-            className="flex-row items-center pb-2">
-            <Text className="text-lg">Locality</Text>
-            <Ionicons name={showLocalityFilter ? 'chevron-up' : 'chevron-down'} size={20} />
-          </Pressable>
-
-          {showLocalityFilter && (
-            <View>
-              <TextInput
-                className="mb-2 px-4 py-2 border border-gray-300 rounded-2xl bg-gray-100 text-base capitalize"
-                placeholder="Enter your locality"
-                placeholderTextColor="#999"
-                value={filters.locality}
-                onChangeText={(value: string) =>
-                  setFilters((prev) => ({ ...prev, locality: value }))
-                }
-              />
             </View>
           )}
 
