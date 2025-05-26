@@ -325,6 +325,7 @@ const HomePage = () => {
               className="mb-2 px-4 py-2 border border-gray-300 rounded-2xl bg-gray-100 text-base capitalize"
               placeholder="Enter your locality"
               placeholderTextColor="#999"
+              value={filters.locality}
               onChangeText={(value: string) => setFilters((prev) => ({ ...prev, locality: value }))}
             />
           )}
