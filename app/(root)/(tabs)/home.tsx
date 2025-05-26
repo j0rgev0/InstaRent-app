@@ -101,14 +101,10 @@ const HomePage = () => {
   const [expandedDescriptions, setExpandedDescriptions] = useState<string[]>([])
 
   const imageScrollRef = useRef<ScrollView>(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
-
-  const scrollX = useRef(new Animated.Value(0)).current
-  const dotsScrollX = useRef(new Animated.Value(0)).current
-
   const [currentIndexes, setCurrentIndexes] = useState<{ [key: string]: number }>({})
   const imageScrollRefs = useRef<{ [key: string]: ScrollView | null }>({})
   const scrollXRefs = useRef<{ [key: string]: Animated.Value }>({})
+  const dotsScrollXRefs = useRef<{ [key: string]: Animated.Value }>({})
 
   const [refreshing, setRefreshing] = useState(false)
 
@@ -165,7 +161,11 @@ const HomePage = () => {
   const onScroll = (event: any, property: Property) => {
     const offsetX = event.nativeEvent.contentOffset.x
     const index = Math.round(offsetX / width)
-    setCurrentIndex(index)
+
+    setCurrentIndexes((prev) => ({
+      ...prev,
+      [property.id]: index
+    }))
 
     if (property?.images?.length) {
       const startIndex = Math.max(
@@ -173,7 +173,11 @@ const HomePage = () => {
         Math.min(index - Math.floor(VISIBLE_DOTS / 2), property.images.length - VISIBLE_DOTS)
       )
 
-      Animated.spring(dotsScrollX, {
+      if (!dotsScrollXRefs.current[property.id]) {
+        dotsScrollXRefs.current[property.id] = new Animated.Value(0)
+      }
+
+      Animated.spring(dotsScrollXRefs.current[property.id], {
         toValue: startIndex * (DOT_SIZE + DOT_SPACING),
         useNativeDriver: true,
         friction: 10,
@@ -187,8 +191,39 @@ const HomePage = () => {
     if (!property || !scrollRef) return
 
     const validIndex = Math.max(0, Math.min(index, property.images.length - 1))
-    setCurrentIndex(validIndex)
-    scrollRef.scrollTo({ x: validIndex * width, animated: true })
+    setCurrentIndexes((prev) => ({
+      ...prev,
+      [property.id]: validIndex
+    }))
+
+    if (Platform.OS === 'web') {
+      scrollRef.scrollTo({ x: validIndex * width, animated: true })
+    } else {
+      scrollRef.scrollTo({ x: validIndex * width, animated: true })
+    }
+  }
+
+  const initializeScrollValues = (property: Property) => {
+    if (!scrollXRefs.current[property.id]) {
+      scrollXRefs.current[property.id] = new Animated.Value(0)
+    }
+    if (!dotsScrollXRefs.current[property.id]) {
+      dotsScrollXRefs.current[property.id] = new Animated.Value(0)
+    }
+  }
+
+  const getScrollX = (propertyId: string) => {
+    if (!scrollXRefs.current[propertyId]) {
+      scrollXRefs.current[propertyId] = new Animated.Value(0)
+    }
+    return scrollXRefs.current[propertyId]
+  }
+
+  const getDotsScrollX = (propertyId: string) => {
+    if (!dotsScrollXRefs.current[propertyId]) {
+      dotsScrollXRefs.current[propertyId] = new Animated.Value(0)
+    }
+    return dotsScrollXRefs.current[propertyId]
   }
 
   const onRefresh = async () => {
@@ -428,12 +463,13 @@ const HomePage = () => {
                         <ScrollView
                           ref={(ref) => {
                             imageScrollRefs.current[item.id] = ref
+                            initializeScrollValues(item)
                           }}
                           horizontal
                           showsHorizontalScrollIndicator={false}
                           scrollEventThrottle={16}
                           onScroll={Animated.event(
-                            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                            [{ nativeEvent: { contentOffset: { x: getScrollX(item.id) } } }],
                             {
                               useNativeDriver: false,
                               listener: (event: any) => onScroll(event, item)
@@ -447,11 +483,6 @@ const HomePage = () => {
                               ...prev,
                               [item.id]: pageIndex
                             }))
-
-                            imageScrollRefs.current[item.id]?.scrollTo({
-                              x: pageIndex * width,
-                              animated: true
-                            })
                           }}
                           contentContainerStyle={{ alignItems: 'center' }}>
                           {item.images.map((img) => (
@@ -475,7 +506,7 @@ const HomePage = () => {
                           showsHorizontalScrollIndicator={false}
                           scrollEventThrottle={16}
                           onScroll={Animated.event(
-                            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+                            [{ nativeEvent: { contentOffset: { x: getScrollX(item.id) } } }],
                             {
                               useNativeDriver: false,
                               listener: (event: any) => onScroll(event, item)
@@ -495,8 +526,8 @@ const HomePage = () => {
                         <View className="flex-row justify-center absolute items-center mt-2 mb-3 bottom-60 left-5 space-x-2">
                           <TouchableOpacity
                             className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
-                            disabled={currentIndex === 0}
-                            onPress={() => goToImage(currentIndex - 1, item)}>
+                            disabled={currentIndexes[item.id] === 0}
+                            onPress={() => goToImage((currentIndexes[item.id] || 0) - 1, item)}>
                             <Ionicons name="chevron-back" size={16} color="white" />
                           </TouchableOpacity>
 
@@ -514,7 +545,7 @@ const HomePage = () => {
                                 flexDirection: 'row',
                                 transform: [
                                   {
-                                    translateX: dotsScrollX.interpolate({
+                                    translateX: getDotsScrollX(item.id).interpolate({
                                       inputRange: [
                                         0,
                                         item.images.length * (DOT_SIZE + DOT_SPACING)
@@ -534,12 +565,12 @@ const HomePage = () => {
                                   index * width,
                                   (index + 1) * width
                                 ]
-                                const scaleAnim = scrollX.interpolate({
+                                const scaleAnim = getScrollX(item.id).interpolate({
                                   inputRange,
                                   outputRange: [0.5, 0.8, 0.5],
                                   extrapolate: 'clamp'
                                 })
-                                const colorAnim = scrollX.interpolate({
+                                const colorAnim = getScrollX(item.id).interpolate({
                                   inputRange,
                                   outputRange: ['#bbb', '#fff', '#bbb'],
                                   extrapolate: 'clamp'
@@ -564,8 +595,8 @@ const HomePage = () => {
 
                           <TouchableOpacity
                             className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
-                            disabled={currentIndex === item.images.length - 1}
-                            onPress={() => goToImage(currentIndex + 1, item)}>
+                            disabled={currentIndexes[item.id] === item.images.length - 1}
+                            onPress={() => goToImage((currentIndexes[item.id] || 0) + 1, item)}>
                             <Ionicons name="chevron-forward" size={16} color="white" />
                           </TouchableOpacity>
                         </View>
@@ -588,7 +619,7 @@ const HomePage = () => {
                               flexDirection: 'row',
                               transform: [
                                 {
-                                  translateX: dotsScrollX.interpolate({
+                                  translateX: getDotsScrollX(item.id).interpolate({
                                     inputRange: [0, item.images.length * (DOT_SIZE + DOT_SPACING)],
                                     outputRange: [
                                       0,
@@ -605,12 +636,12 @@ const HomePage = () => {
                                 index * width,
                                 (index + 1) * width
                               ]
-                              const scaleAnim = scrollX.interpolate({
+                              const scaleAnim = getScrollX(item.id).interpolate({
                                 inputRange,
                                 outputRange: [0.5, 0.8, 0.5],
                                 extrapolate: 'clamp'
                               })
-                              const colorAnim = scrollX.interpolate({
+                              const colorAnim = getScrollX(item.id).interpolate({
                                 inputRange,
                                 outputRange: ['#bbb', '#fff', '#bbb'],
                                 extrapolate: 'clamp'
