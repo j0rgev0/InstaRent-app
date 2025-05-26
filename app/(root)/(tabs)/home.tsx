@@ -191,6 +191,26 @@ const HomePage = () => {
     })
   }
 
+  const clearGeneralFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      operation: '',
+      type: [],
+      features: []
+    }))
+    fetchProperties()
+  }
+
+  const clearLocationFilters = () => {
+    setFilters((prev) => ({
+      ...prev,
+      province: [],
+      locality: ''
+    }))
+    setCurrentAddress('')
+    fetchProperties()
+  }
+
   const getCurrentLocation = async () => {
     try {
       setIsLoadingLocation(true)
@@ -339,6 +359,14 @@ const HomePage = () => {
             left: 10,
             zIndex: 10
           }}>
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-bold">Location Filters</Text>
+            <TouchableOpacity
+              onPress={clearLocationFilters}
+              className="bg-red-500 px-4 py-2 rounded-xl">
+              <Text className="text-white font-semibold">Clear All</Text>
+            </TouchableOpacity>
+          </View>
           <Pressable
             onPress={() => setShowProvinceFilter(!showProvinceFilter)}
             className="flex-row items-center pb-2">
@@ -423,6 +451,14 @@ const HomePage = () => {
             right: 10,
             zIndex: 10
           }}>
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-bold">Filters</Text>
+            <TouchableOpacity
+              onPress={clearGeneralFilters}
+              className="bg-red-500 px-4 py-2 rounded-xl">
+              <Text className="text-white font-semibold">Clear All</Text>
+            </TouchableOpacity>
+          </View>
           <Pressable
             onPress={() => setShowOperationFilter(!showOperationFilter)}
             className="flex-row items-center pb-2">
