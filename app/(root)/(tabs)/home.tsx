@@ -106,6 +106,10 @@ const HomePage = () => {
   const scrollX = useRef(new Animated.Value(0)).current
   const dotsScrollX = useRef(new Animated.Value(0)).current
 
+  const [currentIndexes, setCurrentIndexes] = useState<{ [key: string]: number }>({})
+  const imageScrollRefs = useRef<{ [key: string]: ScrollView | null }>({})
+  const scrollXRefs = useRef<{ [key: string]: Animated.Value }>({})
+
   const [refreshing, setRefreshing] = useState(false)
 
   const [filters, setFilters] = useState({
@@ -179,11 +183,12 @@ const HomePage = () => {
   }
 
   const goToImage = (index: number, property: Property) => {
-    if (!property || !imageScrollRef.current) return
+    const scrollRef = imageScrollRefs.current[property.id]
+    if (!property || !scrollRef) return
 
     const validIndex = Math.max(0, Math.min(index, property.images.length - 1))
     setCurrentIndex(validIndex)
-    imageScrollRef.current.scrollTo({ x: validIndex * width, animated: true })
+    scrollRef.scrollTo({ x: validIndex * width, animated: true })
   }
 
   const onRefresh = async () => {
@@ -357,7 +362,7 @@ const HomePage = () => {
           {showFeaturesFilter && (
             <View style={{ maxHeight: 176 }}>
               <ScrollView>
-                <View className="flex-row flex-wrap gap-2">
+                <View className="flex-row flex-wrap gap-2 mb-2">
                   {interiorFeaturesOptions.map(({ label, value }) => {
                     const isSelected = filters.province.includes(value)
                     return (
@@ -421,7 +426,9 @@ const HomePage = () => {
                     <View>
                       {Platform.OS === 'web' ? (
                         <ScrollView
-                          ref={imageScrollRef}
+                          ref={(ref) => {
+                            imageScrollRefs.current[item.id] = ref
+                          }}
                           horizontal
                           showsHorizontalScrollIndicator={false}
                           scrollEventThrottle={16}
@@ -435,16 +442,22 @@ const HomePage = () => {
                           onMomentumScrollEnd={(event) => {
                             const offsetX = event.nativeEvent.contentOffset.x
                             const pageIndex = Math.round(offsetX / width)
-                            imageScrollRef.current?.scrollTo({
+
+                            setCurrentIndexes((prev) => ({
+                              ...prev,
+                              [item.id]: pageIndex
+                            }))
+
+                            imageScrollRefs.current[item.id]?.scrollTo({
                               x: pageIndex * width,
                               animated: true
                             })
                           }}
                           contentContainerStyle={{ alignItems: 'center' }}>
-                          {item.images.map((item) => (
-                            <View key={item.id} style={{ width: width, height: height }}>
+                          {item.images.map((img) => (
+                            <View key={img.id} style={{ width: width, height: height }}>
                               <Image
-                                source={{ uri: item.url }}
+                                source={{ uri: img.url }}
                                 style={{
                                   width: width,
                                   height: height,
@@ -479,7 +492,7 @@ const HomePage = () => {
                       )}
 
                       {Platform.OS === 'web' ? (
-                        <View className="flex-row justify-center items-center mt-2 space-x-2">
+                        <View className="flex-row justify-center absolute items-center mt-2 mb-3 bottom-60 left-5 space-x-2">
                           <TouchableOpacity
                             className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
                             disabled={currentIndex === 0}
