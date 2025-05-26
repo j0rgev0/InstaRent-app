@@ -22,74 +22,9 @@ import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { Picker } from '@react-native-picker/picker'
 
 import '@/global.css'
-import { interiorFeaturesOptions } from '@/utils/features'
+import { interiorFeaturesOptions, propertyTypes, provincesOfSpain } from '@/utils/optionsData'
 
 const { height, width } = Dimensions.get('window')
-
-const propertyTypes = [
-  'ruralproperty',
-  'groundfloor',
-  'townhouse',
-  'apartment',
-  'penthouse',
-  'chalet',
-  'duplex',
-  'studio',
-  'loft'
-]
-
-export const provincesOfSpain = [
-  { label: 'Álava', value: 'alava' },
-  { label: 'Albacete', value: 'albacete' },
-  { label: 'Alicante', value: 'alicante' },
-  { label: 'Almería', value: 'almeria' },
-  { label: 'Asturias', value: 'asturias' },
-  { label: 'Ávila', value: 'avila' },
-  { label: 'Badajoz', value: 'badajoz' },
-  { label: 'Barcelona', value: 'barcelona' },
-  { label: 'Burgos', value: 'burgos' },
-  { label: 'Cáceres', value: 'caceres' },
-  { label: 'Cádiz', value: 'cadiz' },
-  { label: 'Cantabria', value: 'cantabria' },
-  { label: 'Castellón', value: 'castellon' },
-  { label: 'Ciudad Real', value: 'ciudad real' },
-  { label: 'Córdoba', value: 'cordoba' },
-  { label: 'Cuenca', value: 'cuenca' },
-  { label: 'Girona', value: 'girona' },
-  { label: 'Granada', value: 'granada' },
-  { label: 'Guadalajara', value: 'guadalajara' },
-  { label: 'Guipúzcoa', value: 'guipuzcoa' },
-  { label: 'Huelva', value: 'huelva' },
-  { label: 'Huesca', value: 'huesca' },
-  { label: 'Illes Balears', value: 'illes balears' },
-  { label: 'Jaén', value: 'jaen' },
-  { label: 'A Coruña', value: 'a coruna' },
-  { label: 'La Rioja', value: 'la rioja' },
-  { label: 'Las Palmas', value: 'las palmas' },
-  { label: 'León', value: 'leon' },
-  { label: 'Lleida', value: 'lleida' },
-  { label: 'Lugo', value: 'lugo' },
-  { label: 'Madrid', value: 'madrid' },
-  { label: 'Málaga', value: 'malaga' },
-  { label: 'Murcia', value: 'murcia' },
-  { label: 'Navarra', value: 'navarra' },
-  { label: 'Ourense', value: 'ourense' },
-  { label: 'Palencia', value: 'palencia' },
-  { label: 'Pontevedra', value: 'pontevedra' },
-  { label: 'Salamanca', value: 'salamanca' },
-  { label: 'Santa Cruz de Tenerife', value: 'santa cruz de tenerife' },
-  { label: 'Segovia', value: 'segovia' },
-  { label: 'Sevilla', value: 'sevilla' },
-  { label: 'Soria', value: 'soria' },
-  { label: 'Tarragona', value: 'tarragona' },
-  { label: 'Teruel', value: 'teruel' },
-  { label: 'Toledo', value: 'toledo' },
-  { label: 'Valencia', value: 'valencia' },
-  { label: 'Valladolid', value: 'valladolid' },
-  { label: 'Vizcaya', value: 'vizcaya' },
-  { label: 'Zamora', value: 'zamora' },
-  { label: 'Zaragoza', value: 'zaragoza' }
-]
 
 const VISIBLE_DOTS = 5
 const DOT_SIZE = 8

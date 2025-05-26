@@ -21,7 +21,7 @@ import {
   interiorFeaturesOptions,
   outdoorFeaturesOptions,
   parkingTransportOptions
-} from '@/utils/features'
+} from '@/utils/optionsData'
 
 import '@/global.css'
 
