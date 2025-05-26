@@ -67,7 +67,9 @@ export default function RootLayout() {
           headerTitleAlign: 'center',
           headerTitle: 'My Properties',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+            <TouchableOpacity
+              onPress={() => router.replace('/(root)/(tabs)/profile')}
+              className="flex flex-row items-center">
               <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
               <Text className="text-lg text-blue-500">Back</Text>
             </TouchableOpacity>

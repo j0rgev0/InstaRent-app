@@ -22,7 +22,14 @@ import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { Picker } from '@react-native-picker/picker'
 
 import '@/global.css'
-import { interiorFeaturesOptions, propertyTypes, provincesOfSpain } from '@/utils/optionsData'
+import {
+  buildingFeaturesOptions,
+  interiorFeaturesOptions,
+  outdoorFeaturesOptions,
+  parkingTransportOptions,
+  propertyTypes,
+  provincesOfSpain
+} from '@/utils/optionsData'
 
 const { height, width } = Dimensions.get('window')
 
@@ -330,11 +337,12 @@ const HomePage = () => {
           </Pressable>
 
           {showFeaturesFilter && (
-            <View style={{ maxHeight: 176 }}>
+            <ScrollView style={{ maxHeight: 300 }}>
+              <Text className="mb-2 text-lg">Interior Features</Text>
               <ScrollView>
-                <View className="flex-row flex-wrap gap-2 mb-2">
+                <View className="flex-row flex-wrap gap-2">
                   {interiorFeaturesOptions.map(({ label, value }) => {
-                    const isSelected = filters.province.includes(value)
+                    const isSelected = filters.features.includes(value)
                     return (
                       <TouchableOpacity
                         key={value}
@@ -357,7 +365,91 @@ const HomePage = () => {
                   })}
                 </View>
               </ScrollView>
-            </View>
+
+              <Text className="mb-2 text-lg">Building Features</Text>
+              <ScrollView>
+                <View className="flex-row flex-wrap gap-2 mb-2">
+                  {buildingFeaturesOptions.map(({ label, value }) => {
+                    const isSelected = filters.features.includes(value)
+                    return (
+                      <TouchableOpacity
+                        key={value}
+                        onPress={() => {
+                          setFilters((prev) => {
+                            const newFeature = isSelected
+                              ? prev.features.filter((t) => t !== value)
+                              : [...prev.features, value]
+                            return { ...prev, features: newFeature }
+                          })
+                        }}
+                        className={`border rounded-2xl px-4 py-2 shadow-sm ${
+                          isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
+                        }`}>
+                        <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    )
+                  })}
+                </View>
+              </ScrollView>
+
+              <Text className="mb-2 text-lg">Outdoor Features</Text>
+              <ScrollView>
+                <View className="flex-row flex-wrap gap-2 mb-2">
+                  {outdoorFeaturesOptions.map(({ label, value }) => {
+                    const isSelected = filters.features.includes(value)
+                    return (
+                      <TouchableOpacity
+                        key={value}
+                        onPress={() => {
+                          setFilters((prev) => {
+                            const newFeature = isSelected
+                              ? prev.features.filter((t) => t !== value)
+                              : [...prev.features, value]
+                            return { ...prev, features: newFeature }
+                          })
+                        }}
+                        className={`border rounded-2xl px-4 py-2 shadow-sm ${
+                          isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
+                        }`}>
+                        <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    )
+                  })}
+                </View>
+              </ScrollView>
+
+              <Text className="mb-2 text-lg">Parking & Transport</Text>
+              <ScrollView>
+                <View className="flex-row flex-wrap gap-2 mb-2">
+                  {parkingTransportOptions.map(({ label, value }) => {
+                    const isSelected = filters.features.includes(value)
+                    return (
+                      <TouchableOpacity
+                        key={value}
+                        onPress={() => {
+                          setFilters((prev) => {
+                            const newFeature = isSelected
+                              ? prev.features.filter((t) => t !== value)
+                              : [...prev.features, value]
+                            return { ...prev, features: newFeature }
+                          })
+                        }}
+                        className={`border rounded-2xl px-4 py-2 shadow-sm ${
+                          isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
+                        }`}>
+                        <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    )
+                  })}
+                </View>
+              </ScrollView>
+            </ScrollView>
           )}
 
           <TouchableOpacity onPress={handleApplyFilters} className="bg-darkBlue p-3 rounded-2xl">
