@@ -78,7 +78,7 @@ const HomePage = () => {
   const [showLocationFilters, setShowLocationFilters] = useState(false)
   const [showCountryFilters, setShowCountryFilters] = useState(false)
 
-  const MAX_DISPLAY_LENGTH = 'Santa Cruz de Tenerife'.length + 3
+  const MAX_DISPLAY_LENGTH = 30
 
   const fetchProperties = async () => {
     try {
@@ -255,8 +255,6 @@ const HomePage = () => {
               country = component.long_name.toLowerCase()
             }
           }
-
-          console.log(country)
 
           if (province) {
             setCurrentAddress(province)
