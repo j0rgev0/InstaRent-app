@@ -110,7 +110,6 @@ const HomePage = () => {
 
       setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
-      // console.error('Error getting properties', error)
       setProperties([])
     }
   }
@@ -330,7 +329,6 @@ const HomePage = () => {
         ? prev.country.filter((t) => t !== value)
         : [...prev.country, value]
 
-      // Si se está deseleccionando un país, limpiar las provincias que pertenecen a ese país
       if (isSelected) {
         const provincesToKeep = prev.province.filter((province) => {
           const countryProvinces = getProvincesByCountry(value)
