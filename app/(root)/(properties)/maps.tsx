@@ -7,36 +7,38 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 // @ts-ignore
 import MapComponent from '@/components/map/OldMapComponent'
 
+type PropertyParams = {
+  edit: string
+  propertyid?: string
+  operationTypes: string
+  housingTypes: string
+  description: string
+  bathrooms: string
+  bedrooms: string
+  price: string
+  size: string
+  longitude: string
+  latitude: string
+}
+
 export default function MapsScreen() {
   const navigation = useNavigation()
   const router = useRouter()
-  const params = useLocalSearchParams()
+  const params = useLocalSearchParams<PropertyParams>()
 
-  const edit = params.edit === 'true' ? true : false
+  const edit = params.edit === 'true'
   const propertyid = params.propertyid
 
-  const {
-    operationTypes,
-    description,
-    housingTypes,
-    bathrooms,
-    bedrooms,
-    price,
-    size,
-    longitude,
-    latitude
-  } = params
-
   const sharedParams = {
-    operationTypes,
-    housingTypes,
-    description,
-    bathrooms,
-    longitude,
-    latitude,
-    bedrooms,
-    price,
-    size
+    operationTypes: params.operationTypes,
+    housingTypes: params.housingTypes,
+    description: params.description,
+    bathrooms: params.bathrooms,
+    longitude: params.longitude,
+    latitude: params.latitude,
+    bedrooms: params.bedrooms,
+    price: params.price,
+    size: params.size
   }
 
   useLayoutEffect(() => {
@@ -46,7 +48,7 @@ export default function MapsScreen() {
       headerLeft: () => (
         <TouchableOpacity
           onPress={() => {
-            router.replace({
+            router.push({
               pathname: '/(root)/(properties)/publish',
               params: {
                 ...sharedParams,

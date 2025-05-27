@@ -347,6 +347,7 @@ const PropertyView = () => {
             ellipsizeMode="tail">
             {property.type}
             <Text className="normal-case">
+              {' '}
               {property.operation === 'rent' ? 'for rent on' : 'for sale in'}{' '}
             </Text>
             {property.street} {property.street_number}, {property.locality}

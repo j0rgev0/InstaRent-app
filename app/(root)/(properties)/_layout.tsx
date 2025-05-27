@@ -2,15 +2,17 @@ import { Ionicons } from '@expo/vector-icons'
 import { router, Stack } from 'expo-router'
 import { Text, TouchableOpacity } from 'react-native'
 
-export default function RootLayout() {
+export default function PropertiesLayout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerTitleAlign: 'center',
+        animation: 'slide_from_right'
+      }}>
       <Stack.Screen
         name="publish"
         options={{
           headerShown: true,
-          animation: 'ios_from_left',
-          headerTitleAlign: 'center',
           headerTitle: 'Place your advert',
           headerLeft: () => ''
         }}
@@ -19,57 +21,74 @@ export default function RootLayout() {
       <Stack.Screen
         name="selectType"
         options={{
-          animation: 'slide_from_bottom',
-          headerTitleAlign: 'center',
-          headerTitle: 'Select Housing Type'
+          headerTitle: 'Select Housing Type',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
         }}
       />
 
       <Stack.Screen
         name="conservation"
         options={{
-          animation: 'slide_from_bottom',
-          headerTitleAlign: 'center',
-          headerTitle: 'Select Condition'
+          headerTitle: 'Select Condition',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
         }}
       />
 
       <Stack.Screen
         name="operationType"
         options={{
-          animation: 'slide_from_bottom',
-          headerTitleAlign: 'center',
-          headerTitle: 'Select Operation Type'
+          headerTitle: 'Select Operation Type',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
         }}
       />
 
       <Stack.Screen
         name="maps"
         options={{
-          animation: 'slide_from_bottom'
+          headerTitle: 'Select Location',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
         }}
       />
 
       <Stack.Screen
         name="addPictures"
         options={{
-          animation: 'none',
-          headerTitleAlign: 'center',
           headerTitle: 'Pictures & Features',
-          headerLeft: () => ''
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
         }}
       />
 
       <Stack.Screen
         name="myProperties"
         options={{
-          animation: 'none',
-          headerTitleAlign: 'center',
           headerTitle: 'My Properties',
           headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.replace('/(root)/(tabs)/profile')}
-              className="flex flex-row items-center">
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
               <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
               <Text className="text-lg text-blue-500">Back</Text>
             </TouchableOpacity>

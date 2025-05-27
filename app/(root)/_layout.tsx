@@ -1,12 +1,22 @@
-import React from 'react'
-
-import { Redirect, Stack } from 'expo-router'
-
 import { authClient } from '@/lib/auth-client'
+import { Redirect, Stack } from 'expo-router'
+import React from 'react'
+import { ActivityIndicator, View } from 'react-native'
 
 export default function RootLayout() {
-  const { data: session } = authClient.useSession()
-  if (!session) return <Redirect href={'/'} />
+  const { data: session, isPending } = authClient.useSession()
+
+  if (isPending) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    )
+  }
+
+  if (!session) {
+    return <Redirect href="/" />
+  }
 
   return (
     <Stack>
@@ -28,7 +38,7 @@ export default function RootLayout() {
       <Stack.Screen
         name="(properties)"
         options={{
-          headerTitle: 'Edit profile',
+          headerTitle: 'Properties',
           headerTitleAlign: 'center',
           headerShown: false
         }}
