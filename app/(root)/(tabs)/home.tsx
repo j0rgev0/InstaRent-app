@@ -930,7 +930,7 @@ const HomePage = () => {
                         </View>
                       ) : (
                         <View
-                          className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-64 rounded-full"
+                          className="overflow-hidden justify-center align-middle absolute mt-2 mb-3 bg-black/50 bottom-72 rounded-full"
                           style={{
                             height: DOT_SIZE * 3,
                             width:
