@@ -1007,7 +1007,14 @@ const HomePage = () => {
                   )}
                 </View>
 
-                <View className={`absolute p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}>
+                <ScrollView
+                  className={`absolute p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}
+                  style={{
+                    maxHeight: isExpanded ? height * 0.7 : 'auto',
+                    bottom: isExpanded ? 96 : 0,
+                    left: 0,
+                    right: 0
+                  }}>
                   <Text className="text-white text-2xl font-semibold capitalize">
                     {item.type}
                     <Text className="normal-case">
@@ -1047,7 +1054,7 @@ const HomePage = () => {
                       </Text>
                     </TouchableOpacity>
                   )}
-                </View>
+                </ScrollView>
               </View>
             </View>
           )
