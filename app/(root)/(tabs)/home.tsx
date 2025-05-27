@@ -25,6 +25,7 @@ import { Picker } from '@react-native-picker/picker'
 import '@/global.css'
 import {
   buildingFeaturesOptions,
+  departmentsOfFrance,
   interiorFeaturesOptions,
   outdoorFeaturesOptions,
   parkingTransportOptions,
@@ -301,8 +302,12 @@ const HomePage = () => {
     setFilters((prev) => {
       const selectedProvinces = prev.province
         .map((p) => {
-          const province = provincesOfSpain.find((prov) => prov.value === p)
-          return province ? province.label : ''
+          for (const country of prev.country) {
+            const provinces = getProvincesByCountry(country)
+            const province = provinces.find((prov) => prov.value === p)
+            if (province) return province.label
+          }
+          return ''
         })
         .filter(Boolean)
 
@@ -324,8 +329,29 @@ const HomePage = () => {
       const newCountry = isSelected
         ? prev.country.filter((t) => t !== value)
         : [...prev.country, value]
+
+      // Si se está deseleccionando un país, limpiar las provincias que pertenecen a ese país
+      if (isSelected) {
+        const provincesToKeep = prev.province.filter((province) => {
+          const countryProvinces = getProvincesByCountry(value)
+          return !countryProvinces.some((p) => p.value === province)
+        })
+        return { ...prev, country: newCountry, province: provincesToKeep }
+      }
+
       return { ...prev, country: newCountry }
     })
+  }
+
+  const getProvincesByCountry = (country: string) => {
+    switch (country) {
+      case 'spain':
+        return provincesOfSpain
+      case 'france':
+        return departmentsOfFrance
+      default:
+        return []
+    }
   }
 
   useFocusEffect(
@@ -374,7 +400,18 @@ const HomePage = () => {
           <Ionicons name="location-sharp" size={20} color="black" />
           <Text className="text-black text-base capitalize">
             {currentAddress ||
-              (filters.country.length > 0 ? filters.country[0] : 'No location selected')}
+              (filters.country.length > 0
+                ? (() => {
+                    const countries = filters.country.map(
+                      (c) => c.charAt(0).toUpperCase() + c.slice(1)
+                    )
+                    let displayText = countries.join(', ')
+                    if (displayText.length > MAX_DISPLAY_LENGTH) {
+                      displayText = displayText.substring(0, MAX_DISPLAY_LENGTH) + '...'
+                    }
+                    return displayText
+                  })()
+                : 'No location selected')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -440,25 +477,40 @@ const HomePage = () => {
 
           {showProvinceFilter && (
             <View>
-              <View style={{ maxHeight: 176 }}>
+              <View style={{ maxHeight: 200 }}>
                 <ScrollView>
-                  <View className="flex-row flex-wrap gap-2">
-                    {provincesOfSpain.map(({ label, value }) => {
-                      const isSelected = filters.province.includes(value)
-                      return (
-                        <TouchableOpacity
-                          key={value}
-                          onPress={() => updateSelectedProvince(value, isSelected)}
-                          className={`border rounded-2xl px-4 py-2 shadow-sm ${
-                            isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
-                          }`}>
-                          <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
-                            {label}
-                          </Text>
-                        </TouchableOpacity>
-                      )
-                    })}
-                  </View>
+                  {filters.country.map((country) => {
+                    const provinces = getProvincesByCountry(country)
+                    const countryLabel =
+                      suportCountries.find((c) => c.value === country)?.label || country
+
+                    return (
+                      <View key={country} className="mb-4">
+                        <Text className="text-lg font-semibold mb-2 capitalize">
+                          {countryLabel}
+                        </Text>
+                        <View className="flex-row flex-wrap gap-2">
+                          {provinces.map(({ label, value }) => {
+                            const isSelected = filters.province.includes(value)
+                            return (
+                              <TouchableOpacity
+                                key={value}
+                                onPress={() => updateSelectedProvince(value, isSelected)}
+                                className={`border rounded-2xl px-4 py-2 shadow-sm ${
+                                  isSelected
+                                    ? 'bg-darkBlue border-darkBlue'
+                                    : 'bg-white  border-darkBlue'
+                                }`}>
+                                <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
+                                  {label}
+                                </Text>
+                              </TouchableOpacity>
+                            )
+                          })}
+                        </View>
+                      </View>
+                    )
+                  })}
                 </ScrollView>
               </View>
             </View>
