@@ -320,8 +320,6 @@ const PublishPage = () => {
         parent.setOptions({ gestureEnabled: false })
       }
 
-      getCurrentLocation()
-
       if (latitude && longitude) {
         const parsedLat = Number(latitude)
         const parsedLng = Number(longitude)
