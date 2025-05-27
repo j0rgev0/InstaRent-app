@@ -29,7 +29,8 @@ import {
   outdoorFeaturesOptions,
   parkingTransportOptions,
   propertyTypes,
-  provincesOfSpain
+  provincesOfSpain,
+  suportCountries
 } from '@/utils/optionsData'
 
 const { height, width } = Dimensions.get('window')
@@ -61,8 +62,9 @@ const HomePage = () => {
   const [filters, setFilters] = useState({
     operation: '',
     type: [] as string[],
-    province: [] as string[],
     features: [] as string[],
+    province: [] as string[],
+    country: [] as string[],
     locality: ''
   })
 
@@ -73,6 +75,7 @@ const HomePage = () => {
   const [showLocalityFilter, setShowLocalityFilter] = useState(false)
   const [showFeaturesFilter, setShowFeaturesFilter] = useState(false)
   const [showLocationFilters, setShowLocationFilters] = useState(false)
+  const [showCountryFilters, setShowCountryFilters] = useState(false)
 
   const MAX_DISPLAY_LENGTH = 'Santa Cruz de Tenerife'.length + 3
 
@@ -205,6 +208,7 @@ const HomePage = () => {
     setFilters((prev) => ({
       ...prev,
       province: [],
+      country: [],
       locality: ''
     }))
     setCurrentAddress('')
@@ -241,21 +245,37 @@ const HomePage = () => {
         if (data.results && data.results.length > 0) {
           const result = data.results[0]
           let province = ''
+          let country = ''
 
           for (const component of result.address_components) {
             if (component.types.includes('administrative_area_level_2')) {
               province = component.long_name.toLowerCase()
-              break
+            }
+            if (component.types.includes('country')) {
+              country = component.long_name.toLowerCase()
             }
           }
 
+          console.log(country)
+
           if (province) {
             setCurrentAddress(province)
-            setFilters((prev) => ({ ...prev, province: [province] }))
-            lastGeocodeTime.current = now
+            setFilters((prev) => ({
+              ...prev,
+              province: [province],
+              country: country ? [country] : prev.country
+            }))
+          } else if (country) {
+            setCurrentAddress(country)
+            setFilters((prev) => ({
+              ...prev,
+              province: [],
+              country: [country]
+            }))
           } else {
             setCurrentAddress('Location not found')
           }
+          lastGeocodeTime.current = now
         } else {
           setCurrentAddress('Location not found')
         }
@@ -296,6 +316,15 @@ const HomePage = () => {
         setCurrentAddress('')
       }
       return prev
+    })
+  }
+
+  const updateSelectedCountry = (value: string, isSelected: boolean) => {
+    setFilters((prev) => {
+      const newCountry = isSelected
+        ? prev.country.filter((t) => t !== value)
+        : [...prev.country, value]
+      return { ...prev, country: newCountry }
     })
   }
 
@@ -344,7 +373,8 @@ const HomePage = () => {
           className="px-3 py-2 rounded-2xl flex-row items-center space-x-2 bg-white/80">
           <Ionicons name="location-sharp" size={20} color="black" />
           <Text className="text-black text-base capitalize">
-            {currentAddress || 'No location selected'}
+            {currentAddress ||
+              (filters.country.length > 0 ? filters.country[0] : 'No location selected')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -367,6 +397,40 @@ const HomePage = () => {
               <Text className="text-white font-semibold">Clear All</Text>
             </TouchableOpacity>
           </View>
+
+          <Pressable
+            onPress={() => setShowCountryFilters(!showCountryFilters)}
+            className="flex-row items-center pb-2">
+            <Text className="text-lg">Country</Text>
+            <Ionicons name={showCountryFilters ? 'chevron-up' : 'chevron-down'} size={20} />
+          </Pressable>
+
+          {showCountryFilters && (
+            <View>
+              <View style={{ maxHeight: 176 }}>
+                <ScrollView>
+                  <View className="flex-row flex-wrap gap-2">
+                    {suportCountries.map(({ label, value }) => {
+                      const isSelected = filters.country.includes(value)
+                      return (
+                        <TouchableOpacity
+                          key={value}
+                          onPress={() => updateSelectedCountry(value, isSelected)}
+                          className={`border rounded-2xl px-4 py-2 shadow-sm ${
+                            isSelected ? 'bg-darkBlue border-darkBlue' : 'bg-white  border-darkBlue'
+                          }`}>
+                          <Text className={`capitalize ${isSelected ? 'text-white' : ''}`}>
+                            {label}
+                          </Text>
+                        </TouchableOpacity>
+                      )
+                    })}
+                  </View>
+                </ScrollView>
+              </View>
+            </View>
+          )}
+
           <Pressable
             onPress={() => setShowProvinceFilter(!showProvinceFilter)}
             className="flex-row items-center pb-2">
