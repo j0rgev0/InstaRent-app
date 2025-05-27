@@ -27,20 +27,6 @@ const EdituserPage = () => {
   // @ts-ignore
   const [username, setUsername] = useState(session?.user.username || '')
 
-  useFocusEffect(
-    useCallback(() => {
-      const parent = navigation.getParent()
-      if (parent) {
-        parent.setOptions({ gestureEnabled: false })
-      }
-      return () => {
-        if (parent) {
-          parent.setOptions({ gestureEnabled: true })
-        }
-      }
-    }, [])
-  )
-
   const showImageOptions = () => {
     if (session?.user.image) {
       Alert.alert('Profile Image', 'What would you like to do?', [
@@ -241,6 +227,20 @@ const EdituserPage = () => {
     useCallback(() => {
       if (Platform.OS === 'web') {
         document.title = 'Edit Profile'
+      }
+    }, [])
+  )
+
+  useFocusEffect(
+    useCallback(() => {
+      const parent = navigation.getParent()
+      if (parent) {
+        parent.setOptions({ gestureEnabled: false })
+      }
+      return () => {
+        if (parent) {
+          parent.setOptions({ gestureEnabled: true })
+        }
       }
     }, [])
   )

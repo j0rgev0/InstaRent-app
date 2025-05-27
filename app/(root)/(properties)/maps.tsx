@@ -48,7 +48,7 @@ export default function MapsScreen() {
       headerLeft: () => (
         <TouchableOpacity
           onPress={() => {
-            router.push({
+            router.replace({
               pathname: '/(root)/(properties)/publish',
               params: {
                 ...sharedParams,
