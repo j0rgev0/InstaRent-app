@@ -397,15 +397,6 @@ const HomePage = () => {
                   </View>
                 </ScrollView>
               </View>
-              <TouchableOpacity
-                onPress={getCurrentLocation}
-                disabled={isLoadingLocation}
-                className="flex-row items-center space-x-2 mt-2">
-                <Ionicons name="location" size={20} color={isLoadingLocation ? '#999' : '#000'} />
-                <Text style={{ color: isLoadingLocation ? '#999' : '#000' }}>
-                  {isLoadingLocation ? 'Getting location...' : 'Use current province'}
-                </Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -429,6 +420,16 @@ const HomePage = () => {
               />
             </View>
           )}
+
+          <TouchableOpacity
+            onPress={getCurrentLocation}
+            disabled={isLoadingLocation}
+            className="flex-row items-center space-x-2 mt-2">
+            <Ionicons name="location" size={20} color={isLoadingLocation ? '#999' : '#000'} />
+            <Text style={{ color: isLoadingLocation ? '#999' : '#000' }}>
+              {isLoadingLocation ? 'Getting location...' : 'Use current location'}
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => {
