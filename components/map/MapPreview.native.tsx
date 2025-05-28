@@ -38,11 +38,6 @@ const MapViewComponent = ({
     })
   }, [initialLatitude, initialLongitude])
 
-  const handleMarkerDragEnd = (e: any) => {
-    const { latitude, longitude } = e.nativeEvent.coordinate
-    setMarkerCoords({ latitude, longitude })
-  }
-
   const latitudeDelta = showMarker ? 0.001 : 6.0
   const longitudeDelta = showMarker ? 0.001 : 6.0
 
@@ -68,15 +63,13 @@ const MapViewComponent = ({
           longitude: markerCoords.longitude,
           latitudeDelta,
           longitudeDelta
-        }}
-        onMarkerDragEnd={handleMarkerDragEnd}>
+        }}>
         {showMarker && (
           <Marker
             coordinate={{
               latitude: markerCoords.latitude,
               longitude: markerCoords.longitude
             }}
-            draggable
             title={title}
             description={description}>
             <View className="items-center -mb-1">
