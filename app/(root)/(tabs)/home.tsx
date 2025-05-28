@@ -850,8 +850,8 @@ const HomePage = () => {
                         </ScrollView>
                       )}
 
-                      {Platform.OS === 'web' ? (
-                        <View className="flex-row justify-center absolute items-center mt-2 mb-3 bottom-60 left-5 space-x-2">
+                      {Platform.OS === 'web' ? (  
+                        <View className="flex-row justify-center absolute items-center mt-2 mb-3 bottom-64 left-5 space-x-2">
                           <TouchableOpacity
                             className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
                             disabled={currentIndexes[item.id] === 0}
@@ -1007,54 +1007,61 @@ const HomePage = () => {
                   )}
                 </View>
 
-                <ScrollView
-                  className={`absolute p-5 pb-24 ${isExpanded ? 'bg-black/40' : ''}`}
-                  style={{
-                    maxHeight: isExpanded ? height * 0.7 : 'auto',
-                    bottom: isExpanded ? 96 : 0,
-                    left: 0,
-                    right: 0
-                  }}>
-                  <Text className="text-white text-2xl font-semibold capitalize">
-                    {item.type}
-                    <Text className="normal-case">
-                      {item.operation === 'sell' ? ' for sale' : ' for rent'}
+                <View className="absolute bottom-24 left-0 right-0">
+                  <ScrollView
+                    className={`px-5 ${isExpanded ? 'bg-black/40' : ''}`}
+                    style={{
+                      maxHeight: isExpanded ? height * 0.6 : 'auto'
+                    }}
+                    scrollEnabled={isExpanded}
+                    nestedScrollEnabled={true}
+                    onTouchStart={(e) => {
+                      e.stopPropagation()
+                    }}
+                    onTouchMove={(e) => {
+                      e.stopPropagation()
+                    }}>
+                    <Text className="text-white text-2xl font-semibold capitalize">
+                      {item.type}
+                      <Text className="normal-case">
+                        {item.operation === 'sell' ? ' for sale' : ' for rent'}
+                      </Text>
                     </Text>
-                  </Text>
 
-                  <Text className="text-white mt-1 text-base capitalize">
-                    {item.street} {item.street_number}, {item.locality}
-                  </Text>
+                    <Text className="text-white mt-1 text-base capitalize">
+                      {item.street} {item.street_number}, {item.locality}
+                    </Text>
 
-                  <View className="flex-row flex-wrap gap-4">
-                    <View className="flex-row items-center gap-1">
-                      <Text className="text-white text-base">
-                        €{item.price.toLocaleString()}
-                        {item.operation === 'sell' ? '' : ' / month'}
-                      </Text>
+                    <View className="flex-row flex-wrap gap-4">
+                      <View className="flex-row items-center gap-1">
+                        <Text className="text-white text-base">
+                          €{item.price.toLocaleString()}
+                          {item.operation === 'sell' ? '' : ' / month'}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center gap-1">
+                        <Ionicons name="resize-outline" size={18} color="white" />
+                        <Text className="text-white">{item.size} m²</Text>
+                      </View>
                     </View>
-                    <View className="flex-row items-center gap-1">
-                      <Ionicons name="resize-outline" size={18} color="white" />
-                      <Text className="text-white">{item.size} m²</Text>
-                    </View>
-                  </View>
 
-                  <Text className="text-white mt-1 text-lg font-bold">
-                    {isExpanded
-                      ? description
-                      : description.length > maxLength
-                        ? description.slice(0, maxLength) + '...'
-                        : description}
-                  </Text>
+                    <Text className="text-white mt-1 text-lg font-bold">
+                      {isExpanded
+                        ? description
+                        : description.length > maxLength
+                          ? description.slice(0, maxLength) + '...'
+                          : description}
+                    </Text>
 
-                  {description.length > maxLength && (
-                    <TouchableOpacity onPress={() => toggleDescription(item.id)}>
-                      <Text className="text-blue-400 mt-1 font-semibold">
-                        {isExpanded ? 'Show less' : 'Show more'}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </ScrollView>
+                    {description.length > maxLength && (
+                      <TouchableOpacity onPress={() => toggleDescription(item.id)}>
+                        <Text className="text-blue-400 mt-1 font-semibold">
+                          {isExpanded ? 'Show less' : 'Show more'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </ScrollView>
+                </View>
               </View>
             </View>
           )
