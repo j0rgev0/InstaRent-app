@@ -1,3 +1,4 @@
+import Slider from '@react-native-community/slider'
 import * as Location from 'expo-location'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useRef, useState } from 'react'
@@ -66,7 +67,11 @@ const HomePage = () => {
     features: [] as string[],
     province: [] as string[],
     country: [] as string[],
-    locality: ''
+    locality: '',
+    minSize: '',
+    maxSize: '',
+    minPrice: '',
+    maxPrice: ''
   })
 
   const [showFilters, setShowFilters] = useState(false)
@@ -77,8 +82,30 @@ const HomePage = () => {
   const [showFeaturesFilter, setShowFeaturesFilter] = useState(false)
   const [showLocationFilters, setShowLocationFilters] = useState(false)
   const [showCountryFilters, setShowCountryFilters] = useState(false)
+  const [showSizeFilter, setShowSizeFilter] = useState(false)
+  const [showPriceFilter, setShowPriceFilter] = useState(false)
+
+  const [priceRange, setPriceRange] = useState({
+    min: 0,
+    max: 9999999
+  })
 
   const MAX_DISPLAY_LENGTH = 30
+
+  const getMaxPrice = () => {
+    return filters.operation === 'rent' ? 10000 : 9999999
+  }
+
+  const getStepSize = () => {
+    return filters.operation === 'rent' ? 100 : 1000
+  }
+
+  const formatPrice = (value: number) => {
+    if (filters.operation === 'rent') {
+      return `€${value.toLocaleString()}/month`
+    }
+    return `€${value.toLocaleString()}`
+  }
 
   const fetchProperties = async () => {
     try {
@@ -88,7 +115,11 @@ const HomePage = () => {
         if (Array.isArray(value)) {
           value.forEach((v) => queryParams.append(key, v))
         } else if (value !== '') {
-          queryParams.append(key, value)
+          if (key === 'minSize' || key === 'maxSize') {
+            queryParams.append(key, value)
+          } else {
+            queryParams.append(key, value)
+          }
         }
       })
 
@@ -199,8 +230,16 @@ const HomePage = () => {
       ...prev,
       operation: '',
       type: [],
-      features: []
+      features: [],
+      minSize: '',
+      maxSize: '',
+      minPrice: '',
+      maxPrice: ''
     }))
+    setPriceRange({
+      min: 0,
+      max: 9999999
+    })
     fetchProperties()
   }
 
@@ -367,6 +406,14 @@ const HomePage = () => {
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     )
   }
+
+  React.useEffect(() => {
+    const maxPrice = getMaxPrice()
+    setPriceRange((prev) => ({
+      min: Math.min(prev.min, maxPrice),
+      max: Math.min(prev.max, maxPrice)
+    }))
+  }, [filters.operation])
 
   return (
     <View className={`flex-1 bg-black ${refreshing ? 'pt-10' : ''}`}>
@@ -753,6 +800,96 @@ const HomePage = () => {
             </ScrollView>
           )}
 
+          <Pressable
+            onPress={() => setShowSizeFilter(!showSizeFilter)}
+            className="flex-row items-center pb-2">
+            <Text className="text-lg">Size Range (m²)</Text>
+            <Ionicons name={showSizeFilter ? 'chevron-up' : 'chevron-down'} size={20} />
+          </Pressable>
+
+          {showSizeFilter && (
+            <View className="flex-row items-center space-x-2 mb-4">
+              <View className="flex-1">
+                <Text className="text-sm mb-1">Min Size</Text>
+                <TextInput
+                  className="px-4 py-2 border border-gray-300 rounded-2xl bg-gray-100 text-base"
+                  placeholder="Min size"
+                  keyboardType="numeric"
+                  value={filters.minSize}
+                  onChangeText={(value) => setFilters((prev) => ({ ...prev, minSize: value }))}
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm mb-1">Max Size</Text>
+                <TextInput
+                  className="px-4 py-2 border border-gray-300 rounded-2xl bg-gray-100 text-base"
+                  placeholder="Max size"
+                  keyboardType="numeric"
+                  value={filters.maxSize}
+                  onChangeText={(value) => setFilters((prev) => ({ ...prev, maxSize: value }))}
+                />
+              </View>
+            </View>
+          )}
+
+          <Pressable
+            onPress={() => setShowPriceFilter(!showPriceFilter)}
+            className="flex-row items-center pb-2">
+            <Text className="text-lg">Price Range (€)</Text>
+            <Ionicons name={showPriceFilter ? 'chevron-up' : 'chevron-down'} size={20} />
+          </Pressable>
+
+          {showPriceFilter && (
+            <View className="mb-4 px-2">
+              <View className="flex-row justify-between mb-2">
+                <Text className="text-base">Min: {formatPrice(priceRange.min)}</Text>
+                <Text className="text-base">Max: {formatPrice(priceRange.max)}</Text>
+              </View>
+              <View className="flex-row items-center space-x-4">
+                <Slider
+                  style={{ flex: 1, height: 40 }}
+                  minimumValue={0}
+                  maximumValue={getMaxPrice()}
+                  step={getStepSize()}
+                  value={priceRange.min}
+                  onValueChange={(value: number) => {
+                    setPriceRange((prev) => ({
+                      ...prev,
+                      min: Math.min(value, prev.max - getStepSize())
+                    }))
+                    setFilters((prev) => ({
+                      ...prev,
+                      minPrice: value.toString()
+                    }))
+                  }}
+                  minimumTrackTintColor="#1E3A8A"
+                  maximumTrackTintColor="#000000"
+                  thumbTintColor="#1E3A8A"
+                />
+                <Slider
+                  style={{ flex: 1, height: 40 }}
+                  minimumValue={0}
+                  maximumValue={getMaxPrice()}
+                  step={getStepSize()}
+                  value={priceRange.max}
+                  onValueChange={(value: number) => {
+                    setPriceRange((prev) => ({
+                      ...prev,
+                      max: Math.max(value, prev.min + getStepSize())
+                    }))
+                    setFilters((prev) => ({
+                      ...prev,
+                      maxPrice: value.toString()
+                    }))
+                  }}
+                  minimumTrackTintColor="#1E3A8A"
+                  maximumTrackTintColor="#000000"
+                  thumbTintColor="#1E3A8A"
+                />
+              </View>
+            </View>
+          )}
+
           <TouchableOpacity onPress={handleApplyFilters} className="bg-darkBlue p-3 rounded-2xl">
             <Text className="text-white text-center font-bold">Apply Filters</Text>
           </TouchableOpacity>
@@ -850,7 +987,7 @@ const HomePage = () => {
                         </ScrollView>
                       )}
 
-                      {Platform.OS === 'web' ? (  
+                      {Platform.OS === 'web' ? (
                         <View className="flex-row justify-center absolute items-center mt-2 mb-3 bottom-64 left-5 space-x-2">
                           <TouchableOpacity
                             className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
@@ -1034,10 +1171,7 @@ const HomePage = () => {
 
                     <View className="flex-row flex-wrap gap-4">
                       <View className="flex-row items-center gap-1">
-                        <Text className="text-white text-base">
-                          €{item.price.toLocaleString()}
-                          {item.operation === 'sell' ? '' : ' / month'}
-                        </Text>
+                        <Text className="text-white text-base">{formatPrice(item.price)}</Text>
                       </View>
                       <View className="flex-row items-center gap-1">
                         <Ionicons name="resize-outline" size={18} color="white" />
