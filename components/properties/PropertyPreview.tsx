@@ -316,7 +316,7 @@ const PropertyPreview = ({
               source={
                 property.images[0]?.url
                   ? { uri: property.images[0].url }
-                  : require('../../assets/images/NotAvalibleImg3.png')
+                  : require('../../assets/images/NotAvalibleImg.png')
               }
               className="w-full h-72"
               resizeMode="cover"
@@ -369,7 +369,7 @@ const PropertyPreview = ({
               source={
                 property.images[0]?.url
                   ? { uri: property.images[0].url }
-                  : require('../../assets/images/NotAvalibleImg3.png')
+                  : require('../../assets/images/NotAvalibleImg.png')
               }
               className={'w-full h-48 rounded-t-2xl'}
               resizeMode="cover"

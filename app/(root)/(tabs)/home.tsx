@@ -996,7 +996,7 @@ const HomePage = () => {
                   ) : (
                     <View className="justify-center items-center">
                       <Image
-                        source={require('@/assets/images/NotAvalibleImg3.png')}
+                        source={require('@/assets/images/NotAvalibleImg.png')}
                         style={{
                           width: width,
                           height: height,

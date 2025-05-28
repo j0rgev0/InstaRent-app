@@ -352,7 +352,7 @@ const PropertyView = () => {
         ) : (
           <View className="w-full h-60 bg-gray-200 justify-center items-center mb-4">
             <Image
-              source={require('@/assets/images/NotAvalibleImg3.png')}
+              source={require('@/assets/images/NotAvalibleImg.png')}
               style={{ maxWidth: 500, maxHeight: 300, width: '100%' }}
             />
           </View>
