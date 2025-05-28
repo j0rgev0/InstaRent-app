@@ -862,9 +862,9 @@ const HomePage = () => {
                       minPrice: value.toString()
                     }))
                   }}
-                  minimumTrackTintColor="#1E3A8A"
-                  maximumTrackTintColor="#000000"
-                  thumbTintColor="#1E3A8A"
+                  minimumTrackTintColor="#353949"
+                  maximumTrackTintColor="#fff"
+                  thumbTintColor="#353949"
                 />
                 <Slider
                   style={{ flex: 1, height: 40 }}
@@ -882,9 +882,9 @@ const HomePage = () => {
                       maxPrice: value.toString()
                     }))
                   }}
-                  minimumTrackTintColor="#1E3A8A"
-                  maximumTrackTintColor="#000000"
-                  thumbTintColor="#1E3A8A"
+                  minimumTrackTintColor="#353949"
+                  maximumTrackTintColor="#fff"
+                  thumbTintColor="#353949"
                 />
               </View>
             </View>
