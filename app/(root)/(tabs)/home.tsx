@@ -982,6 +982,27 @@ const HomePage = () => {
                           pagingEnabled
                           showsHorizontalScrollIndicator={false}
                           scrollEventThrottle={16}
+                          onMomentumScrollEnd={(event) => {
+                            const offsetX = event.nativeEvent.contentOffset.x
+                            const pageIndex = Math.round(offsetX / width)
+                            const maxIndex = item.images.length - 1
+                            const lastPageOffset = maxIndex * width
+                            const overscrollThreshold = 30
+
+                            if (pageIndex >= maxIndex) {
+                              const overscroll = offsetX - lastPageOffset
+
+                              if (overscroll > overscrollThreshold) {
+                                handleViewProperty()
+                                return
+                              }
+                            }
+
+                            setCurrentIndexes((prev) => ({
+                              ...prev,
+                              [item.id]: pageIndex
+                            }))
+                          }}
                           onScroll={Animated.event(
                             [{ nativeEvent: { contentOffset: { x: getScrollX(item.id) } } }],
                             {
