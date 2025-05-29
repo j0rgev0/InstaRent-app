@@ -47,7 +47,7 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   tab: {
-    backgroundColor: Platform.OS !== 'android'  ? 'transparent' : 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: Platform.OS !== 'android' ? 'transparent' : 'rgba(255, 255, 255, 0.8)',
     position: 'absolute',
     borderRadius: 30,
     paddingTop: 10,
