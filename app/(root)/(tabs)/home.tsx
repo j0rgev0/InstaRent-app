@@ -1,6 +1,3 @@
-import Slider from '@react-native-community/slider'
-import * as Location from 'expo-location'
-import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useRef, useState } from 'react'
 import {
   Animated,
@@ -18,12 +15,15 @@ import {
   View
 } from 'react-native'
 
-import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
-import { Property } from '@/utils/types'
-import Ionicons from '@expo/vector-icons/build/Ionicons'
+import * as Location from 'expo-location'
+import { router, useFocusEffect } from 'expo-router'
+
+import Slider from '@react-native-community/slider'
 import { Picker } from '@react-native-picker/picker'
 
-import '@/global.css'
+import Ionicons from '@expo/vector-icons/build/Ionicons'
+
+import { GOOGLE_MAPS_API_KEY, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import {
   buildingFeaturesOptions,
   departmentsOfFrance,
@@ -34,13 +34,16 @@ import {
   provincesOfSpain,
   suportCountries
 } from '@/utils/optionsData'
+import { Property } from '@/utils/types'
 
-const { height, width } = Dimensions.get('window')
+import '@/global.css'
 
 const VISIBLE_DOTS = 5
 const DOT_SIZE = 8
 const DOT_SPACING = 4
 const DOT_CONTAINER_WIDTH = VISIBLE_DOTS * (DOT_SIZE + DOT_SPACING)
+
+const { height, width } = Dimensions.get('window')
 
 const HomePage = () => {
   const [properties, setProperties] = useState<Property[]>([])
@@ -918,6 +921,15 @@ const HomePage = () => {
           const maxLength = 70
           const description = item.description
 
+          const handleViewProperty = () => {
+            router.push({
+              pathname: '/(root)/(properties)/propertyView',
+              params: {
+                propertyId: item.id
+              }
+            })
+          }
+
           return (
             <View style={{ height }}>
               <View className="h-full w-full bg-black justify-end">
@@ -981,7 +993,11 @@ const HomePage = () => {
                             <Image
                               key={item.id}
                               source={{ uri: item.url }}
-                              style={{ width: width, height: height, resizeMode: 'contain' }}
+                              style={{
+                                width: width,
+                                height: height,
+                                resizeMode: 'contain'
+                              }}
                             />
                           ))}
                         </ScrollView>
@@ -1146,7 +1162,7 @@ const HomePage = () => {
 
                 <View className="absolute bottom-24 left-0 right-0">
                   <ScrollView
-                    className={`px-5 ${isExpanded ? 'bg-black/40' : ''}`}
+                    className={`px-5 pt-5 ${isExpanded ? 'bg-black/40' : ''}`}
                     style={{
                       maxHeight: isExpanded ? height * 0.6 : 'auto'
                     }}
@@ -1158,12 +1174,14 @@ const HomePage = () => {
                     onTouchMove={(e) => {
                       e.stopPropagation()
                     }}>
-                    <Text className="text-white text-2xl font-semibold capitalize">
-                      {item.type}
-                      <Text className="normal-case">
-                        {item.operation === 'sell' ? ' for sale' : ' for rent'}
+                    <TouchableOpacity activeOpacity={0.8} onPress={handleViewProperty}>
+                      <Text className="text-white text-2xl font-semibold capitalize">
+                        {item.type}
+                        <Text className="normal-case">
+                          {item.operation === 'sell' ? ' for sale' : ' for rent'}
+                        </Text>
                       </Text>
-                    </Text>
+                    </TouchableOpacity>
 
                     <Text className="text-white mt-1 text-base capitalize">
                       {item.street} {item.street_number}, {item.locality}
