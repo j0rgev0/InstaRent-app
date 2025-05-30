@@ -53,13 +53,11 @@ const HomePage = () => {
   )
   const [currentAddress, setCurrentAddress] = useState<string>('')
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
-  const [navigatedProperties, setNavigatedProperties] = useState<Set<string>>(new Set())
   const lastGeocodeTime = useRef<number>(0)
   const GEOCODE_COOLDOWN = 2000
   const lastNavigationTime = useRef<number>(0)
-  const NAVIGATION_COOLDOWN = 1000 // 1 segundo de cooldown entre navegaciones
+  const NAVIGATION_COOLDOWN = 1000
 
-  const imageScrollRef = useRef<ScrollView>(null)
   const [currentIndexes, setCurrentIndexes] = useState<{ [key: string]: number }>({})
   const imageScrollRefs = useRef<{ [key: string]: ScrollView | null }>({})
   const scrollXRefs = useRef<{ [key: string]: Animated.Value }>({})
@@ -1029,7 +1027,6 @@ const HomePage = () => {
                                 [item.id]: pageIndex
                               }))
 
-                              // Si estamos en la última imagen, asegurarnos de que volvemos a ella
                               if (pageIndex >= maxIndex) {
                                 const scrollRef = imageScrollRefs.current[item.id]
                                 if (scrollRef) {
