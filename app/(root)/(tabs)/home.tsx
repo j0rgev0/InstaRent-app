@@ -53,8 +53,11 @@ const HomePage = () => {
   )
   const [currentAddress, setCurrentAddress] = useState<string>('')
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [navigatedProperties, setNavigatedProperties] = useState<Set<string>>(new Set())
   const lastGeocodeTime = useRef<number>(0)
   const GEOCODE_COOLDOWN = 2000
+  const lastNavigationTime = useRef<number>(0)
+  const NAVIGATION_COOLDOWN = 1000 // 1 segundo de cooldown entre navegaciones
 
   const imageScrollRef = useRef<ScrollView>(null)
   const [currentIndexes, setCurrentIndexes] = useState<{ [key: string]: number }>({})
@@ -417,6 +420,21 @@ const HomePage = () => {
       max: Math.min(prev.max, maxPrice)
     }))
   }, [filters.operation])
+
+  const handleViewProperty = (propertyId: string) => {
+    const now = Date.now()
+    if (now - lastNavigationTime.current < NAVIGATION_COOLDOWN) {
+      return
+    }
+    lastNavigationTime.current = now
+
+    router.push({
+      pathname: '/(root)/(properties)/propertyView',
+      params: {
+        propertyId
+      }
+    })
+  }
 
   return (
     <View className={`flex-1 bg-black ${refreshing ? 'pt-10' : ''}`}>
@@ -921,15 +939,6 @@ const HomePage = () => {
           const maxLength = 70
           const description = item.description
 
-          const handleViewProperty = () => {
-            router.push({
-              pathname: '/(root)/(properties)/propertyView',
-              params: {
-                propertyId: item.id
-              }
-            })
-          }
-
           return (
             <View style={{ height }}>
               <View className="h-full w-full bg-black justify-end">
@@ -976,51 +985,80 @@ const HomePage = () => {
                           ))}
                         </ScrollView>
                       ) : (
-                        <ScrollView
-                          ref={imageScrollRef}
-                          horizontal
-                          pagingEnabled
-                          showsHorizontalScrollIndicator={false}
-                          scrollEventThrottle={1}
-                          scrollEnabled={true}
-                          bounces={false}
-                          onScroll={Animated.event(
-                            [{ nativeEvent: { contentOffset: { x: getScrollX(item.id) } } }],
-                            {
-                              useNativeDriver: false,
-                              listener: (event: any) => {
-                                const offsetX = event.nativeEvent.contentOffset.x
-                                const index = Math.floor(offsetX / width)
+                        <View>
+                          <ScrollView
+                            ref={(ref) => {
+                              imageScrollRefs.current[item.id] = ref
+                              initializeScrollValues(item)
+                            }}
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            scrollEventThrottle={16}
+                            bounces={true}
+                            onScroll={Animated.event(
+                              [{ nativeEvent: { contentOffset: { x: getScrollX(item.id) } } }],
+                              {
+                                useNativeDriver: false,
+                                listener: (event: any) => {
+                                  const offsetX = event.nativeEvent.contentOffset.x
+                                  const index = Math.floor(offsetX / width)
+                                  const maxIndex = item.images.length - 1
+                                  const lastPageOffset = maxIndex * width
+                                  const overscrollThreshold = 30
 
-                                if (index >= item.images.length - 1) {
-                                  imageScrollRef.current?.scrollTo({
-                                    x: (item.images.length - 1) * width,
-                                    animated: false
+                                  if (index >= maxIndex) {
+                                    const overscroll = offsetX - lastPageOffset
+                                    if (overscroll > overscrollThreshold) {
+                                      handleViewProperty(item.id)
+                                      return
+                                    }
+                                  }
+
+                                  onScroll(event, item)
+                                }
+                              }
+                            )}
+                            onMomentumScrollEnd={(event) => {
+                              const offsetX = event.nativeEvent.contentOffset.x
+                              const pageIndex = Math.round(offsetX / width)
+                              const maxIndex = item.images.length - 1
+
+                              setCurrentIndexes((prev) => ({
+                                ...prev,
+                                [item.id]: pageIndex
+                              }))
+
+                              // Si estamos en la última imagen, asegurarnos de que volvemos a ella
+                              if (pageIndex >= maxIndex) {
+                                const scrollRef = imageScrollRefs.current[item.id]
+                                if (scrollRef) {
+                                  scrollRef.scrollTo({
+                                    x: maxIndex * width,
+                                    animated: true
                                   })
                                 }
-
-                                onScroll(event, item)
                               }
-                            }
-                          )}>
-                          {item.images.map((item) => (
-                            <Image
-                              key={item.id}
-                              source={{ uri: item.url }}
-                              style={{
-                                width: width,
-                                height: height,
-                                resizeMode: 'contain'
-                              }}
-                            />
-                          ))}
-                        </ScrollView>
+                            }}>
+                            {item.images.map((img) => (
+                              <Image
+                                key={img.id}
+                                source={{ uri: img.url }}
+                                style={{
+                                  width: width,
+                                  height: height,
+                                  resizeMode: 'contain'
+                                }}
+                              />
+                            ))}
+                          </ScrollView>
+                        </View>
                       )}
 
                       {Platform.OS === 'web' ? (
                         <View className="flex-row justify-center absolute items-center mt-2 mb-3 bottom-64 left-5 space-x-2">
                           <TouchableOpacity
-                            className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                            className="bg-darkBlue px-3 py-1 rounded-lg disabled:opacity-50"
                             disabled={currentIndexes[item.id] === 0}
                             onPress={() => goToImage((currentIndexes[item.id] || 0) - 1, item)}>
                             <Ionicons name="chevron-back" size={16} color="white" />
@@ -1089,7 +1127,7 @@ const HomePage = () => {
                           </View>
 
                           <TouchableOpacity
-                            className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                            className="bg-darkBlue px-3 py-1 rounded-lg disabled:opacity-50"
                             disabled={currentIndexes[item.id] === item.images.length - 1}
                             onPress={() => goToImage((currentIndexes[item.id] || 0) + 1, item)}>
                             <Ionicons name="chevron-forward" size={16} color="white" />
@@ -1161,15 +1199,38 @@ const HomePage = () => {
                       )}
                     </View>
                   ) : (
-                    <View className="justify-center items-center">
-                      <Image
-                        source={require('@/assets/images/NotAvalibleImg.png')}
-                        style={{
-                          width: width,
-                          height: height,
-                          resizeMode: 'contain'
+                    <View>
+                      <ScrollView
+                        ref={(ref) => {
+                          imageScrollRefs.current[item.id] = ref
+                          initializeScrollValues(item)
                         }}
-                      />
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        scrollEventThrottle={16}
+                        bounces={true}
+                        onScroll={Animated.event(
+                          [{ nativeEvent: { contentOffset: { x: getScrollX(item.id) } } }],
+                          {
+                            useNativeDriver: false,
+                            listener: (event: any) => {
+                              const offsetX = event.nativeEvent.contentOffset.x
+                              if (offsetX > 30) {
+                                handleViewProperty(item.id)
+                              }
+                            }
+                          }
+                        )}>
+                        <Image
+                          source={require('@/assets/images/NotAvalibleImg.png')}
+                          style={{
+                            width: width,
+                            height: height,
+                            resizeMode: 'contain'
+                          }}
+                        />
+                      </ScrollView>
                     </View>
                   )}
                 </View>
@@ -1188,7 +1249,9 @@ const HomePage = () => {
                     onTouchMove={(e) => {
                       e.stopPropagation()
                     }}>
-                    <TouchableOpacity activeOpacity={0.8} onPress={handleViewProperty}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => handleViewProperty(item.id)}>
                       <Text className="text-white text-2xl font-semibold capitalize">
                         {item.type}
                         <Text className="normal-case">

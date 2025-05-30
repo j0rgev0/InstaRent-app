@@ -74,6 +74,21 @@ export default function RootLayout() {
           )
         }}
       />
+
+      <Stack.Screen
+        name="propertyView"
+        options={{
+          animation: 'none',
+          headerTitleAlign: 'center',
+          headerTitle: 'Property Details',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+              <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+              <Text className="text-lg text-blue-500">Back</Text>
+            </TouchableOpacity>
+          )
+        }}
+      />
     </Stack>
   )
 }
