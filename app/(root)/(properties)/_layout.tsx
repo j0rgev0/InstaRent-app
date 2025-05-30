@@ -80,7 +80,7 @@ export default function RootLayout() {
         options={{
           animation: 'none',
           headerTitleAlign: 'center',
-          headerTitle: 'Property Details',
+          headerTitle: 'My Properties',
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
               <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
