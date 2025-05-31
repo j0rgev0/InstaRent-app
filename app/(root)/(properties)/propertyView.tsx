@@ -13,6 +13,7 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
+  StatusBar,
   Text,
   TouchableOpacity,
   View,
@@ -98,6 +99,15 @@ const PropertyView = () => {
     }
   }
 
+  const handleChat = () => {
+    router.push({
+      pathname: '/(root)/(chat)/chat',
+      params: {
+        userid: property?.user_id
+      }
+    })
+  }
+
   const fetchProperty = async () => {
     if (!propertyId) return
     try {
@@ -179,6 +189,8 @@ const PropertyView = () => {
 
   useFocusEffect(
     useCallback(() => {
+      StatusBar.setBarStyle('dark-content', true)
+
       if (Platform.OS === 'web') {
         document.title = 'Property Details'
       }
@@ -196,6 +208,45 @@ const PropertyView = () => {
       </View>
     )
   }
+
+  const EditModal = () => (
+    <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+      <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+        <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: '/(root)/(properties)/addPictures',
+              params: {
+                propertyId,
+                edit: 'true'
+              }
+            })
+          }}
+          className="bg-yellow-500 p-3 rounded-lg">
+          <Text className="text-white text-center font-semibold">Change images & features</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: '/(root)/(properties)/publish',
+              params: {
+                ...sharedParams,
+                edit: 'true'
+              }
+            })
+          }}
+          className="bg-darkBlue p-3 rounded-lg">
+          <Text className="text-white text-center font-semibold">Edit general information</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setEditModalVisible(false)}
+          className="mt-2 p-2 rounded-lg border border-gray-300">
+          <Text className="text-center text-darkBlue">Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
 
   const renderContent = () => (
     <>
@@ -513,50 +564,13 @@ const PropertyView = () => {
           <Text className="text-white text-base font-medium">Edit</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity className="bg-darkBlue rounded-xl p-4 items-center mt-4">
+        <TouchableOpacity
+          onPress={handleChat}
+          className="bg-darkBlue rounded-xl p-4 items-center mt-4">
           <Text className="text-white text-base font-medium">Contact Owner</Text>
         </TouchableOpacity>
       )}
     </>
-  )
-
-  const EditModal = () => (
-    <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
-      <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
-        <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
-        <TouchableOpacity
-          onPress={() => {
-            router.push({
-              pathname: '/(root)/(properties)/addPictures',
-              params: {
-                propertyId,
-                edit: 'true'
-              }
-            })
-          }}
-          className="bg-yellow-500 p-3 rounded-lg">
-          <Text className="text-white text-center font-semibold">Change images & features</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => {
-            router.push({
-              pathname: '/(root)/(properties)/publish',
-              params: {
-                ...sharedParams,
-                edit: 'true'
-              }
-            })
-          }}
-          className="bg-darkBlue p-3 rounded-lg">
-          <Text className="text-white text-center font-semibold">Edit general information</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setEditModalVisible(false)}
-          className="mt-2 p-2 rounded-lg border border-gray-300">
-          <Text className="text-center text-darkBlue">Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
   )
 
   return Platform.OS === 'web' ? (
