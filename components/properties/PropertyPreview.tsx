@@ -244,6 +244,7 @@ const PropertyPreview = ({
       </View>
     </View>
   )
+
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleKeyDown = (e: KeyboardEvent) => {

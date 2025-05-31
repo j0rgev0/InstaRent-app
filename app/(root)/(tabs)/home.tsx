@@ -800,7 +800,8 @@ const HomePage = () => {
     router.push({
       pathname: '/(root)/(properties)/propertyView',
       params: {
-        propertyId
+        propertyId,
+        fromHome: 'true'
       }
     })
   }

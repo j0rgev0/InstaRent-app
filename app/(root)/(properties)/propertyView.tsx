@@ -1,10 +1,11 @@
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
 import { Ionicons } from '@expo/vector-icons'
-import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   Image,
@@ -33,14 +34,69 @@ const PropertyView = () => {
   const params = useLocalSearchParams()
   const { width } = useWindowDimensions()
 
+  const fromHome = params.fromHome === 'true' ? true : false
+
   const propertyId = params.propertyId as string | undefined
   const [property, setProperty] = useState<Property | null>(null)
-  const [refreshing, setRefreshing] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const imageScrollRef = useRef<ScrollView>(null)
 
+  const [refreshing, setRefreshing] = useState(false)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+
+  const sharedParams = {
+    propertyid: property?.id,
+    operationTypes: property?.operation,
+    housingTypes: property?.type,
+    description: property?.description,
+    bathrooms: property?.bathrooms,
+    bedrooms: property?.bedrooms,
+    size: property?.size,
+    price: property?.price,
+    latitude: property?.latitude,
+    longitude: property?.longitude,
+    floor: property?.floor,
+    letter: property?.letter,
+    conservation: property?.conservation,
+    constructionYear: property?.construction_year
+  }
+
   const scrollX = useRef(new Animated.Value(0)).current
   const dotsScrollX = useRef(new Animated.Value(0)).current
+
+  const handleEdit = () => {
+    if (Platform.OS !== 'web') {
+      Alert.alert('Edit property', 'What would you like to do?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Change images & features',
+          onPress: () => {
+            router.push({
+              pathname: '/(root)/(properties)/addPictures',
+              params: {
+                propertyId,
+                edit: 'true'
+              }
+            })
+          }
+        },
+        {
+          text: 'Edit general information',
+          onPress: () => {
+            router.push({
+              pathname: '/(root)/(properties)/publish',
+              params: {
+                ...sharedParams,
+                edit: 'true'
+              }
+            })
+          }
+        }
+      ])
+    } else {
+      setEditModalVisible(true)
+    }
+  }
 
   const fetchProperty = async () => {
     if (!propertyId) return
@@ -448,6 +504,61 @@ const PropertyView = () => {
     </>
   )
 
+  const renderBottomButton = () => (
+    <>
+      {!fromHome ? (
+        <TouchableOpacity
+          onPress={handleEdit}
+          className="bg-darkBlue rounded-xl p-4 items-center mt-4">
+          <Text className="text-white text-base font-medium">Edit</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity className="bg-darkBlue rounded-xl p-4 items-center mt-4">
+          <Text className="text-white text-base font-medium">Contact Owner</Text>
+        </TouchableOpacity>
+      )}
+    </>
+  )
+
+  const EditModal = () => (
+    <View className="absolute w-full h-full rounded-2xl bg-black/40 z-50 items-center justify-center">
+      <View className="bg-white rounded-2xl p-6 w-11/12 max-w-md space-y-4">
+        <Text className="text-lg font-bold text-darkBlue">Edit property</Text>
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: '/(root)/(properties)/addPictures',
+              params: {
+                propertyId,
+                edit: 'true'
+              }
+            })
+          }}
+          className="bg-yellow-500 p-3 rounded-lg">
+          <Text className="text-white text-center font-semibold">Change images & features</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: '/(root)/(properties)/publish',
+              params: {
+                ...sharedParams,
+                edit: 'true'
+              }
+            })
+          }}
+          className="bg-darkBlue p-3 rounded-lg">
+          <Text className="text-white text-center font-semibold">Edit general information</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setEditModalVisible(false)}
+          className="mt-2 p-2 rounded-lg border border-gray-300">
+          <Text className="text-center text-darkBlue">Cancel</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
   return Platform.OS === 'web' ? (
     <div
       style={{
@@ -473,10 +584,9 @@ const PropertyView = () => {
           position: 'sticky',
           bottom: 0
         }}>
-        <TouchableOpacity className="bg-darkBlue rounded-xl p-4 items-center mt-4">
-          <Text className="text-white text-base font-medium">Contact Owner</Text>
-        </TouchableOpacity>
+        {renderBottomButton()}
       </div>
+      {editModalVisible && <EditModal />}
     </div>
   ) : (
     <View className="flex-1 bg-white">
@@ -485,11 +595,11 @@ const PropertyView = () => {
         contentContainerStyle={{ paddingBottom: 20 }}>
         {renderContent()}
       </ScrollView>
+
       <View className="bg-white border-t border-gray-200 px-4 py-3 pb-10">
-        <TouchableOpacity className="bg-darkBlue rounded-xl p-4 items-center mt-4">
-          <Text className="text-white text-base font-medium">Contact Owner</Text>
-        </TouchableOpacity>
+        {renderBottomButton()}
       </View>
+      {editModalVisible && <EditModal />}
     </View>
   )
 }
