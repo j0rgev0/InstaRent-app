@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   FlatList,
   Keyboard,
@@ -25,6 +25,7 @@ export default function ChatScreen() {
   ])
 
   const [input, setInput] = useState('')
+  const flatListRef = useRef<FlatList>(null)
 
   const sendMessage = () => {
     if (input.trim() === '') return
@@ -36,6 +37,15 @@ export default function ChatScreen() {
     setMessages([...messages, newMessage])
     setInput('')
   }
+
+  useEffect(() => {
+    // Hace scroll al último mensaje cuando cambia la lista
+    if (messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true })
+      }, 100)
+    }
+  }, [messages])
 
   const renderItem = ({ item }: ListRenderItemInfo<Message>) => {
     const isUser = item.sender === 'user'
@@ -63,6 +73,7 @@ export default function ChatScreen() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1 justify-end">
           <FlatList
+            ref={flatListRef}
             data={messages}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
