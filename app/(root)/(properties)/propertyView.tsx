@@ -218,7 +218,7 @@ const PropertyView = () => {
                   zIndex: 1
                 }}>
                 <TouchableOpacity
-                  className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                  className="bg-darkBlue px-3 py-1 rounded-lg disabled:opacity-50"
                   disabled={currentIndex === 0}
                   onPress={() => goToImage(currentIndex - 1)}>
                   <Ionicons name="chevron-back" size={16} color="white" />
@@ -285,7 +285,7 @@ const PropertyView = () => {
                 </div>
 
                 <TouchableOpacity
-                  className="bg-[#353949] px-3 py-1 rounded-lg disabled:opacity-50"
+                  className="bg-darkBlue px-3 py-1 rounded-lg disabled:opacity-50"
                   disabled={currentIndex === property.images.length - 1}
                   onPress={() => goToImage(currentIndex + 1)}>
                   <Ionicons name="chevron-forward" size={16} color="white" />
@@ -473,7 +473,7 @@ const PropertyView = () => {
           position: 'sticky',
           bottom: 0
         }}>
-        <TouchableOpacity className="bg-[#353949] rounded-xl p-4 items-center mt-4">
+        <TouchableOpacity className="bg-darkBlue rounded-xl p-4 items-center mt-4">
           <Text className="text-white text-base font-medium">Contact Owner</Text>
         </TouchableOpacity>
       </div>
@@ -486,7 +486,7 @@ const PropertyView = () => {
         {renderContent()}
       </ScrollView>
       <View className="bg-white border-t border-gray-200 px-4 py-3 pb-10">
-        <TouchableOpacity className="bg-[#353949] rounded-xl p-4 items-center mt-4">
+        <TouchableOpacity className="bg-darkBlue rounded-xl p-4 items-center mt-4">
           <Text className="text-white text-base font-medium">Contact Owner</Text>
         </TouchableOpacity>
       </View>
