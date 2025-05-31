@@ -39,7 +39,6 @@ export default function ChatScreen() {
   }
 
   useEffect(() => {
-    // Hace scroll al último mensaje cuando cambia la lista
     if (messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true })
@@ -70,7 +69,7 @@ export default function ChatScreen() {
       className="flex-1 bg-white"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined}>
         <View className="flex-1 justify-end">
           <FlatList
             ref={flatListRef}
