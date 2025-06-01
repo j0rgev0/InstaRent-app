@@ -1,7 +1,11 @@
-import { departmentsOfFrance, provincesOfSpain, suportCountries } from '@/utils/optionsData'
-import Ionicons from '@expo/vector-icons/build/Ionicons'
 import React, { useState } from 'react'
 import { Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
+import { departmentsOfFrance, provincesOfSpain, suportCountries } from '@/utils/optionsData'
+
+import { Ionicons } from '@expo/vector-icons'
+
+import '@/global.css'
 
 interface LocationFiltersProps {
   filters: {

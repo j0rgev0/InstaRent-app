@@ -1,4 +1,3 @@
-import Ionicons from '@expo/vector-icons/build/Ionicons'
 import React, { useRef, useState } from 'react'
 import {
   Animated,
@@ -10,6 +9,10 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+
+import { Ionicons } from '@expo/vector-icons'
+
+import '@/global.css'
 
 const { height, width } = Dimensions.get('window')
 const VISIBLE_DOTS = 5

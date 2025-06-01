@@ -1,4 +1,5 @@
 import { FlatList, ListRenderItemInfo } from 'react-native'
+
 import { MessageBubble } from './MessageBubble'
 
 export type Message = {

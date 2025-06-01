@@ -1,3 +1,11 @@
+import React, { useState } from 'react'
+import { Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
+import Slider from '@react-native-community/slider'
+import { Picker } from '@react-native-picker/picker'
+
+import { Ionicons } from '@expo/vector-icons'
+
 import {
   buildingFeaturesOptions,
   interiorFeaturesOptions,
@@ -5,11 +13,8 @@ import {
   parkingTransportOptions,
   propertyTypes
 } from '@/utils/optionsData'
-import Ionicons from '@expo/vector-icons/build/Ionicons'
-import Slider from '@react-native-community/slider'
-import { Picker } from '@react-native-picker/picker'
-import React, { useState } from 'react'
-import { Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
+import '@/global.css'
 
 interface GeneralFiltersProps {
   filters: {
