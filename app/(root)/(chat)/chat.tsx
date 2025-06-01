@@ -1,7 +1,7 @@
 import { ChatInput } from '@/components/chat/ChatInput'
 import { MessageList, type Message } from '@/components/chat/MessageList'
-import { authClient } from '@/lib/auth-client'
-import { useNavigation } from 'expo-router'
+import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+import { useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   FlatList,
@@ -14,6 +14,37 @@ import {
 
 export default function ChatScreen() {
   const navigation = useNavigation()
+  const params = useLocalSearchParams()
+  const propertyOwner = params.propertyOwner as string
+  const [ownerName, setOwnerName] = useState<string>('')
+
+  useEffect(() => {
+    const fetchOwnerName = async () => {
+      try {
+        const response = await fetch(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          }
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Error getting user')
+        }
+
+        setOwnerName(data.name)
+      } catch (error) {
+        console.error('Error fetching owner name:', error)
+      }
+    }
+
+    if (propertyOwner) {
+      fetchOwnerName()
+    }
+  }, [propertyOwner])
 
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: 'Hola, ¿en qué puedo ayudarte?', sender: 'bot' },
@@ -51,9 +82,9 @@ export default function ChatScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitleAlign: 'center',
-      headerTitle: 'Chat'
+      headerTitle: ownerName || 'Chat'
     })
-  }, [navigation])
+  }, [navigation, ownerName])
 
   return (
     <KeyboardAvoidingView
