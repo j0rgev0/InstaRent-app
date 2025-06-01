@@ -103,7 +103,7 @@ const PropertyView = () => {
     router.push({
       pathname: '/(root)/(chat)/chat',
       params: {
-        userid: property?.user_id
+        propertyOwner: property?.user_id
       }
     })
   }
