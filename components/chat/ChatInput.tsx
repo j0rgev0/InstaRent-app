@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { socketService } from '../../lib/socket'
 
 type ChatInputProps = {
@@ -18,11 +18,21 @@ export function ChatInput({
   receiverId
 }: ChatInputProps) {
   const [isTyping, setIsTyping] = useState(false)
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false)
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true)
+    })
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false)
+    })
+
     return () => {
+      keyboardDidShowListener.remove()
+      keyboardDidHideListener.remove()
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
@@ -54,33 +64,26 @@ export function ChatInput({
     }
   }
 
-  const handleKeyPress = (e: any) => {
-    if (e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
-
   return (
-    <View className="flex-row px-2.5 pb-10 py-2 border-t border-gray-300 bg-white">
+    <View
+      className={`flex-row items-end px-2.5 py-2 border-t border-gray-300 bg-white ${!isKeyboardVisible ? 'pb-10' : ''}`}>
       <TextInput
         ref={inputRef}
-        className="flex-1 bg-gray-200 rounded-full px-4 text-base h-10"
+        className="flex-1 bg-gray-200 rounded-3xl px-4 text-base min-h-[40px] max-h-[100px] py-2"
         placeholder="Escribe un mensaje..."
         placeholderTextColor="#999"
         value={value}
         onChangeText={handleTextChange}
-        onSubmitEditing={handleSend}
-        onKeyPress={handleKeyPress}
-        returnKeyType="send"
-        multiline={false}
+        onSubmitEditing={() => {}}
+        returnKeyType="default"
+        multiline={true}
         maxLength={1000}
-        blurOnSubmit={false}
+        textAlignVertical="center"
       />
       <TouchableOpacity
         onPress={handleSend}
         disabled={!value.trim()}
-        className={`rounded-full px-4 justify-center ml-2 ${
+        className={`rounded-full px-4 h-[40px] justify-center ml-2 ${
           value.trim() ? 'bg-darkBlue' : 'bg-gray-300'
         }`}>
         <Text className={`font-bold ${value.trim() ? 'text-white' : 'text-gray-500'}`}>Enviar</Text>
