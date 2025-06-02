@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import {
+  Keyboard,
+  KeyboardEvent,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import { socketService } from '../../lib/socket'
 
 type ChatInputProps = {
@@ -19,15 +27,21 @@ export function ChatInput({
 }: ChatInputProps) {
   const [isTyping, setIsTyping] = useState(false)
   const [isKeyboardVisible, setKeyboardVisible] = useState(false)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true)
-    })
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (event: KeyboardEvent) => {
+        setKeyboardVisible(true)
+        setKeyboardHeight(event.endCoordinates.height)
+      }
+    )
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false)
+      setKeyboardHeight(0)
     })
 
     return () => {
@@ -66,7 +80,17 @@ export function ChatInput({
 
   return (
     <View
-      className={`flex-row items-end px-2.5 py-2 border-t border-gray-300 bg-white ${!isKeyboardVisible ? 'pb-10' : ''}`}>
+      className={`flex-row items-end px-2.5 py-2 border-t border-gray-300 bg-white`}
+      style={{
+        paddingBottom:
+          Platform.OS === 'android'
+            ? isKeyboardVisible
+              ? keyboardHeight + 25
+              : 10
+            : !isKeyboardVisible
+              ? 10
+              : 0
+      }}>
       <TextInput
         ref={inputRef}
         className="flex-1 bg-gray-200 rounded-3xl px-4 text-base min-h-[40px] max-h-[100px] py-2"
