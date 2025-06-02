@@ -4,9 +4,9 @@ import { authClient } from '@/lib/auth-client'
 import { socketService } from '@/lib/socket'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
-  ActivityIndicator,
+  Alert,
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
@@ -15,213 +15,161 @@ import {
   View
 } from 'react-native'
 
+const MESSAGES_PER_PAGE = 20
+
 export default function ChatScreen() {
   const { data: session, isPending: isSessionLoading } = authClient.useSession()
   const navigation = useNavigation()
   const params = useLocalSearchParams()
   const propertyOwner = params.propertyOwner as string
-  const [ownerName, setOwnerName] = useState<string>('')
+
+  const [ownerName, setOwnerName] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasMoreMessages, setHasMoreMessages] = useState(true)
+
   const flatListRef = useRef<FlatList<Message>>(null)
   const currentUserId = session?.user?.id
-  const receiverId = propertyOwner
+  const socketInitialized = useRef(false)
+  const isInitialLoad = useRef(true)
 
-  useEffect(() => {
-    const fetchOwnerName = async () => {
-      try {
-        const response = await fetch(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${INSTARENT_API_KEY}`
-          }
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Error getting user')
+  const fetchOwnerName = useCallback(async () => {
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
         }
+      })
+      const data = await response.json()
 
-        setOwnerName(data.name)
-      } catch (error) {
-        console.error('Error fetching owner name:', error)
-      }
-    }
-
-    if (propertyOwner) {
-      fetchOwnerName()
+      if (!response.ok) throw new Error(data.error || 'Error getting user')
+      setOwnerName(data.name)
+    } catch (error) {
+      console.error('Error fetching owner name:', error)
+      Alert.alert('Error', 'No se pudo cargar la información del usuario')
     }
   }, [propertyOwner])
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!currentUserId) return
+  const fetchMessages = useCallback(
+    async (page = 1) => {
+      if (!currentUserId || isLoading) return
 
+      setIsLoading(true)
       try {
         const response = await fetch(
-          `${INSTARENT_API_URL}/chat/${[currentUserId, propertyOwner].sort().join('-')}`,
+          `${INSTARENT_API_URL}/chat/${[currentUserId, propertyOwner].sort().join('-')}?page=${page}&limit=${MESSAGES_PER_PAGE}`,
           {
-            method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${INSTARENT_API_KEY}`
             }
           }
         )
-
         const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'Error fetching messages')
 
-        if (!response.ok) {
-          throw new Error(data.error || 'Error fetching messages')
-        }
-
-        // Transform backend messages to frontend format
-        const formattedMessages = data.map((msg: any) => ({
+        const messagesArray = Array.isArray(data) ? data : data.messages || []
+        const formattedMessages: Message[] = messagesArray.map((msg: any) => ({
           id: msg.id.toString(),
-          text: msg.message,
+          text: msg.message.trim(),
           sender: msg.senderId === currentUserId ? 'user' : 'bot',
           timestamp: new Date(msg.createdAt).getTime()
         }))
 
-        setMessages(formattedMessages)
+        setMessages((prev) => {
+          const newMessages = page === 1 ? formattedMessages : [...prev, ...formattedMessages]
+          return [...new Set(newMessages.map((m) => m.id))]
+            .map((id) => newMessages.find((m) => m.id === id)!)
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        })
+
+        setHasMoreMessages(messagesArray.length === MESSAGES_PER_PAGE)
       } catch (error) {
         console.error('Error fetching messages:', error)
+        Alert.alert('Error', 'No se pudieron cargar los mensajes')
+      } finally {
+        setIsLoading(false)
       }
-    }
-
-    if (propertyOwner && currentUserId) {
-      fetchMessages()
-    }
-  }, [propertyOwner, currentUserId])
+    },
+    [propertyOwner, currentUserId, isLoading]
+  )
 
   useEffect(() => {
-    if (!currentUserId) return
+    if (propertyOwner) fetchOwnerName()
+  }, [fetchOwnerName])
 
-    // Connect to socket with current user ID
-    socketService.connect(currentUserId)
+  useEffect(() => {
+    if (propertyOwner && currentUserId) fetchMessages(1)
+  }, [propertyOwner, currentUserId, fetchMessages])
 
-    // Join the chat room
+  useEffect(() => {
+    if (!currentUserId || socketInitialized.current) return
+
     const roomId = [currentUserId, propertyOwner].sort().join('-')
+    socketService.connect(currentUserId)
     socketService.joinRoom(roomId)
+    socketInitialized.current = true
 
-    // Listen for new messages
-    socketService.onMessage((data) => {
-      console.log('Received raw socket data:', data) // Log raw data
-
-      // Validate message data
-      if (!data || typeof data !== 'object') {
+    const handleNewMessage = (data: any) => {
+      if (!data || !data.message || !data.id || !data.senderId || !data.createdAt) {
         console.log('Invalid message data received:', data)
         return
       }
 
-      // Validate required fields
-      if (!data.message || typeof data.message !== 'string' || data.message.trim() === '') {
-        console.log('Received message with no text or empty text, ignoring:', data)
-        return
-      }
-
-      if (!data.id || !data.senderId || !data.createdAt) {
-        console.log('Received message missing required fields, ignoring:', data)
-        return
-      }
-
       setMessages((prev) => {
-        // 1. Check if this received message corresponds to a temporary message sent by the current user
-        const tempMessageIndex = prev.findIndex(
-          (msg) =>
-            msg.id.startsWith('temp-') && msg.id === data.tempId && data.senderId === currentUserId
-        )
+        // Check if we already have this message
+        const existing = prev.find((msg) => msg.id === data.id.toString())
+        if (existing) return prev
 
-        if (tempMessageIndex > -1) {
-          console.log(
-            'Updating temporary message with tempId:',
-            data.tempId,
-            'to real ID:',
-            data.id
-          )
-          // Update the temporary message with real data from the backend
-          const updatedMessages = [...prev]
-          updatedMessages[tempMessageIndex] = {
+        // Add new message
+        return [
+          ...prev,
+          {
             id: data.id.toString(),
             text: data.message.trim(),
-            sender: data.senderId === currentUserId ? 'user' : 'bot',
+            sender: data.senderId === currentUserId ? ('user' as const) : ('bot' as const),
             timestamp: new Date(data.createdAt).getTime()
           }
-          return updatedMessages
-        }
-
-        // 2. Check if message already exists
-        const messageExists = prev.some((msg) => msg.id === data.id.toString())
-        if (messageExists) {
-          console.log('Message with real ID', data.id, 'already exists, ignoring.')
-          return prev
-        }
-
-        // 3. Add new message
-        console.log('Adding new message with ID:', data.id, 'and text:', data.message)
-        const newMessage: Message = {
-          id: data.id.toString(),
-          text: data.message.trim(),
-          sender: data.senderId === currentUserId ? 'user' : 'bot',
-          timestamp: new Date(data.createdAt).getTime()
-        }
-        console.log('New message object to be added:', newMessage) // Log the message object before adding
-        return [...prev, newMessage]
+        ].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
       })
-    })
+    }
 
-    // Cleanup on unmount
+    socketService.onMessage(handleNewMessage)
+
     return () => {
       socketService.disconnect()
+      socketInitialized.current = false
     }
   }, [currentUserId, propertyOwner])
 
-  const handleNewMessage = (message: Message) => {
-    setMessages((prevMessages) => [...prevMessages, message])
+  const handleLoadMore = () => {
+    if (!isLoading && hasMoreMessages) {
+      const nextPage = Math.floor(messages.length / MESSAGES_PER_PAGE) + 1
+      fetchMessages(nextPage)
+    }
   }
 
   const sendMessage = async () => {
     if (input.trim() === '' || !currentUserId) return
 
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const newMessage: Message = {
-      id: tempId,
-      text: input.trim(),
-      sender: 'user',
-      timestamp: Date.now()
-    }
-
-    // Add message to UI immediately
-    setMessages((prev) => [...prev, newMessage])
+    const messageText = input.trim()
     setInput('')
 
     try {
       const roomId = [currentUserId, propertyOwner].sort().join('-')
-
-      // Send message through Socket.IO
-      socketService.sendMessage({
+      await socketService.sendMessage({
         roomId,
         senderId: currentUserId,
         receiverId: propertyOwner,
-        message: input.trim(),
-        tempId: tempId
+        message: messageText
       })
     } catch (error) {
       console.error('Error sending message:', error)
-      // Remove message from UI if sending failed
-      setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+      Alert.alert('Error', 'No se pudo enviar el mensaje')
     }
   }
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true })
-      }, 100)
-    }
-  }, [messages])
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -230,25 +178,21 @@ export default function ChatScreen() {
     })
   }, [navigation, ownerName])
 
-  if (isSessionLoading || !currentUserId) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    )
-  }
+  if (isSessionLoading || !currentUserId) return null
 
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}>
-      <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1 justify-end">
           <MessageList
             messages={messages}
             flatListRef={flatListRef}
-            onNewMessage={handleNewMessage}
+            onLoadMore={handleLoadMore}
+            isLoading={isLoading}
+            hasMoreMessages={hasMoreMessages}
             currentUserId={currentUserId}
           />
           <ChatInput
@@ -256,7 +200,7 @@ export default function ChatScreen() {
             onChangeText={setInput}
             onSend={sendMessage}
             currentUserId={currentUserId}
-            receiverId={receiverId}
+            receiverId={propertyOwner}
           />
         </View>
       </TouchableWithoutFeedback>

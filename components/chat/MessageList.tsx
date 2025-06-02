@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 import { FlatList, ListRenderItemInfo } from 'react-native'
 
 import { socketService } from '../../lib/socket'
@@ -14,46 +14,55 @@ export type Message = {
 type MessageListProps = {
   messages: Message[]
   flatListRef: React.RefObject<FlatList<Message> | null>
-  onNewMessage: (message: Message) => void
+  onLoadMore: () => void
+  isLoading: boolean
+  hasMoreMessages: boolean
   currentUserId: string
 }
 
-export function MessageList({
+const MessageList = memo(function MessageList({
   messages,
   flatListRef,
-  onNewMessage,
+  onLoadMore,
+  isLoading,
+  hasMoreMessages,
   currentUserId
 }: MessageListProps) {
   useEffect(() => {
     socketService.connect(currentUserId)
-
-    socketService.onMessage((message) => {
-      onNewMessage({
-        id: message.id,
-        text: message.text,
-        sender: message.sender === currentUserId ? 'user' : 'bot',
-        timestamp: message.timestamp
-      })
-    })
 
     return () => {
       socketService.disconnect()
     }
   }, [currentUserId])
 
-  const renderItem = ({ item }: ListRenderItemInfo<Message>) => {
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<Message>) => {
     const isUser = item.sender === 'user'
     return <MessageBubble text={item.text} isUser={isUser} />
-  }
+  }, [])
+
+  const handleEndReached = useCallback(() => {
+    if (!isLoading && hasMoreMessages) {
+      onLoadMore()
+    }
+  }, [isLoading, hasMoreMessages, onLoadMore])
+
+  const keyExtractor = useCallback((item: Message) => item.id, [])
 
   return (
     <FlatList
       ref={flatListRef}
       data={messages}
-      keyExtractor={(item) => item.id}
+      keyExtractor={keyExtractor}
       renderItem={renderItem}
       contentContainerStyle={{ padding: 10, paddingBottom: 10 }}
       keyboardShouldPersistTaps="handled"
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.5}
+      inverted
+      showsVerticalScrollIndicator={false}
     />
   )
-}
+})
+
+export { MessageList }
