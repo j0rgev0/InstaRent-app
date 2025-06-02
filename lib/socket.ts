@@ -1,3 +1,4 @@
+import { CHAT_API_URL } from '@/utils/constants'
 import { io, Socket } from 'socket.io-client'
 
 class SocketService {
@@ -15,7 +16,7 @@ class SocketService {
 
   public connect(userId: string) {
     if (!this.socket) {
-      this.socket = io('http://localhost:3000', {
+      this.socket = io(CHAT_API_URL, {
         query: { userId },
         transports: ['websocket']
       })
@@ -41,15 +42,27 @@ class SocketService {
     }
   }
 
-  public sendMessage(message: { text: string; sender: string; receiver: string }) {
+  public joinRoom(roomId: string) {
     if (this.socket) {
-      this.socket.emit('message', message)
+      this.socket.emit('join_room', roomId)
+    }
+  }
+
+  public sendMessage(message: {
+    roomId: string
+    senderId: string
+    receiverId: string
+    message: string
+    tempId?: string
+  }) {
+    if (this.socket) {
+      this.socket.emit('send_message', message)
     }
   }
 
   public onMessage(callback: (message: any) => void) {
     if (this.socket) {
-      this.socket.on('message', callback)
+      this.socket.on('receive_message', callback)
     }
   }
 

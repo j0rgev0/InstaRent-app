@@ -31,18 +31,15 @@ export function ChatInput({
   const handleTextChange = (text: string) => {
     onChangeText(text)
 
-    // Emit typing status
     if (!isTyping) {
       setIsTyping(true)
       socketService.emitTyping(true)
     }
 
-    // Clear previous timeout
     if (typingTimeout) {
       clearTimeout(typingTimeout)
     }
 
-    // Set new timeout
     typingTimeout = setTimeout(() => {
       setIsTyping(false)
       socketService.emitTyping(false)
@@ -51,11 +48,6 @@ export function ChatInput({
 
   const handleSend = () => {
     if (value.trim()) {
-      socketService.sendMessage({
-        text: value.trim(),
-        sender: currentUserId,
-        receiver: receiverId
-      })
       onSend()
     }
   }
