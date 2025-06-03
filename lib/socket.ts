@@ -21,13 +21,9 @@ class SocketService {
         transports: ['websocket']
       })
 
-      this.socket.on('connect', () => {
-        console.log('Connected to socket server')
-      })
+      this.socket.on('connect', () => {})
 
-      this.socket.on('disconnect', () => {
-        console.log('Disconnected from socket server')
-      })
+      this.socket.on('disconnect', () => {})
 
       this.socket.on('error', (error) => {
         console.error('Socket error:', error)
