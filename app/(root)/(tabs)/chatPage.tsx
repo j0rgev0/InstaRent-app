@@ -1,4 +1,3 @@
-import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   Image,
@@ -12,9 +11,12 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import '@/global.css'
+import { useFocusEffect, useRouter } from 'expo-router'
+
 import { authClient } from '@/lib/auth-client'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+
+import '@/global.css'
 
 type User = {
   id: string
@@ -65,7 +67,6 @@ const ChatPage = () => {
         throw new Error(data.error || 'Error getting chat rooms')
       }
 
-      // Ensure data is an array and has the expected structure
       if (!Array.isArray(data)) {
         console.error('Unexpected data format:', data)
         throw new Error('Invalid data format received from server')

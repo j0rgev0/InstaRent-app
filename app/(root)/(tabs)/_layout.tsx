@@ -25,7 +25,7 @@ export default function RootLayout() {
         />
 
         <Tabs.Screen
-          name="chat"
+          name="chatPage"
           options={{
             tabBarLabel: '',
             headerShown: false,
