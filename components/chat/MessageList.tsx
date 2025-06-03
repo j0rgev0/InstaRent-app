@@ -36,6 +36,12 @@ const MessageList = memo(function MessageList({
     }
   }, [currentUserId])
 
+  useEffect(() => {
+    if (messages.length > 0 && flatListRef.current) {
+      flatListRef.current.scrollToOffset({ offset: 0, animated: true })
+    }
+  }, [messages.length])
+
   const renderItem = useCallback(({ item }: ListRenderItemInfo<Message>) => {
     const isUser = item.sender === 'user'
     return <MessageBubble text={item.text} isUser={isUser} />
