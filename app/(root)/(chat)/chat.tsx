@@ -59,7 +59,7 @@ export default function ChatScreen() {
       setIsLoading(true)
       try {
         const response = await fetch(
-          `${INSTARENT_API_URL}/chat/${[currentUserId, propertyOwner].sort().join('-')}?page=${page}&limit=${MESSAGES_PER_PAGE}`,
+          `${INSTARENT_API_URL}/chat/${[currentUserId, propertyOwner].sort().join('-')}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -119,11 +119,9 @@ export default function ChatScreen() {
       }
 
       setMessages((prev) => {
-        // Check if we already have this message
         const existing = prev.find((msg) => msg.id === data.id.toString())
         if (existing) return prev
 
-        // Add new message
         return [
           ...prev,
           {
