@@ -86,10 +86,10 @@ export function ChatInput({
           Platform.OS === 'android'
             ? isKeyboardVisible
               ? keyboardHeight + 25
-              : 10
+              : 25
             : !isKeyboardVisible
-              ? 10
-              : 0
+              ? 30
+              : 10
       }}>
       <TextInput
         ref={inputRef}
