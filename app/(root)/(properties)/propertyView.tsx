@@ -48,7 +48,7 @@ const PropertyView = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [editModalVisible, setEditModalVisible] = useState(false)
 
-  const roomChatID = [property?.id, session?.user.id].sort().join('::')
+  const roomChatID = [property?.id, session?.user.id].join('::')
 
   const sharedParams = {
     propertyid: property?.id,

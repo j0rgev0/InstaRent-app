@@ -122,8 +122,6 @@ const PropertyCard = React.memo<PropertyCardProps>(
       }
     }
 
-    const scrollX = getScrollX(item.id)
-    const dotsScrollX = getDotsScrollX(item.id)
     const maxLength = 70
     const description = isExpanded
       ? item.description

@@ -18,6 +18,7 @@ import { socketService } from '@/lib/socket'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
+import { Property } from '@/utils/types'
 
 type User = {
   id: string
@@ -38,11 +39,13 @@ type ChatRoom = {
 
 const ChatPage = () => {
   const { data: session } = authClient.useSession()
-  const [chats, setChats] = useState<ChatRoom[]>([])
-  const [refreshing, setRefreshing] = useState(false)
-  const router = useRouter()
 
   const userId = session?.user.id
+
+  const [chats, setChats] = useState<ChatRoom[]>([])
+  const [refreshing, setRefreshing] = useState(false)
+  const [properties, setProperties] = useState<Map<string, Property>>(new Map())
+  const router = useRouter()
 
   const fetchUserChatRooms = async () => {
     try {
@@ -187,6 +190,36 @@ const ChatPage = () => {
     })
   }
 
+  const fetchProperty = async (propertyId: string) => {
+    if (!propertyId) return
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/properties/${propertyId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Error getting property')
+
+      setProperties((prev) => new Map(prev).set(propertyId, data))
+    } catch (error) {
+      console.error('Error getting property', error)
+    }
+  }
+
+  useEffect(() => {
+    // Fetch properties for all chats
+    chats.forEach((chatRoom) => {
+      const [propertyId] = chatRoom.roomId.split('::')
+      if (propertyId && !properties.has(propertyId)) {
+        fetchProperty(propertyId)
+      }
+    })
+  }, [chats])
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-1">
@@ -203,6 +236,9 @@ const ChatPage = () => {
             chats.map((chatRoom) => {
               const otherUser = getOtherUser(chatRoom)
               const isUnread = !chatRoom.read && chatRoom.receiverId === userId
+              const [propertyId] = chatRoom.roomId.split('::')
+              const property = properties.get(propertyId)
+
               return (
                 <TouchableOpacity
                   key={chatRoom.roomId}
@@ -243,6 +279,14 @@ const ChatPage = () => {
                         </Text>
                         {isUnread && <View className="w-3 h-3 rounded-full bg-darkBlue" />}
                       </View>
+                      <Text className="text-sm text-gray-400">
+                        <Text className="capitalize">{property?.type} </Text>
+                        on
+                        <Text className="capitalize">
+                          {' '}
+                          {property?.street} {property?.street_number}, {property?.locality}
+                        </Text>
+                      </Text>
                     </View>
                   </View>
                 </TouchableOpacity>
