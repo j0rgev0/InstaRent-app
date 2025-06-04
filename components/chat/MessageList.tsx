@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect } from 'react'
-import { FlatList, ListRenderItemInfo } from 'react-native'
+import { FlatList, ListRenderItemInfo, Text, View } from 'react-native'
 
 import { socketService } from '../../lib/socket'
 import { MessageBubble } from './MessageBubble'
@@ -11,9 +11,14 @@ export type Message = {
   timestamp?: number
 }
 
+type MessageGroup = {
+  date: string
+  messages: Message[]
+}
+
 type MessageListProps = {
   messages: Message[]
-  flatListRef: React.RefObject<FlatList<Message> | null>
+  flatListRef: React.RefObject<FlatList<MessageGroup> | null>
   onLoadMore: () => void
   isLoading: boolean
   hasMoreMessages: boolean
@@ -42,9 +47,70 @@ const MessageList = memo(function MessageList({
     }
   }, [messages.length])
 
-  const renderItem = useCallback(({ item }: ListRenderItemInfo<Message>) => {
-    const isUser = item.sender === 'user'
-    return <MessageBubble text={item.text} isUser={isUser} />
+  const formatDate = (timestamp: number) => {
+    const messageDate = new Date(timestamp)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    if (messageDate.toDateString() === today.toDateString()) {
+      return 'Hoy'
+    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Ayer'
+    } else {
+      return messageDate.toLocaleDateString([], {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
+    }
+  }
+
+  const formatTime = (timestamp: number) => {
+    return new Date(timestamp).toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: undefined
+    })
+  }
+
+  const groupMessagesByDate = useCallback((messages: Message[]): MessageGroup[] => {
+    const groups: { [key: string]: Message[] } = {}
+
+    messages.forEach((message) => {
+      if (!message.timestamp) return
+
+      const date = new Date(message.timestamp).toDateString()
+      if (!groups[date]) {
+        groups[date] = []
+      }
+      groups[date].push(message)
+    })
+
+    return Object.entries(groups).map(([date, messages]) => ({
+      date: formatDate(new Date(date).getTime()),
+      messages
+    }))
+  }, [])
+
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<MessageGroup>) => {
+    return (
+      <View className="mb-4">
+        <View className="items-center mb-4">
+          <View className="bg-gray-200 px-4 py-1 rounded-full">
+            <Text className="text-gray-600 text-sm">{item.date}</Text>
+          </View>
+        </View>
+        {item.messages.map((message) => (
+          <MessageBubble
+            key={message.id}
+            text={message.text}
+            timestamp={message.timestamp ? formatTime(message.timestamp) : ''}
+            isUser={message.sender === 'user'}
+          />
+        ))}
+      </View>
+    )
   }, [])
 
   const handleEndReached = useCallback(() => {
@@ -53,12 +119,14 @@ const MessageList = memo(function MessageList({
     }
   }, [isLoading, hasMoreMessages, onLoadMore])
 
-  const keyExtractor = useCallback((item: Message) => item.id, [])
+  const keyExtractor = useCallback((item: MessageGroup) => item.date, [])
+
+  const groupedMessages = groupMessagesByDate(messages)
 
   return (
     <FlatList
       ref={flatListRef}
-      data={messages}
+      data={groupedMessages}
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       contentContainerStyle={{ padding: 10, paddingBottom: 10 }}

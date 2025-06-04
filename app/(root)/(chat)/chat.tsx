@@ -17,6 +17,11 @@ import {
 
 const MESSAGES_PER_PAGE = 20
 
+type MessageGroup = {
+  date: string
+  messages: Message[]
+}
+
 export default function ChatScreen() {
   const { data: session, isPending: isSessionLoading } = authClient.useSession()
   const navigation = useNavigation()
@@ -29,7 +34,7 @@ export default function ChatScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
 
-  const flatListRef = useRef<FlatList<Message>>(null)
+  const flatListRef = useRef<FlatList<MessageGroup> | null>(null)
   const currentUserId = session?.user?.id
   const socketInitialized = useRef(false)
   const isInitialLoad = useRef(true)

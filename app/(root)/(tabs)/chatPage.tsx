@@ -208,7 +208,7 @@ const ChatPage = () => {
                   onPress={() => handleChatPress(chatRoom)}
                   className="border-b border-gray-200 p-4">
                   <View className="flex-row items-center">
-                    <View className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 mr-3">
+                    <View className="w-14 h-14 rounded-full overflow-hidden bg-gray-200 mr-3">
                       {otherUser.image ? (
                         <Image
                           source={{ uri: otherUser.image }}
@@ -225,17 +225,23 @@ const ChatPage = () => {
                     </View>
                     <View className="flex-1">
                       <View className="flex-row items-center justify-between">
-                        <Text className="text-lg font-semibold text-darkBlue">
+                        <Text className="text-xl font-semibold text-darkBlue">
                           {otherUser.name}
                         </Text>
-                        {isUnread && <View className="w-2.5 h-2.5 rounded-full bg-darkBlue" />}
+                        <Text
+                          className={`text-base ${isUnread ? 'text-darkBlue font-semibold' : 'text-gray-400'} `}>
+                          {formatMessageTime(chatRoom.createdAt)}
+                        </Text>
                       </View>
-                      <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        {chatRoom.message}
-                      </Text>
-                      <Text className="text-xs text-gray-400">
-                        {formatMessageTime(chatRoom.createdAt)}
-                      </Text>
+
+                      <View className="flex-row items-center justify-between">
+                        <Text
+                          className={`text-lg ${isUnread ? 'text-darkBlue font-semibold' : 'text-gray-400'} `}
+                          numberOfLines={1}>
+                          {chatRoom.message}
+                        </Text>
+                        {isUnread && <View className="w-3 h-3 rounded-full bg-darkBlue" />}
+                      </View>
                     </View>
                   </View>
                 </TouchableOpacity>
