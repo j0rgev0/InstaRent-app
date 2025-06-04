@@ -15,7 +15,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (session) {
-      router.replace('/profile')
+      router.replace('/home')
     }
   }, [session])
 

@@ -34,7 +34,7 @@ export default function SignInPage() {
           console.log(ctx)
         },
         onSuccess: () => {
-          router.replace('/(root)/(tabs)/profile')
+          router.replace('/(root)/(tabs)/home')
         }
       }
     )

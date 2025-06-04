@@ -42,7 +42,7 @@ export default function SignUpPage() {
           Alert.alert('Account created', 'Successfully created an account', [
             {
               text: 'Continue',
-              onPress: () => router.replace('/(root)/(tabs)/profile')
+              onPress: () => router.replace('/(root)/(tabs)/home')
             }
           ])
         }
