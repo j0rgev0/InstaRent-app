@@ -39,6 +39,31 @@ export default function ChatScreen() {
   const socketInitialized = useRef(false)
   const isInitialLoad = useRef(true)
 
+  const markMessagesAsRead = useCallback(async () => {
+    if (!currentUserId || !propertyOwner) return
+
+    try {
+      const response = await fetch(
+        `${INSTARENT_API_URL}/chat/read/${[currentUserId, propertyOwner].sort().join('-')}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          },
+          body: JSON.stringify({ userId: currentUserId })
+        }
+      )
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Error marking messages as read')
+      }
+    } catch (error) {
+      console.error('Error marking messages as read:', error)
+    }
+  }, [currentUserId, propertyOwner])
+
   const fetchOwnerName = useCallback(async () => {
     try {
       const response = await fetch(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
@@ -87,7 +112,7 @@ export default function ChatScreen() {
           const newMessages = page === 1 ? formattedMessages : [...prev, ...formattedMessages]
           return [...new Set(newMessages.map((m) => m.id))]
             .map((id) => newMessages.find((m) => m.id === id)!)
-            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+            .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
         })
 
         setHasMoreMessages(messagesArray.length === MESSAGES_PER_PAGE)
@@ -106,8 +131,11 @@ export default function ChatScreen() {
   }, [fetchOwnerName])
 
   useEffect(() => {
-    if (propertyOwner && currentUserId) fetchMessages(1)
-  }, [propertyOwner, currentUserId, fetchMessages])
+    if (propertyOwner && currentUserId) {
+      fetchMessages(1)
+      markMessagesAsRead()
+    }
+  }, [propertyOwner, currentUserId, fetchMessages, markMessagesAsRead])
 
   useEffect(() => {
     if (!currentUserId || socketInitialized.current) return
@@ -135,7 +163,7 @@ export default function ChatScreen() {
             sender: data.senderId === currentUserId ? ('user' as const) : ('bot' as const),
             timestamp: new Date(data.createdAt).getTime()
           }
-        ].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+        ].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
       })
     }
 
