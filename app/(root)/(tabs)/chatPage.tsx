@@ -44,59 +44,6 @@ const ChatPage = () => {
 
   const userId = session?.user.id
 
-  useEffect(() => {
-    if (!userId) return
-
-    socketService.connect(userId)
-
-    const handleNewMessage = (data: any) => {
-      console.log('New message received:', data)
-      if (!data || !data.message || !data.senderId || !data.receiverId) {
-        console.log('Invalid message data received:', data)
-        return
-      }
-
-      if (data.receiverId === userId) {
-        setChats((prevChats) => {
-          const existingChatIndex = prevChats.findIndex(
-            (chat) =>
-              (chat.senderId === data.senderId && chat.receiverId === data.receiverId) ||
-              (chat.senderId === data.receiverId && chat.receiverId === data.senderId)
-          )
-
-          if (existingChatIndex !== -1) {
-            const updatedChats = [...prevChats]
-            updatedChats[existingChatIndex] = {
-              ...updatedChats[existingChatIndex],
-              message: data.message,
-              createdAt: data.createdAt,
-              read: false
-            }
-            return updatedChats.sort(
-              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            )
-          } else {
-            fetchUserChatRooms()
-            return prevChats
-          }
-        })
-      }
-    }
-
-    // Set up socket listeners
-    socketService.onMessage(handleNewMessage)
-
-    // Join all chat rooms
-    chats.forEach((chat) => {
-      const roomId = [chat.senderId, chat.receiverId].sort().join('-')
-      socketService.joinRoom(roomId)
-    })
-
-    return () => {
-      socketService.disconnect()
-    }
-  }, [userId, chats])
-
   const fetchUserChatRooms = async () => {
     try {
       const url = `${INSTARENT_API_URL}/chat/rooms/${userId}`
@@ -159,6 +106,34 @@ const ChatPage = () => {
       setChats([])
     }
   }
+
+  useEffect(() => {
+    if (!userId) return
+
+    socketService.connect(userId)
+
+    const handleNewMessage = async (data: any) => {
+      if (!data || !data.message || !data.senderId || !data.receiverId) {
+        return
+      }
+
+      const roomId = [data.senderId, data.receiverId].sort().join('-')
+      socketService.joinRoom(roomId)
+
+      await fetchUserChatRooms()
+    }
+
+    socketService.onMessage(handleNewMessage)
+
+    chats.forEach((chat) => {
+      const roomId = [chat.senderId, chat.receiverId].sort().join('-')
+      socketService.joinRoom(roomId)
+    })
+
+    return () => {
+      socketService.disconnect()
+    }
+  }, [userId, chats])
 
   const onRefresh = async () => {
     setRefreshing(true)
