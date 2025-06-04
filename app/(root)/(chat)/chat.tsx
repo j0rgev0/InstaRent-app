@@ -24,9 +24,11 @@ type MessageGroup = {
 
 export default function ChatScreen() {
   const { data: session, isPending: isSessionLoading } = authClient.useSession()
-  const navigation = useNavigation()
   const params = useLocalSearchParams()
+
+  const roomChatId = params.roomChatID as string
   const propertyOwner = params.propertyOwner as string
+  const navigation = useNavigation()
 
   const [ownerName, setOwnerName] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -37,23 +39,19 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList<MessageGroup> | null>(null)
   const currentUserId = session?.user?.id
   const socketInitialized = useRef(false)
-  const isInitialLoad = useRef(true)
 
   const markMessagesAsRead = useCallback(async () => {
     if (!currentUserId || !propertyOwner) return
 
     try {
-      const response = await fetch(
-        `${INSTARENT_API_URL}/chat/read/${[currentUserId, propertyOwner].sort().join('-')}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${INSTARENT_API_KEY}`
-          },
-          body: JSON.stringify({ userId: currentUserId })
-        }
-      )
+      const response = await fetch(`${INSTARENT_API_URL}/chat/read/${roomChatId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        },
+        body: JSON.stringify({ userId: currentUserId })
+      })
 
       if (!response.ok) {
         const data = await response.json()
@@ -88,15 +86,12 @@ export default function ChatScreen() {
 
       setIsLoading(true)
       try {
-        const response = await fetch(
-          `${INSTARENT_API_URL}/chat/${[currentUserId, propertyOwner].sort().join('-')}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${INSTARENT_API_KEY}`
-            }
+        const response = await fetch(`${INSTARENT_API_URL}/chat/${roomChatId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
           }
-        )
+        })
         const data = await response.json()
         if (!response.ok) throw new Error(data.error || 'Error fetching messages')
 
@@ -140,7 +135,7 @@ export default function ChatScreen() {
   useEffect(() => {
     if (!currentUserId || socketInitialized.current) return
 
-    const roomId = [currentUserId, propertyOwner].sort().join('-')
+    const roomId = roomChatId
     socketService.connect(currentUserId)
     socketService.joinRoom(roomId)
     socketInitialized.current = true
@@ -189,7 +184,7 @@ export default function ChatScreen() {
     setInput('')
 
     try {
-      const roomId = [currentUserId, propertyOwner].sort().join('-')
+      const roomId = roomChatId
       await socketService.sendMessage({
         roomId,
         senderId: currentUserId,

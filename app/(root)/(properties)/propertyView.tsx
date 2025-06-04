@@ -22,6 +22,7 @@ import {
 
 // @ts-ignore
 import MapPreview from '@/components/map/MapPreview'
+import { authClient } from '@/lib/auth-client'
 
 const VISIBLE_DOTS = 5
 const DOT_SIZE = 8
@@ -31,6 +32,8 @@ const DOT_CONTAINER_WIDTH = VISIBLE_DOTS * (DOT_SIZE + DOT_SPACING)
 const screenWidth = Dimensions.get('window').width
 
 const PropertyView = () => {
+  const { data: session } = authClient.useSession()
+
   const navigation = useNavigation()
   const params = useLocalSearchParams()
   const { width } = useWindowDimensions()
@@ -44,6 +47,8 @@ const PropertyView = () => {
 
   const [refreshing, setRefreshing] = useState(false)
   const [editModalVisible, setEditModalVisible] = useState(false)
+
+  const roomChatID = [property?.id, session?.user.id].sort().join('-')
 
   const sharedParams = {
     propertyid: property?.id,
@@ -103,7 +108,8 @@ const PropertyView = () => {
     router.push({
       pathname: '/(root)/(chat)/chat',
       params: {
-        propertyOwner: property?.user_id
+        propertyOwner: property?.user_id,
+        roomChatID
       }
     })
   }

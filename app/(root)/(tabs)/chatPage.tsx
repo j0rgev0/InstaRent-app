@@ -117,7 +117,7 @@ const ChatPage = () => {
         return
       }
 
-      const roomId = [data.senderId, data.receiverId].sort().join('-')
+      const roomId = data.roomid
       socketService.joinRoom(roomId)
 
       await fetchUserChatRooms()
@@ -126,7 +126,7 @@ const ChatPage = () => {
     socketService.onMessage(handleNewMessage)
 
     chats.forEach((chat) => {
-      const roomId = [chat.senderId, chat.receiverId].sort().join('-')
+      const roomId = chat.roomId
       socketService.joinRoom(roomId)
     })
 
@@ -160,7 +160,8 @@ const ChatPage = () => {
     router.push({
       pathname: '/(root)/(chat)/chat',
       params: {
-        propertyOwner: otherUserId
+        propertyOwner: otherUserId,
+        roomChatID: chatRoom.roomId
       }
     })
   }
