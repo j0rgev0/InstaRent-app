@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   Image,
   Platform,
@@ -30,6 +30,9 @@ type ChatRoom = {
   receiverId: string
   sender: User
   receiver: User
+  message: string
+  createdAt: string
+  read: boolean
 }
 
 const ChatPage = () => {
@@ -81,7 +84,10 @@ const ChatPage = () => {
           chat.sender &&
           chat.receiver &&
           typeof chat.sender.name === 'string' &&
-          typeof chat.receiver.name === 'string'
+          typeof chat.receiver.name === 'string' &&
+          typeof chat.message === 'string' &&
+          typeof chat.createdAt === 'string' &&
+          typeof chat.read === 'boolean'
 
         if (!isValid) {
           console.warn('Invalid chat room data:', chat)
@@ -89,7 +95,11 @@ const ChatPage = () => {
         return isValid
       })
 
-      setChats(validChats)
+      const sortedChats = validChats.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+
+      setChats(sortedChats)
     } catch (error) {
       console.error('Error fetching chat rooms:', error)
       setChats([])
@@ -109,14 +119,12 @@ const ChatPage = () => {
       if (Platform.OS === 'web') {
         document.title = 'Chats'
       }
-    }, [])
-  )
 
-  useEffect(() => {
-    if (userId) {
-      fetchUserChatRooms()
-    }
-  }, [userId])
+      if (userId) {
+        fetchUserChatRooms()
+      }
+    }, [userId])
+  )
 
   const handleChatPress = (chatRoom: ChatRoom) => {
     const otherUserId = chatRoom.senderId === userId ? chatRoom.receiverId : chatRoom.senderId
@@ -130,6 +138,23 @@ const ChatPage = () => {
 
   const getOtherUser = (chatRoom: ChatRoom) => {
     return chatRoom.senderId === userId ? chatRoom.receiver : chatRoom.sender
+  }
+
+  const formatMessageTime = (dateString: string) => {
+    const messageDate = new Date(dateString)
+    const today = new Date()
+
+    if (messageDate.toDateString() === today.toDateString()) {
+      return messageDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    return messageDate.toLocaleDateString([], {
+      month: 'short',
+      day: 'numeric'
+    })
   }
 
   return (
@@ -147,6 +172,7 @@ const ChatPage = () => {
           ) : (
             chats.map((chatRoom) => {
               const otherUser = getOtherUser(chatRoom)
+              const isUnread = !chatRoom.read && chatRoom.receiverId === userId
               return (
                 <TouchableOpacity
                   key={chatRoom.roomId}
@@ -169,7 +195,18 @@ const ChatPage = () => {
                       )}
                     </View>
                     <View className="flex-1">
-                      <Text className="text-lg font-semibold text-darkBlue">{otherUser.name}</Text>
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-lg font-semibold text-darkBlue">
+                          {otherUser.name}
+                        </Text>
+                        {isUnread && <View className="w-2.5 h-2.5 rounded-full bg-darkBlue" />}
+                      </View>
+                      <Text className="text-sm text-gray-500" numberOfLines={1}>
+                        {chatRoom.message}
+                      </Text>
+                      <Text className="text-xs text-gray-400">
+                        {formatMessageTime(chatRoom.createdAt)}
+                      </Text>
                     </View>
                   </View>
                 </TouchableOpacity>
