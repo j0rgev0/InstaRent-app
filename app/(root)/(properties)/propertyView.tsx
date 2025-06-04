@@ -563,7 +563,7 @@ const PropertyView = () => {
 
   const renderBottomButton = () => (
     <>
-      {!fromHome ? (
+      {!fromHome || property.user_id === session?.user.id ? (
         <TouchableOpacity
           onPress={handleEdit}
           className="bg-darkBlue rounded-xl p-4 items-center mt-4">
