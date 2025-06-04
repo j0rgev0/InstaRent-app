@@ -87,10 +87,20 @@ const MessageList = memo(function MessageList({
       groups[date].push(message)
     })
 
-    return Object.entries(groups).map(([date, messages]) => ({
-      date: formatDate(new Date(date).getTime()),
-      messages
-    }))
+    Object.keys(groups).forEach((date) => {
+      groups[date].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+    })
+
+    return Object.entries(groups)
+      .map(([date, messages]) => ({
+        date: formatDate(new Date(date).getTime()),
+        messages
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.messages[0]?.timestamp || 0)
+        const dateB = new Date(b.messages[0]?.timestamp || 0)
+        return dateB.getTime() - dateA.getTime()
+      })
   }, [])
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<MessageGroup>) => {
