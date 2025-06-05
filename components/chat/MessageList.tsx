@@ -1,7 +1,6 @@
-import { memo, useCallback, useEffect } from 'react'
+import { memo, useCallback } from 'react'
 import { FlatList, ListRenderItemInfo, Text, View } from 'react-native'
 
-import { socketService } from '../../lib/socket'
 import { MessageBubble } from './MessageBubble'
 
 export type Message = {
@@ -22,7 +21,7 @@ type MessageListProps = {
   onLoadMore: () => void
   isLoading: boolean
   hasMoreMessages: boolean
-  currentUserId: string
+  currentUserId: string | undefined
 }
 
 const MessageList = memo(function MessageList({
@@ -33,45 +32,31 @@ const MessageList = memo(function MessageList({
   hasMoreMessages,
   currentUserId
 }: MessageListProps) {
-  useEffect(() => {
-    socketService.connect(currentUserId)
-
-    return () => {
-      socketService.disconnect()
-    }
-  }, [currentUserId])
-
-  useEffect(() => {
-    if (messages.length > 0 && flatListRef.current) {
-      flatListRef.current.scrollToOffset({ offset: 0, animated: true })
-    }
-  }, [messages.length])
+  const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp)
+    return date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
 
   const formatDate = (timestamp: number) => {
-    const messageDate = new Date(timestamp)
+    const date = new Date(timestamp)
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    if (messageDate.toDateString() === today.toDateString()) {
-      return 'Hoy'
-    } else if (messageDate.toDateString() === yesterday.toDateString()) {
-      return 'Ayer'
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today'
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday'
     } else {
-      return messageDate.toLocaleDateString([], {
-        day: '2-digit',
-        month: '2-digit',
+      return date.toLocaleDateString([], {
+        month: 'short',
+        day: 'numeric',
         year: 'numeric'
       })
     }
-  }
-
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: undefined
-    })
   }
 
   const groupMessagesByDate = useCallback((messages: Message[]): MessageGroup[] => {

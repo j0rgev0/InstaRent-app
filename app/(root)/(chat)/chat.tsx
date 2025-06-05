@@ -1,11 +1,10 @@
 import { ChatInput } from '@/components/chat/ChatInput'
 import { MessageList, type Message } from '@/components/chat/MessageList'
 import { authClient } from '@/lib/auth-client'
-import { socketService } from '@/lib/socket'
+import { useSocket } from '@/lib/socket'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
-import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   Alert,
   FlatList,
@@ -24,183 +23,131 @@ type MessageGroup = {
 }
 
 export default function ChatScreen() {
-  const { data: session, isPending: isSessionLoading } = authClient.useSession()
-  const params = useLocalSearchParams()
-
-  const roomChatId = params.roomChatID as string
-  const propertyOwner = params.propertyOwner as string
+  const { propertyOwner, roomChatID } = useLocalSearchParams<{
+    propertyOwner: string
+    roomChatID: string
+  }>()
+  const { data: session } = authClient.useSession()
+  const currentUserId = session?.user?.id
+  const socket = useSocket()
   const navigation = useNavigation()
-
-  const [ownerName, setOwnerName] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
-
+  const [page, setPage] = useState(1)
   const flatListRef = useRef<FlatList<MessageGroup> | null>(null)
-  const currentUserId = session?.user?.id
-  const socketInitialized = useRef(false)
 
-  const markMessagesAsRead = useCallback(async () => {
-    if (!currentUserId || !propertyOwner) return
+  const fetchMessages = async (pageNum: number) => {
+    if (!currentUserId || !roomChatID) return
 
     try {
-      const response = await fetch(`${INSTARENT_API_URL}/chat/read/${roomChatId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${INSTARENT_API_KEY}`
-        },
-        body: JSON.stringify({ userId: currentUserId })
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Error marking messages as read')
-      }
-    } catch (error) {
-      console.error('Error marking messages as read:', error)
-    }
-  }, [currentUserId, propertyOwner])
-
-  const fetchOwnerName = useCallback(async () => {
-    try {
-      const response = await fetchWithErrorHandling(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
+      setIsLoading(true)
+      const response = await fetch(`${INSTARENT_API_URL}/chat/${roomChatID}`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${INSTARENT_API_KEY}`
         }
       })
-      const data = await response.json()
-      setOwnerName(data.name)
-    } catch (error) {
-      handleNetworkError(error, 'No se pudo cargar la información del usuario')
-    }
-  }, [propertyOwner])
 
-  const fetchMessages = useCallback(
-    async (page = 1) => {
-      if (!currentUserId || isLoading) return
-
-      setIsLoading(true)
-      try {
-        const response = await fetchWithErrorHandling(`${INSTARENT_API_URL}/chat/${roomChatId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${INSTARENT_API_KEY}`
-          }
-        })
-        const data = await response.json()
-
-        const messagesArray = Array.isArray(data) ? data : data.messages || []
-        const formattedMessages: Message[] = messagesArray.map((msg: any) => ({
-          id: msg.id.toString(),
-          text: msg.message.trim(),
-          sender: msg.senderId === currentUserId ? 'user' : 'bot',
-          timestamp: new Date(msg.createdAt).getTime()
-        }))
-
-        setMessages((prev) => {
-          const newMessages = page === 1 ? formattedMessages : [...prev, ...formattedMessages]
-          return [...new Set(newMessages.map((m) => m.id))]
-            .map((id) => newMessages.find((m) => m.id === id)!)
-            .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
-        })
-
-        setHasMoreMessages(messagesArray.length === MESSAGES_PER_PAGE)
-      } catch (error) {
-        handleNetworkError(error, 'Error fetching messages')
-      } finally {
-        setIsLoading(false)
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages')
       }
-    },
-    [currentUserId, isLoading, roomChatId]
-  )
 
-  useEffect(() => {
-    if (propertyOwner) fetchOwnerName()
-  }, [fetchOwnerName])
+      const data = await response.json()
 
-  useEffect(() => {
-    if (propertyOwner && currentUserId) {
-      fetchMessages(1)
-      markMessagesAsRead()
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid response format')
+      }
+
+      const formattedMessages: Message[] = data.map((msg: any) => ({
+        id: msg.id,
+        text: msg.message,
+        sender: msg.senderId === currentUserId ? 'user' : 'bot',
+        timestamp: new Date(msg.createdAt).getTime()
+      }))
+
+      if (pageNum === 1) {
+        setMessages(formattedMessages)
+      } else {
+        setMessages((prev) => [...prev, ...formattedMessages])
+      }
+
+      setHasMoreMessages(data.length === MESSAGES_PER_PAGE)
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      Alert.alert('Error', 'Failed to load messages')
+    } finally {
+      setIsLoading(false)
     }
-  }, [propertyOwner, currentUserId, fetchMessages, markMessagesAsRead])
+  }
 
   useEffect(() => {
-    if (!currentUserId || socketInitialized.current) return
+    if (currentUserId && roomChatID) {
+      fetchMessages(1)
+      socket.joinRoom(roomChatID)
+    }
+  }, [currentUserId, roomChatID])
 
-    const roomId = roomChatId
-    socketService.connect(currentUserId)
-    socketService.joinRoom(roomId)
-    socketInitialized.current = true
+  useEffect(() => {
+    if (!currentUserId || !roomChatID) return
 
     const handleNewMessage = (data: any) => {
-      if (!data || !data.message || !data.id || !data.senderId || !data.createdAt) {
-        console.log('Invalid message data received:', data)
-        return
+      if (!data || !data.message || !data.senderId || !data.receiverId) return
+
+      const newMessage: Message = {
+        id: data.id || Date.now().toString(),
+        text: data.message,
+        sender: data.senderId === currentUserId ? 'user' : 'bot',
+        timestamp: new Date(data.createdAt).getTime()
       }
 
-      setMessages((prev) => {
-        const existing = prev.find((msg) => msg.id === data.id.toString())
-        if (existing) return prev
-
-        return [
-          ...prev,
-          {
-            id: data.id.toString(),
-            text: data.message.trim(),
-            sender: data.senderId === currentUserId ? ('user' as const) : ('bot' as const),
-            timestamp: new Date(data.createdAt).getTime()
-          }
-        ].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
-      })
+      setMessages((prev) => [newMessage, ...prev])
     }
 
-    socketService.onMessage(handleNewMessage)
+    socket.onMessage(handleNewMessage)
 
     return () => {
-      socketService.disconnect()
-      socketInitialized.current = false
+      socket.removeHandler('receive_message', handleNewMessage)
     }
-  }, [currentUserId, propertyOwner])
+  }, [currentUserId, roomChatID])
 
   const handleLoadMore = () => {
     if (!isLoading && hasMoreMessages) {
-      const nextPage = Math.floor(messages.length / MESSAGES_PER_PAGE) + 1
+      const nextPage = page + 1
+      setPage(nextPage)
       fetchMessages(nextPage)
     }
   }
 
   const sendMessage = async () => {
-    if (input.trim() === '' || !currentUserId) return
+    if (!input.trim() || !currentUserId || !propertyOwner || !roomChatID) return
 
-    const messageText = input.trim()
+    const message = input.trim()
     setInput('')
 
     try {
-      const roomId = roomChatId
-      await socketService.sendMessage({
-        roomId,
+      socket.sendMessage({
+        roomId: roomChatID,
         senderId: currentUserId,
         receiverId: propertyOwner,
-        message: messageText
+        message
       })
     } catch (error) {
       console.error('Error sending message:', error)
-      Alert.alert('Error', 'No se pudo enviar el mensaje')
+      Alert.alert('Error', 'Failed to send message')
     }
   }
 
   useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitleAlign: 'center',
-      headerTitle: `Chat with ${ownerName}`
-    })
-  }, [navigation, ownerName])
+    if (Platform.OS === 'web') {
+      document.title = 'Chat'
+    }
+  }, [])
 
-  if (isSessionLoading || !currentUserId) return null
+  if (!currentUserId || !propertyOwner || !roomChatID) {
+    return null
+  }
 
   return (
     <KeyboardAvoidingView

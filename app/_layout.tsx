@@ -6,6 +6,7 @@ import { Stack, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 
 import { authClient } from '@/lib/auth-client'
+import { SocketProvider } from '@/lib/socket'
 
 import '@/global.css'
 
@@ -28,29 +29,31 @@ export default function AppLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar style="dark" />
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
-            headerShown: false,
-            animation: 'none'
-          }}
-        />
-        <Stack.Screen
-          name="(auth)"
-          options={{
-            headerShown: false
-          }}
-        />
-        <Stack.Screen
-          name="(root)"
-          options={{
-            headerShown: false
-          }}
-        />
-      </Stack>
-    </View>
+    <SocketProvider>
+      <View style={{ flex: 1 }}>
+        <StatusBar style="dark" />
+        <Stack>
+          <Stack.Screen
+            name="index"
+            options={{
+              headerShown: false,
+              animation: 'none'
+            }}
+          />
+          <Stack.Screen
+            name="(auth)"
+            options={{
+              headerShown: false
+            }}
+          />
+          <Stack.Screen
+            name="(root)"
+            options={{
+              headerShown: false
+            }}
+          />
+        </Stack>
+      </View>
+    </SocketProvider>
   )
 }

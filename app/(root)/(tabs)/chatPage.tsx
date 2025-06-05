@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect, useRouter } from 'expo-router'
 
 import { authClient } from '@/lib/auth-client'
-import { socketService } from '@/lib/socket'
+import { useSocket } from '@/lib/socket'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
@@ -39,6 +39,7 @@ type ChatRoom = {
 
 const ChatPage = () => {
   const { data: session } = authClient.useSession()
+  const socket = useSocket()
 
   const userId = session?.user.id
 
@@ -113,28 +114,26 @@ const ChatPage = () => {
   useEffect(() => {
     if (!userId) return
 
-    socketService.connect(userId)
-
     const handleNewMessage = async (data: any) => {
       if (!data || !data.message || !data.senderId || !data.receiverId) {
         return
       }
 
       const roomId = data.roomid
-      socketService.joinRoom(roomId)
+      socket.joinRoom(roomId)
 
       await fetchUserChatRooms()
     }
 
-    socketService.onMessage(handleNewMessage)
+    socket.onMessage(handleNewMessage)
 
     chats.forEach((chat) => {
       const roomId = chat.roomId
-      socketService.joinRoom(roomId)
+      socket.joinRoom(roomId)
     })
 
     return () => {
-      socketService.disconnect()
+      socket.removeHandler('receive_message', handleNewMessage)
     }
   }, [userId, chats])
 
@@ -158,8 +157,31 @@ const ChatPage = () => {
     }, [userId])
   )
 
-  const handleChatPress = (chatRoom: ChatRoom) => {
+  const handleChatPress = async (chatRoom: ChatRoom) => {
     const otherUserId = chatRoom.senderId === userId ? chatRoom.receiverId : chatRoom.senderId
+
+    // Mark messages as read when entering chat
+    if (!chatRoom.read && chatRoom.receiverId === userId) {
+      try {
+        await fetch(`${INSTARENT_API_URL}/chat/read/${chatRoom.roomId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          }
+        })
+
+        // Update local state
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.roomId === chatRoom.roomId ? { ...chat, read: true } : chat
+          )
+        )
+      } catch (error) {
+        console.error('Error marking messages as read:', error)
+      }
+    }
+
     router.push({
       pathname: '/(root)/(chat)/chat',
       params: {
