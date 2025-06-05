@@ -22,7 +22,7 @@ import '@/global.css'
 import GeneralFilters from '@/components/home/GeneralFilters'
 import LocationFilters from '@/components/home/LocationFilters'
 import PropertyCard from '@/components/home/PropertyCard'
-import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
+import { fetchWithErrorHandling } from '@/utils/error-handler'
 
 const { height } = Dimensions.get('window')
 
@@ -113,7 +113,6 @@ const HomePage = () => {
       const data = await response.json()
       setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
-      handleNetworkError(error, 'Error getting properties')
       setProperties([])
     }
   }

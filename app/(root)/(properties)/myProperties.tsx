@@ -1,5 +1,6 @@
+import { router } from 'expo-router'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Platform, RefreshControl, ScrollView } from 'react-native'
+import { Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 
 import { authClient } from '@/lib/auth-client'
@@ -35,9 +36,11 @@ const MyProperties = () => {
       )
 
       const data = await response.json()
-      setProperties(data)
+      setProperties(data || [])
     } catch (error) {
-      handleNetworkError(error, 'Error getting properties')
+      if (error instanceof Error && error.message !== 'No properties found') {
+        handleNetworkError(error, 'Error getting properties')
+      }
       setProperties([])
     }
   }
@@ -65,14 +68,25 @@ const MyProperties = () => {
       <ScrollView
         className="bg-white px-4 pt-4"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {properties.map((property) => (
-          <PropertyPreview
-            key={property.id}
-            property={property}
-            swipeableRef={swipeableRef}
-            onDelete={fetchProperties}
-          />
-        ))}
+        {properties.length === 0 ? (
+          <View className="flex-1 items-center justify-center min-h-[80vh]">
+            <Text className="text-xl text-gray-600 mb-4">You don't have any properties yet</Text>
+            <Pressable
+              onPress={() => router.push('/publish')}
+              className="bg-blue-500 px-6 py-3 rounded-lg">
+              <Text className="text-white font-semibold">Publish a Property</Text>
+            </Pressable>
+          </View>
+        ) : (
+          properties.map((property) => (
+            <PropertyPreview
+              key={property.id}
+              property={property}
+              swipeableRef={swipeableRef}
+              onDelete={fetchProperties}
+            />
+          ))
+        )}
       </ScrollView>
     </GestureHandlerRootView>
   )
