@@ -103,6 +103,25 @@ export default function ChatScreen() {
       }
 
       setMessages((prev) => [newMessage, ...prev])
+
+      if (data.receiverId === currentUserId) {
+        fetch(`${INSTARENT_API_URL}/chat/read/${roomChatID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          },
+          body: JSON.stringify({
+            userId: currentUserId
+          })
+        })
+          .then(() => {
+            socket.fetchUnreadCount(currentUserId)
+          })
+          .catch((error) => {
+            console.error('Error marking message as read:', error)
+          })
+      }
     }
 
     socket.onMessage(handleNewMessage)
@@ -110,6 +129,31 @@ export default function ChatScreen() {
     return () => {
       socket.removeHandler('receive_message', handleNewMessage)
     }
+  }, [currentUserId, roomChatID])
+
+  useEffect(() => {
+    if (!currentUserId || !roomChatID) return
+
+    const markMessagesAsRead = async () => {
+      try {
+        await fetch(`${INSTARENT_API_URL}/chat/read/${roomChatID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          },
+          body: JSON.stringify({
+            userId: currentUserId
+          })
+        })
+        // Refresh unread count after marking all messages as read
+        socket.fetchUnreadCount(currentUserId)
+      } catch (error) {
+        console.error('Error marking messages as read:', error)
+      }
+    }
+
+    markMessagesAsRead()
   }, [currentUserId, roomChatID])
 
   const handleLoadMore = () => {
