@@ -25,6 +25,7 @@ import AddressAutocomplete from '@/components/map/MapComponent.web'
 import MapPreview from '@/components/map/MapPreview'
 
 import '@/global.css'
+import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
 import { Ionicons } from '@expo/vector-icons'
 
 const PublishPage = () => {
@@ -119,69 +120,30 @@ const PublishPage = () => {
 
   const fetchAddressFromCoords = async (latitude: number, longitude: number) => {
     try {
-      const response = await fetch(
+      const response = await fetchWithErrorHandling(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}&language=en`
       )
       const data = await response.json()
-      if (data.results.length > 0) {
+
+      if (data.results && data.results.length > 0) {
         const result = data.results[0]
+        const addressComponents = result.address_components.reduce((acc: any, component: any) => {
+          const type = component.types[0]
+          acc[type] = component.long_name
+          return acc
+        }, {})
 
-        const components = {
-          street: '',
-          streetNumber: '',
-          neighborhood: '',
-          locality: '',
-          province: '',
-          state: '',
-          country: '',
-          postalCode: '',
+        setAddressComponents({
+          street: addressComponents.route || '',
+          streetNumber: addressComponents.street_number || '',
+          neighborhood: addressComponents.sublocality_level_1 || '',
+          locality: addressComponents.locality || '',
+          province: addressComponents.administrative_area_level_2 || '',
+          state: addressComponents.administrative_area_level_1 || '',
+          country: addressComponents.country || '',
+          postalCode: addressComponents.postal_code || '',
           formattedAddress: result.formatted_address
-        }
-
-        let foundCity = false
-
-        result.address_components.forEach((component: any) => {
-          const types = component.types
-          const name = component.long_name
-
-          if (types.includes('street_number')) {
-            components.streetNumber = name
-          }
-
-          if (types.includes('route')) {
-            components.street = name
-          }
-
-          if (types.includes('sublocality') || types.includes('neighborhood')) {
-            components.neighborhood = name
-          }
-
-          if (types.includes('locality') && !foundCity) {
-            components.locality = name
-            foundCity = true
-          }
-
-          if (types.includes('administrative_area_level_2')) {
-            components.province = name
-            if (!foundCity) {
-              components.locality = name
-            }
-          }
-
-          if (types.includes('administrative_area_level_1')) {
-            components.state = name
-          }
-
-          if (types.includes('country')) {
-            components.country = name
-          }
-
-          if (types.includes('postal_code')) {
-            components.postalCode = name
-          }
         })
-
-        setAddressComponents(components)
       } else {
         setAddressComponents({
           street: '',
@@ -196,8 +158,7 @@ const PublishPage = () => {
         })
       }
     } catch (error) {
-      console.error('Error fetching address:', error)
-
+      handleNetworkError(error, 'Error fetching address')
       setAddressComponents({
         street: '',
         streetNumber: '',
@@ -214,7 +175,7 @@ const PublishPage = () => {
 
   async function createProperty(propertyData: any, token: string) {
     try {
-      const response = await fetch(`${INSTARENT_API_URL}/properties/new`, {
+      const response = await fetchWithErrorHandling(`${INSTARENT_API_URL}/properties/new`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,38 +185,31 @@ const PublishPage = () => {
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error publishing property')
-      }
-
       return data
     } catch (error) {
-      console.error('Error publishing property:', error)
+      handleNetworkError(error, 'Error publishing property')
       throw error
     }
   }
 
   async function editProperty(propertyData: any, token: string) {
     try {
-      const response = await fetch(`${INSTARENT_API_URL}/properties/edit/${propertyid}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(propertyData)
-      })
+      const response = await fetchWithErrorHandling(
+        `${INSTARENT_API_URL}/properties/edit/${propertyid}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(propertyData)
+        }
+      )
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error editing property')
-      }
-
       return data
     } catch (error) {
-      console.error('Error editing property:', error)
+      handleNetworkError(error, 'Error editing property')
       throw error
     }
   }
@@ -416,14 +370,14 @@ const PublishPage = () => {
       const data = await createProperty(propertyPayload, INSTARENT_API_KEY)
       const newPropertyId = data.property.id
 
-      Alert.alert('Added property')
+      Alert.alert('Success', 'Property added successfully')
       router.replace({
         pathname: '/(root)/(properties)/addPictures',
         params: { propertyId: newPropertyId }
       })
     } catch (error) {
-      console.error(error)
-      Alert.alert('Failed to create property')
+      // El error ya fue manejado en createProperty
+      console.error('Failed to create property:', error)
     }
   }
 
@@ -433,12 +387,11 @@ const PublishPage = () => {
     }
     try {
       await editProperty(propertyPayload, INSTARENT_API_KEY)
-
-      Alert.alert('Property edited')
+      Alert.alert('Success', 'Property edited successfully')
       router.replace('/(root)/(properties)/myProperties')
     } catch (error) {
-      console.error(error)
-      Alert.alert('Failed to edit property')
+      // El error ya fue manejado en editProperty
+      console.error('Failed to edit property:', error)
     }
   }
 

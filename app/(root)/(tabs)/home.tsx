@@ -22,6 +22,7 @@ import '@/global.css'
 import GeneralFilters from '@/components/home/GeneralFilters'
 import LocationFilters from '@/components/home/LocationFilters'
 import PropertyCard from '@/components/home/PropertyCard'
+import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
 
 const { height } = Dimensions.get('window')
 
@@ -101,7 +102,7 @@ const HomePage = () => {
 
       const url = `${INSTARENT_API_URL}/properties?${queryParams.toString()}`
 
-      const response = await fetch(url, {
+      const response = await fetchWithErrorHandling(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -110,13 +111,9 @@ const HomePage = () => {
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error getting properties')
-      }
-
       setProperties(Array.isArray(data) ? data : [])
     } catch (error) {
+      handleNetworkError(error, 'Error getting properties')
       setProperties([])
     }
   }

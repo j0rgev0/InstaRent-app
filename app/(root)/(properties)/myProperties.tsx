@@ -10,6 +10,7 @@ import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import { Property } from '@/utils/types'
 
 import '@/global.css'
+import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
 import { useFocusEffect } from 'expo-router'
 
 const MyProperties = () => {
@@ -22,23 +23,22 @@ const MyProperties = () => {
   const fetchProperties = async () => {
     if (!userid) return
     try {
-      const response = await fetch(`${INSTARENT_API_URL}/properties?userid=${userid}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${INSTARENT_API_KEY}`
+      const response = await fetchWithErrorHandling(
+        `${INSTARENT_API_URL}/properties?userid=${userid}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          }
         }
-      })
+      )
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error getting properties')
-      }
-
       setProperties(data)
     } catch (error) {
-      console.error('Error getting properties', error)
+      handleNetworkError(error, 'Error getting properties')
+      setProperties([])
     }
   }
 

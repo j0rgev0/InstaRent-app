@@ -3,6 +3,7 @@ import { MessageList, type Message } from '@/components/chat/MessageList'
 import { authClient } from '@/lib/auth-client'
 import { socketService } from '@/lib/socket'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
@@ -64,19 +65,16 @@ export default function ChatScreen() {
 
   const fetchOwnerName = useCallback(async () => {
     try {
-      const response = await fetch(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
+      const response = await fetchWithErrorHandling(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${INSTARENT_API_KEY}`
         }
       })
       const data = await response.json()
-
-      if (!response.ok) throw new Error(data.error || 'Error getting user')
       setOwnerName(data.name)
     } catch (error) {
-      console.error('Error fetching owner name:', error)
-      Alert.alert('Error', 'No se pudo cargar la información del usuario')
+      handleNetworkError(error, 'No se pudo cargar la información del usuario')
     }
   }, [propertyOwner])
 
@@ -86,14 +84,13 @@ export default function ChatScreen() {
 
       setIsLoading(true)
       try {
-        const response = await fetch(`${INSTARENT_API_URL}/chat/${roomChatId}`, {
+        const response = await fetchWithErrorHandling(`${INSTARENT_API_URL}/chat/${roomChatId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${INSTARENT_API_KEY}`
           }
         })
         const data = await response.json()
-        if (!response.ok) throw new Error(data.error || 'Error fetching messages')
 
         const messagesArray = Array.isArray(data) ? data : data.messages || []
         const formattedMessages: Message[] = messagesArray.map((msg: any) => ({
@@ -112,13 +109,12 @@ export default function ChatScreen() {
 
         setHasMoreMessages(messagesArray.length === MESSAGES_PER_PAGE)
       } catch (error) {
-        console.error('Error fetching messages:', error)
-        Alert.alert('Error', 'No se pudieron cargar los mensajes')
+        handleNetworkError(error, 'Error fetching messages')
       } finally {
         setIsLoading(false)
       }
     },
-    [propertyOwner, currentUserId, isLoading]
+    [currentUserId, isLoading, roomChatId]
   )
 
   useEffect(() => {
