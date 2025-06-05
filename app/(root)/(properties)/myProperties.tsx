@@ -1,6 +1,6 @@
 import { router } from 'expo-router'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 
 import { authClient } from '@/lib/auth-client'
@@ -13,6 +13,7 @@ import { Property } from '@/utils/types'
 import '@/global.css'
 import { fetchWithErrorHandling, handleNetworkError } from '@/utils/error-handler'
 import { useFocusEffect } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 
 const MyProperties = () => {
   const { data: session } = authClient.useSession()
@@ -71,11 +72,11 @@ const MyProperties = () => {
         {properties.length === 0 ? (
           <View className="flex-1 items-center justify-center min-h-[80vh]">
             <Text className="text-xl text-gray-600 mb-4">You don't have any properties yet</Text>
-            <Pressable
-              onPress={() => router.push('/publish')}
-              className="bg-blue-500 px-6 py-3 rounded-lg">
-              <Text className="text-white font-semibold">Publish a Property</Text>
-            </Pressable>
+            <TouchableOpacity
+              className="px-6 py-3 rounded-2xl bg-darkBlue"
+              onPress={() => router.push('/(root)/(properties)/publish')}>
+              <Text className="px-2 text-base font-semibold text-white">Publish</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           properties.map((property) => (
