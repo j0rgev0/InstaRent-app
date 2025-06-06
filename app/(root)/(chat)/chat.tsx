@@ -3,14 +3,19 @@ import { MessageList, type Message } from '@/components/chat/MessageList'
 import { authClient } from '@/lib/auth-client'
 import { useSocket } from '@/lib/socket'
 import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   Alert,
   FlatList,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Text,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from 'react-native'
@@ -20,6 +25,16 @@ const MESSAGES_PER_PAGE = 20
 type MessageGroup = {
   date: string
   messages: Message[]
+}
+
+type User = {
+  id: string
+  name: string
+  username: string
+  image: string | null
+  email: string
+  emailVerified: boolean
+  displayUsername: string
 }
 
 export default function ChatScreen() {
@@ -36,7 +51,66 @@ export default function ChatScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const [hasMoreMessages, setHasMoreMessages] = useState(true)
   const [page, setPage] = useState(1)
+  const [otherUser, setOtherUser] = useState<User | null>(null)
+  const [property, setProperty] = useState<any>(null)
+  const [showPropertyInfo, setShowPropertyInfo] = useState(false)
+  const [showUserInfo, setShowUserInfo] = useState(false)
   const flatListRef = useRef<FlatList<MessageGroup> | null>(null)
+
+  const [propertyId] = roomChatID ? roomChatID.split('::') : ['']
+
+  const fetchOtherUser = async () => {
+    if (!propertyOwner) return
+
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/users/${propertyOwner}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user information')
+      }
+
+      const userData = await response.json()
+      setOtherUser(userData)
+    } catch (error) {
+      console.error('Error fetching user information:', error)
+    }
+  }
+
+  const fetchProperty = async () => {
+    if (!propertyId) return
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/properties/${propertyId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch property')
+      }
+
+      const data = await response.json()
+      setProperty(data)
+    } catch (error) {
+      console.error('Error fetching property:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchOtherUser()
+  }, [propertyOwner])
+
+  useEffect(() => {
+    if (propertyId) {
+      fetchProperty()
+    }
+  }, [propertyId])
 
   const fetchMessages = async (pageNum: number) => {
     if (!currentUserId || !roomChatID) return
@@ -146,7 +220,6 @@ export default function ChatScreen() {
             userId: currentUserId
           })
         })
-        // Refresh unread count after marking all messages as read
         socket.fetchUnreadCount(currentUserId)
       } catch (error) {
         console.error('Error marking messages as read:', error)
@@ -183,6 +256,39 @@ export default function ChatScreen() {
     }
   }
 
+  const handleViewProperty = () => {
+    if (propertyId) {
+      router.push({
+        pathname: '/(root)/(properties)/propertyView',
+        params: { propertyId }
+      })
+    }
+  }
+
+  const handleViewUserInfo = () => {
+    if (otherUser) {
+      setShowUserInfo(true)
+    }
+  }
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: otherUser?.name,
+      headerTitleAlign: 'center',
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.back()} className="flex flex-row items-center">
+          <Ionicons name="chevron-back-sharp" size={32} color={'#3b82f6'} />
+          <Text className="text-lg text-blue-500">Back</Text>
+        </TouchableOpacity>
+      ),
+      headerRight: () => (
+        <TouchableOpacity onPress={handleViewUserInfo} className="mr-4">
+          <Ionicons name="information-circle-outline" size={24} color={'#3b82f6'} />
+        </TouchableOpacity>
+      )
+    })
+  }, [navigation, otherUser])
+
   useLayoutEffect(() => {
     if (Platform.OS === 'web') {
       document.title = 'Chat'
@@ -199,24 +305,92 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}>
       <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined}>
-        <View className="flex-1 justify-end">
-          <MessageList
-            messages={messages}
-            flatListRef={flatListRef}
-            onLoadMore={handleLoadMore}
-            isLoading={isLoading}
-            hasMoreMessages={hasMoreMessages}
-            currentUserId={currentUserId}
-          />
-          <ChatInput
-            value={input}
-            onChangeText={setInput}
-            onSend={sendMessage}
-            currentUserId={currentUserId}
-            receiverId={propertyOwner}
-          />
+        <View className="flex-1">
+          {property && (
+            <TouchableOpacity
+              onPress={handleViewProperty}
+              className="bg-gray-50 border-b border-gray-200 px-4 py-2">
+              <View className="flex-row justify-between items-center">
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-darkBlue capitalize">
+                    {property.type}
+                  </Text>
+                  <Text className="text-sm text-gray-600 capitalize">
+                    {property.street} {property.street_number}, {property.locality}
+                  </Text>
+                </View>
+
+                <Text className="text-base font-semibold text-darkBlue">
+                  {property.operation === 'rent'
+                    ? `${Number(property.price).toLocaleString('es-ES')} €/mes`
+                    : `${Number(property.price).toLocaleString('es-ES')} €`}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          <View className="flex-1 justify-end">
+            <MessageList
+              messages={messages}
+              flatListRef={flatListRef}
+              onLoadMore={handleLoadMore}
+              isLoading={isLoading}
+              hasMoreMessages={hasMoreMessages}
+              currentUserId={currentUserId}
+            />
+            <ChatInput
+              value={input}
+              onChangeText={setInput}
+              onSend={sendMessage}
+              currentUserId={currentUserId}
+              receiverId={propertyOwner}
+            />
+          </View>
         </View>
       </TouchableWithoutFeedback>
+
+      <Modal
+        visible={showUserInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowUserInfo(false)}>
+        <TouchableWithoutFeedback onPress={() => setShowUserInfo(false)}>
+          <View className="flex-1 justify-center items-center bg-black/50">
+            <TouchableWithoutFeedback>
+              <View className="bg-white rounded-lg p-6 m-4 w-[80%]">
+                <View className="items-center mb-4">
+                  {otherUser?.image ? (
+                    <Image
+                      source={{ uri: otherUser.image }}
+                      className="w-20 h-20 rounded-full mb-2"
+                    />
+                  ) : (
+                    <View className="w-20 h-20 rounded-full bg-gray-200 items-center justify-center mb-2">
+                      <Text className="text-2xl text-gray-600">
+                        {otherUser?.name?.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                  <View className="flex-row items-center">
+                    <Text className="text-xl font-semibold text-darkBlue mr-2">
+                      {otherUser?.name}
+                    </Text>
+                    {otherUser?.emailVerified && (
+                      <Ionicons name="shield-checkmark-sharp" size={16} color="#353949" />
+                    )}
+                  </View>
+                  <Text className="text-gray-600">@{otherUser?.username}</Text>
+                  <Text className="text-gray-600 mt-1">{otherUser?.email}</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setShowUserInfo(false)}
+                  className="absolute top-2 right-2">
+                  <Ionicons name="close" size={24} color="#353949" />
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </KeyboardAvoidingView>
   )
 }
