@@ -285,7 +285,7 @@ const ChatPage = () => {
                     </View>
                     <View className="flex-1">
                       <View className="flex-row items-center justify-between">
-                        <View className="flex flex-row items-center mb-2 space-x-2">
+                        <View className="flex flex-row items-center space-x-2">
                           <Text className="text-xl font-semibold text-darkBlue">
                             {otherUser.name}
                           </Text>

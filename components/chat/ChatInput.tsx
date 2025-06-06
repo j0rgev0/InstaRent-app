@@ -78,7 +78,7 @@ export function ChatInput({
               : 10
       }}>
       <TextInput
-        className="flex-1 bg-gray-100 rounded-full px-4 py-2 mr-2"
+        className="flex-1 bg-gray-100 rounded-3xl px-4 py-2 mr-2"
         placeholder="Type a message..."
         value={value}
         onChangeText={handleTyping}
@@ -94,7 +94,7 @@ export function ChatInput({
         className={`rounded-full px-4 h-[40px] justify-center ml-2 ${
           value.trim() ? 'bg-darkBlue' : 'bg-gray-300'
         }`}>
-        <Ionicons name={Platform.OS === 'ios' ? 'arrow-up' : 'send'} size={20} color="white" />
+        <Ionicons name= 'arrow-up' size={20} color="white" />
       </TouchableOpacity>
     </View>
   )
