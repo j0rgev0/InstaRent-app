@@ -371,9 +371,7 @@ export default function ChatScreen() {
                     </View>
                   )}
                   <View className="flex-row items-center">
-                    <Text className="text-xl font-semibold text-darkBlue mr-2">
-                      {otherUser?.name}
-                    </Text>
+                    <Text className="text-xl font-semibold text-darkBlue">{otherUser?.name}</Text>
                     {otherUser?.emailVerified && (
                       <Ionicons name="shield-checkmark-sharp" size={16} color="#353949" />
                     )}
