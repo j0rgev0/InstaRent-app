@@ -28,7 +28,7 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCMDZehRRJZmHC_ER3WxzTOSKrvf0tcz60"
+          "apiKey": ""
         }
       },
       "edgeToEdgeEnabled": true,
