@@ -43,20 +43,12 @@ export default function RootLayout() {
                 />
                 {unreadCount > 0 && (
                   <View
+                    className="absolute rounded-full h-5 min-w-5 justify-center items-center bg-red-500"
                     style={{
-                      position: 'absolute',
                       right: -6,
-                      top: -6,
-                      backgroundColor: '#FF3B30',
-                      borderRadius: 10,
-                      minWidth: 20,
-                      height: 20,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      borderWidth: 1,
-                      borderColor: 'white'
+                      top: -6
                     }}>
-                    <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                    <Text className="text-white text-xs font-semibold">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </Text>
                   </View>

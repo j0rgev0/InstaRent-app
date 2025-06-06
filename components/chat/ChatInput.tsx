@@ -65,7 +65,18 @@ export function ChatInput({
   }
 
   return (
-    <View className="flex-row items-center p-4 border-t border-gray-200 bg-white">
+    <View
+      className={`flex-row items-end px-2.5 py-2 border-t border-gray-300 bg-white`}
+      style={{
+        paddingBottom:
+          Platform.OS === 'android'
+            ? isKeyboardVisible
+              ? keyboardHeight + 25
+              : 25
+            : !isKeyboardVisible
+              ? 30
+              : 10
+      }}>
       <TextInput
         className="flex-1 bg-gray-100 rounded-full px-4 py-2 mr-2"
         placeholder="Type a message..."

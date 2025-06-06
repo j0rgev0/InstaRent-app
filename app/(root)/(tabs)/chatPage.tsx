@@ -19,11 +19,15 @@ import { INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 
 import '@/global.css'
 import { Property } from '@/utils/types'
+import { Ionicons } from '@expo/vector-icons'
 
 type User = {
   id: string
   name: string
+  username: string
   image: string | null
+  emailVerified: boolean
+  displayUsername: string
 }
 
 type ChatRoom = {
@@ -160,7 +164,6 @@ const ChatPage = () => {
   const handleChatPress = async (chatRoom: ChatRoom) => {
     const otherUserId = chatRoom.senderId === userId ? chatRoom.receiverId : chatRoom.senderId
 
-    // Mark messages as read when entering chat
     if (!chatRoom.read && chatRoom.receiverId === userId) {
       try {
         await fetch(`${INSTARENT_API_URL}/chat/read/${chatRoom.roomId}`, {
@@ -171,7 +174,6 @@ const ChatPage = () => {
           }
         })
 
-        // Update local state
         setChats((prevChats) =>
           prevChats.map((chat) =>
             chat.roomId === chatRoom.roomId ? { ...chat, read: true } : chat
@@ -233,7 +235,6 @@ const ChatPage = () => {
   }
 
   useEffect(() => {
-    // Fetch properties for all chats
     chats.forEach((chatRoom) => {
       const [propertyId] = chatRoom.roomId.split('::')
       if (propertyId && !properties.has(propertyId)) {
@@ -284,9 +285,14 @@ const ChatPage = () => {
                     </View>
                     <View className="flex-1">
                       <View className="flex-row items-center justify-between">
-                        <Text className="text-xl font-semibold text-darkBlue">
-                          {otherUser.name}
-                        </Text>
+                        <View className="flex flex-row items-center mb-2 space-x-2">
+                          <Text className="text-xl font-semibold text-darkBlue">
+                            {otherUser.name}
+                          </Text>
+                          {otherUser.emailVerified && (
+                            <Ionicons name="shield-checkmark-sharp" size={12} color="#353949" />
+                          )}
+                        </View>
                         <Text
                           className={`text-base ${isUnread ? 'text-darkBlue font-semibold' : 'text-gray-400'} `}>
                           {formatMessageTime(chatRoom.createdAt)}
