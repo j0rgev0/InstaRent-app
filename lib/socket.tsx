@@ -1,4 +1,5 @@
 import { CHAT_API_URL, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
+import { useRouter } from 'expo-router'
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { AppState, AppStateStatus } from 'react-native'
 import { io, Socket } from 'socket.io-client'
@@ -83,10 +84,36 @@ class SocketService {
             try {
               const userData = await this.fetchUserData(data.senderId)
               const senderName = userData?.name || 'Someone'
-              showMessageToast(senderName, data.message)
+              showMessageToast(senderName, data.message, {
+                onPress: () => {
+                  if (data.roomId) {
+                    const router = require('expo-router').router
+                    router.push({
+                      pathname: '/(root)/(chat)/chat',
+                      params: {
+                        propertyOwner: data.senderId,
+                        roomChatID: data.roomId
+                      }
+                    })
+                  }
+                }
+              })
             } catch (error) {
               console.error('Error showing message toast:', error)
-              showMessageToast('New message', data.message)
+              showMessageToast('New message', data.message, {
+                onPress: () => {
+                  if (data.roomId) {
+                    const router = require('expo-router').router
+                    router.push({
+                      pathname: '/(root)/(chat)/chat',
+                      params: {
+                        propertyOwner: data.senderId,
+                        roomChatID: data.roomId
+                      }
+                    })
+                  }
+                }
+              })
             }
           }
         }
@@ -236,6 +263,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const { data: session } = authClient.useSession()
   const userId = session?.user?.id
   const [unreadCount, setUnreadCount] = useState(0)
+  const router = useRouter()
 
   const fetchAndJoinChatRooms = async (userId: string) => {
     try {
@@ -252,7 +280,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json()
       if (Array.isArray(data)) {
-        // Join all chat rooms
         data.forEach((chat: ChatRoom) => {
           if (chat.roomId) {
             socketService.joinRoom(chat.roomId)

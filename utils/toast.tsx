@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Toast from 'react-native-toast-message'
 import { FlexAlignType } from 'react-native/Libraries/StyleSheet/StyleSheetTypes'
 
@@ -46,33 +46,44 @@ const styles = StyleSheet.create({
 })
 
 export const toastConfig = {
-  success: ({ text1, text2 }: any) => (
-    <View style={[styles.baseToastContainer, { backgroundColor: '#F5F5F5' }]}>
+  success: ({ text1, text2, onPress }: any) => (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.baseToastContainer, { backgroundColor: '#F5F5F5' }]}>
       <View style={styles.textContainer}>
         <Text style={[styles.text1Style, { color: '#424242' }]}>{text1}</Text>
         <Text style={[styles.text2Style, { color: '#616161' }]}>{text2}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   ),
-  error: ({ text1, text2 }: any) => (
-    <View style={[styles.baseToastContainer, { backgroundColor: '#FAFAFA' }]}>
+  error: ({ text1, text2, onPress }: any) => (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.baseToastContainer, { backgroundColor: '#FAFAFA' }]}>
       <View style={styles.textContainer}>
         <Text style={[styles.text1Style, { color: '#424242' }]}>{text1}</Text>
         <Text style={[styles.text2Style, { color: '#616161' }]}>{text2}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   ),
-  info: ({ text1, text2 }: any) => (
-    <View style={[styles.baseToastContainer, { backgroundColor: '#F0F0F0' }]}>
+  info: ({ text1, text2, onPress }: any) => (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.baseToastContainer, { backgroundColor: '#F0F0F0' }]}>
       <View style={styles.textContainer}>
         <Text style={[styles.text1Style, { color: '#424242' }]}>{text1}</Text>
         <Text style={[styles.text2Style, { color: '#616161' }]}>{text2}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   )
 }
 
-export const showToast = (type: ToastType, title: string, message: string) => {
+export const showToast = (
+  type: ToastType,
+  title: string,
+  message: string,
+  options?: { onPress?: () => void }
+) => {
   Toast.show({
     type,
     text1: title,
@@ -81,22 +92,27 @@ export const showToast = (type: ToastType, title: string, message: string) => {
     visibilityTime: 6000,
     autoHide: true,
     topOffset: 50,
-    bottomOffset: 40
+    bottomOffset: 40,
+    onPress: options?.onPress
   })
 }
 
-export const showSuccessToast = (message: string) => {
-  showToast('success', 'Success', message)
+export const showSuccessToast = (message: string, options?: { onPress?: () => void }) => {
+  showToast('success', 'Success', message, options)
 }
 
-export const showErrorToast = (message: string) => {
-  showToast('error', 'Error', message)
+export const showErrorToast = (message: string, options?: { onPress?: () => void }) => {
+  showToast('error', 'Error', message, options)
 }
 
-export const showInfoToast = (message: string) => {
-  showToast('info', 'Info', message)
+export const showInfoToast = (message: string, options?: { onPress?: () => void }) => {
+  showToast('info', 'Info', message, options)
 }
 
-export const showMessageToast = (senderName: string, message: string) => {
-  showToast('info', senderName, message)
+export const showMessageToast = (
+  senderName: string,
+  message: string,
+  options?: { onPress?: () => void }
+) => {
+  showToast('info', senderName, message, options)
 }
