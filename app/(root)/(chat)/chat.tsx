@@ -53,7 +53,6 @@ export default function ChatScreen() {
   const [page, setPage] = useState(1)
   const [otherUser, setOtherUser] = useState<User | null>(null)
   const [property, setProperty] = useState<any>(null)
-  const [showPropertyInfo, setShowPropertyInfo] = useState(false)
   const [showUserInfo, setShowUserInfo] = useState(false)
   const flatListRef = useRef<FlatList<MessageGroup> | null>(null)
 
