@@ -32,7 +32,7 @@ const InputTextField = ({
   return (
     <View className="gap-2">
       {subtitle && <Text className="pt-5 text-sm font-bold">{subtitle}</Text>}
-      <View className="h-14 flex-row items-center rounded-md border border-black">
+      <View className="h-14 flex-row items-center rounded-2xl border border-black">
         {iconName && <Ionicons name={iconName} size={24} color="black" className="p-2" />}
         <TextInput
           className="flex-1"

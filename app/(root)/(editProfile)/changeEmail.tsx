@@ -72,7 +72,7 @@ const changeEmailPage = () => {
         />
         <View className="py-4">
           <TouchableOpacity
-            className="rounded-md bg-darkBlue p-4"
+            className="rounded-2xl bg-darkBlue p-4"
             disabled={loading}
             onPress={handleSave}>
             <Text className="text-center text-lg text-white">Save</Text>

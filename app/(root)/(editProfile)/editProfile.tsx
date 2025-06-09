@@ -337,7 +337,7 @@ const EdituserPage = () => {
           <Text className="text-lg text-red-500">Delete Account</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity className="rounded-md bg-darkBlue p-4" onPress={handleSave}>
+        <TouchableOpacity className="rounded-2xl bg-darkBlue p-4" onPress={handleSave}>
           <Text className="text-center text-lg text-white">Save</Text>
         </TouchableOpacity>
 

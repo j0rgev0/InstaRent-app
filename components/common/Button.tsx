@@ -15,7 +15,7 @@ const Button = ({ title, loadingTitle = title, loading = false, onPress }: Butto
   return (
     <TouchableOpacity
       activeOpacity={0.77}
-      className="flex-row items-center justify-center gap-2 rounded-md bg-darkBlue p-4"
+      className="flex-row items-center justify-center gap-2 rounded-2xl bg-darkBlue p-4"
       onPress={onPress}
       disabled={loading}>
       {loading && <ActivityIndicator color={'white'} />}
