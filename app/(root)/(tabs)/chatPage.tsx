@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
+  AppState,
   Image,
   Platform,
   RefreshControl,
@@ -51,6 +52,24 @@ const ChatPage = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [properties, setProperties] = useState<Map<string, Property>>(new Map())
   const router = useRouter()
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserChatRooms()
+    }
+  }, [userId])
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && userId) {
+        fetchUserChatRooms()
+      }
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [userId])
 
   const fetchUserChatRooms = async () => {
     try {
@@ -128,22 +147,45 @@ const ChatPage = () => {
 
       if (data.receiverId === userId) {
         await socket.fetchUnreadCount(userId)
+        await fetchUserChatRooms()
       }
-
-      await fetchUserChatRooms()
     }
 
     socket.onMessage(handleNewMessage)
 
-    chats.forEach((chat) => {
-      const roomId = chat.roomId
-      socket.joinRoom(roomId)
-    })
+    // Join all chat rooms on mount
+    const joinRooms = async () => {
+      try {
+        const response = await fetch(`${INSTARENT_API_URL}/chat/rooms/${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INSTARENT_API_KEY}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch chat rooms')
+        }
+
+        const data = await response.json()
+        if (Array.isArray(data)) {
+          data.forEach((chat: ChatRoom) => {
+            if (chat.roomId) {
+              socket.joinRoom(chat.roomId)
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Error joining chat rooms:', error)
+      }
+    }
+
+    joinRooms()
 
     return () => {
       socket.removeHandler('receive_message', handleNewMessage)
     }
-  }, [userId, chats])
+  }, [userId])
 
   const onRefresh = async () => {
     setRefreshing(true)

@@ -80,9 +80,14 @@ class SocketService {
           this.fetchUnreadCount(userId)
 
           if (!this.isInChatScreen) {
-            const userData = await this.fetchUserData(data.senderId)
-            const senderName = userData?.name
-            showMessageToast(senderName, data.message)
+            try {
+              const userData = await this.fetchUserData(data.senderId)
+              const senderName = userData?.name || 'Someone'
+              showMessageToast(senderName, data.message)
+            } catch (error) {
+              console.error('Error showing message toast:', error)
+              showMessageToast('New message', data.message)
+            }
           }
         }
       })
@@ -218,15 +223,53 @@ const SocketContext = createContext<SocketService | null>(null)
 
 const UnreadCountContext = createContext<number>(0)
 
+type ChatRoom = {
+  roomId: string
+  senderId: string
+  receiverId: string
+  message: string
+  createdAt: string
+  read: boolean
+}
+
 export function SocketProvider({ children }: { children: ReactNode }) {
   const { data: session } = authClient.useSession()
   const userId = session?.user?.id
   const [unreadCount, setUnreadCount] = useState(0)
 
+  const fetchAndJoinChatRooms = async (userId: string) => {
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/chat/rooms/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch chat rooms')
+      }
+
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        // Join all chat rooms
+        data.forEach((chat: ChatRoom) => {
+          if (chat.roomId) {
+            socketService.joinRoom(chat.roomId)
+          }
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching and joining chat rooms:', error)
+    }
+  }
+
   useEffect(() => {
     if (!userId) return
 
     socketService.connect(userId)
+    socketService.fetchUnreadCount(userId)
+    fetchAndJoinChatRooms(userId)
 
     const unsubscribe = socketService.onUnreadCountChange(setUnreadCount)
 
@@ -239,14 +282,31 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active' && userId) {
         socketService.fetchUnreadCount(userId)
+        fetchAndJoinChatRooms(userId)
       }
     })
+
+    const handleNewMessage = async (data: any) => {
+      if (!data || !data.message || !data.senderId || !data.receiverId) {
+        return
+      }
+
+      const roomId = data.roomId
+      socketService.joinRoom(roomId)
+
+      if (data.receiverId === userId) {
+        await socketService.fetchUnreadCount(userId)
+      }
+    }
+
+    socketService.onMessage(handleNewMessage)
 
     return () => {
       unsubscribe()
       socketService.disconnect()
       clearInterval(intervalId)
       subscription.remove()
+      socketService.removeHandler('receive_message', handleNewMessage)
     }
   }, [userId])
 
