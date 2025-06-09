@@ -376,7 +376,7 @@ const PublishPage = () => {
         params: { propertyId: newPropertyId }
       })
     } catch (error) {
-      // El error ya fue manejado en createProperty
+
       console.error('Failed to create property:', error)
     }
   }
@@ -390,7 +390,7 @@ const PublishPage = () => {
       Alert.alert('Success', 'Property edited successfully')
       router.replace('/(root)/(properties)/myProperties')
     } catch (error) {
-      // El error ya fue manejado en editProperty
+
       console.error('Failed to edit property:', error)
     }
   }

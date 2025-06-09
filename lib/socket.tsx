@@ -33,7 +33,7 @@ class SocketService {
         this.isConnected = true
         console.log('Socket connected')
         this.fetchUnreadCount(userId)
-        // Rejoin all rooms on reconnect
+
         this.joinedRooms.forEach((roomId) => this.joinRoom(roomId))
       })
 
@@ -99,7 +99,6 @@ class SocketService {
       this.messageHandlers.set(event, [])
     }
     this.messageHandlers.get(event)?.push(callback)
-    console.log('mensaje recibido 2')
   }
 
   public removeHandler(event: string, callback: (data: any) => void) {
