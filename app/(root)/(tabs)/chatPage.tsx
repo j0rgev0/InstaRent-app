@@ -123,8 +123,12 @@ const ChatPage = () => {
         return
       }
 
-      const roomId = data.roomid
+      const roomId = data.roomId
       socket.joinRoom(roomId)
+
+      if (data.receiverId === userId) {
+        await socket.fetchUnreadCount(userId)
+      }
 
       await fetchUserChatRooms()
     }
@@ -157,6 +161,7 @@ const ChatPage = () => {
 
       if (userId) {
         fetchUserChatRooms()
+        socket.fetchUnreadCount(userId)
       }
     }, [userId])
   )

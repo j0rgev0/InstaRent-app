@@ -1,5 +1,6 @@
 import { CHAT_API_URL, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/constants'
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
+import { AppState, AppStateStatus } from 'react-native'
 import { io, Socket } from 'socket.io-client'
 import { authClient } from './auth-client'
 
@@ -10,6 +11,7 @@ class SocketService {
   private isConnected: boolean = false
   private unreadCount: number = 0
   private unreadCountListeners: ((count: number) => void)[] = []
+  private joinedRooms: Set<string> = new Set()
 
   private constructor() {}
 
@@ -31,6 +33,8 @@ class SocketService {
         this.isConnected = true
         console.log('Socket connected')
         this.fetchUnreadCount(userId)
+        // Rejoin all rooms on reconnect
+        this.joinedRooms.forEach((roomId) => this.joinRoom(roomId))
       })
 
       this.socket.on('disconnect', () => {
@@ -42,11 +46,11 @@ class SocketService {
         console.error('Socket error:', error)
       })
 
-      // Add global message handler
       this.socket.on('receive_message', (data) => {
         this.notifyHandlers('receive_message', data)
         if (data.receiverId === userId) {
           this.incrementUnreadCount()
+          this.fetchUnreadCount(userId)
         }
       })
     }
@@ -61,8 +65,16 @@ class SocketService {
   }
 
   public joinRoom(roomId: string) {
-    if (this.socket) {
+    if (this.socket && !this.joinedRooms.has(roomId)) {
       this.socket.emit('join_room', roomId)
+      this.joinedRooms.add(roomId)
+    }
+  }
+
+  public leaveRoom(roomId: string) {
+    if (this.socket && this.joinedRooms.has(roomId)) {
+      this.socket.emit('leave_room', roomId)
+      this.joinedRooms.delete(roomId)
     }
   }
 
@@ -82,24 +94,12 @@ class SocketService {
     this.addHandler('receive_message', callback)
   }
 
-  public onTyping(callback: (data: { userId: string; isTyping: boolean }) => void) {
-    this.addHandler('typing', callback)
-    if (this.socket) {
-      this.socket.on('typing', callback)
-    }
-  }
-
-  public emitTyping(isTyping: boolean) {
-    if (this.socket) {
-      this.socket.emit('typing', { isTyping })
-    }
-  }
-
   public addHandler(event: string, callback: (data: any) => void) {
     if (!this.messageHandlers.has(event)) {
       this.messageHandlers.set(event, [])
     }
     this.messageHandlers.get(event)?.push(callback)
+    console.log('mensaje recibido 2')
   }
 
   public removeHandler(event: string, callback: (data: any) => void) {
@@ -131,11 +131,18 @@ class SocketService {
           Authorization: `Bearer ${INSTARENT_API_KEY}`
         }
       })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch unread count')
+      }
+
       const data = await response.json()
       const count = Array.isArray(data) ? data.length : data.count || 0
       this.setUnreadCount(count)
+      return count
     } catch (error) {
       console.error('Error fetching unread count:', error)
+      return 0
     }
   }
 
@@ -152,8 +159,10 @@ class SocketService {
   }
 
   private setUnreadCount(count: number) {
-    this.unreadCount = count
-    this.unreadCountListeners.forEach((listener) => listener(count))
+    if (this.unreadCount !== count) {
+      this.unreadCount = count
+      this.unreadCountListeners.forEach((listener) => listener(count))
+    }
   }
 
   public getUnreadCount(): number {
@@ -171,16 +180,12 @@ class SocketService {
   }
 }
 
-// Export a singleton instance
 export const socketService = SocketService.getInstance()
 
-// Create a context for the socket service
 const SocketContext = createContext<SocketService | null>(null)
 
-// Create a context for unread count
 const UnreadCountContext = createContext<number>(0)
 
-// Create a provider component
 export function SocketProvider({ children }: { children: ReactNode }) {
   const { data: session } = authClient.useSession()
   const userId = session?.user?.id
@@ -189,16 +194,27 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!userId) return
 
-    // Connect to socket when user is authenticated
     socketService.connect(userId)
 
-    // Subscribe to unread count changes
     const unsubscribe = socketService.onUnreadCountChange(setUnreadCount)
 
-    // Cleanup on unmount
+    const intervalId = setInterval(() => {
+      if (userId) {
+        socketService.fetchUnreadCount(userId)
+      }
+    }, 30000)
+
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && userId) {
+        socketService.fetchUnreadCount(userId)
+      }
+    })
+
     return () => {
       unsubscribe()
       socketService.disconnect()
+      clearInterval(intervalId)
+      subscription.remove()
     }
   }, [userId])
 
@@ -209,7 +225,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   )
 }
 
-// Create a hook to use the socket service
 export function useSocket() {
   const socket = useContext(SocketContext)
   if (!socket) {
@@ -218,7 +233,6 @@ export function useSocket() {
   return socket
 }
 
-// Create a hook to use the unread count
 export function useUnreadCount() {
   return useContext(UnreadCountContext)
 }

@@ -52,7 +52,6 @@ export function ChatInput({
     onChangeText(text)
     if (!isTyping) {
       setIsTyping(true)
-      socket.emitTyping(true)
     }
   }
 
@@ -60,7 +59,6 @@ export function ChatInput({
     if (value.trim()) {
       onSend()
       setIsTyping(false)
-      socket.emitTyping(false)
     }
   }
 
@@ -94,7 +92,7 @@ export function ChatInput({
         className={`rounded-full px-4 h-[40px] justify-center ml-2 ${
           value.trim() ? 'bg-darkBlue' : 'bg-gray-300'
         }`}>
-        <Ionicons name= 'arrow-up' size={20} color="white" />
+        <Ionicons name="arrow-up" size={20} color="white" />
       </TouchableOpacity>
     </View>
   )

@@ -23,6 +23,7 @@ import {
 // @ts-ignore
 import MapPreview from '@/components/map/MapPreview'
 import { authClient } from '@/lib/auth-client'
+import { useSocket } from '@/lib/socket'
 
 const VISIBLE_DOTS = 5
 const DOT_SIZE = 8
@@ -33,6 +34,8 @@ const screenWidth = Dimensions.get('window').width
 
 const PropertyView = () => {
   const { data: session } = authClient.useSession()
+  const userId = session?.user?.id
+  const socket = useSocket()
 
   const navigation = useNavigation()
   const params = useLocalSearchParams()
@@ -105,6 +108,10 @@ const PropertyView = () => {
   }
 
   const handleChat = () => {
+    if (userId) {
+      socket.fetchUnreadCount(userId)
+    }
+
     router.push({
       pathname: '/(root)/(chat)/chat',
       params: {
