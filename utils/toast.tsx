@@ -14,11 +14,11 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4
+      height: 6
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
     width: '90%',
     alignSelf: 'center' as FlexAlignType,
     overflow: 'hidden',
@@ -32,13 +32,13 @@ const styles = StyleSheet.create({
     flex: 1
   },
   text1Style: {
-    color: '#353949',
+    color: '#ffffff',
     fontSize: 15,
     fontWeight: '600' as '600',
     marginBottom: 4
   },
   text2Style: {
-    color: '#353949',
+    color: '#ffffff',
     fontSize: 14,
     lineHeight: 18,
     opacity: 0.95
@@ -47,26 +47,26 @@ const styles = StyleSheet.create({
 
 export const toastConfig = {
   success: ({ text1, text2 }: any) => (
-    <View style={[styles.baseToastContainer, { backgroundColor: '#4CAF50' }]}>
+    <View style={[styles.baseToastContainer, { backgroundColor: '#F5F5F5' }]}>
       <View style={styles.textContainer}>
-        <Text style={styles.text1Style}>{text1}</Text>
-        <Text style={styles.text2Style}>{text2}</Text>
+        <Text style={[styles.text1Style, { color: '#424242' }]}>{text1}</Text>
+        <Text style={[styles.text2Style, { color: '#616161' }]}>{text2}</Text>
       </View>
     </View>
   ),
   error: ({ text1, text2 }: any) => (
-    <View style={[styles.baseToastContainer, { backgroundColor: '#F44336' }]}>
+    <View style={[styles.baseToastContainer, { backgroundColor: '#FAFAFA' }]}>
       <View style={styles.textContainer}>
-        <Text style={styles.text1Style}>{text1}</Text>
-        <Text style={styles.text2Style}>{text2}</Text>
+        <Text style={[styles.text1Style, { color: '#424242' }]}>{text1}</Text>
+        <Text style={[styles.text2Style, { color: '#616161' }]}>{text2}</Text>
       </View>
     </View>
   ),
   info: ({ text1, text2 }: any) => (
-    <View style={[styles.baseToastContainer, { backgroundColor: '#ffffff' }]}>
+    <View style={[styles.baseToastContainer, { backgroundColor: '#F0F0F0' }]}>
       <View style={styles.textContainer}>
-        <Text style={styles.text1Style}>{text1}</Text>
-        <Text style={styles.text2Style}>{text2}</Text>
+        <Text style={[styles.text1Style, { color: '#424242' }]}>{text1}</Text>
+        <Text style={[styles.text2Style, { color: '#616161' }]}>{text2}</Text>
       </View>
     </View>
   )
