@@ -4,9 +4,11 @@ import { ActivityIndicator, SafeAreaView, View } from 'react-native'
 
 import { Stack, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
+import Toast from 'react-native-toast-message'
 
 import { authClient } from '@/lib/auth-client'
 import { SocketProvider } from '@/lib/socket'
+import { toastConfig } from '../utils/toast'
 
 import '@/global.css'
 
@@ -53,6 +55,7 @@ export default function AppLayout() {
             }}
           />
         </Stack>
+        <Toast config={toastConfig} />
       </View>
     </SocketProvider>
   )

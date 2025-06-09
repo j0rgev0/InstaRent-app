@@ -2,6 +2,7 @@ import { CHAT_API_URL, INSTARENT_API_KEY, INSTARENT_API_URL } from '@/utils/cons
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { AppState, AppStateStatus } from 'react-native'
 import { io, Socket } from 'socket.io-client'
+import { showMessageToast } from '../utils/toast'
 import { authClient } from './auth-client'
 
 class SocketService {
@@ -12,6 +13,7 @@ class SocketService {
   private unreadCount: number = 0
   private unreadCountListeners: ((count: number) => void)[] = []
   private joinedRooms: Set<string> = new Set()
+  private isInChatScreen: boolean = false
 
   private constructor() {}
 
@@ -20,6 +22,31 @@ class SocketService {
       SocketService.instance = new SocketService()
     }
     return SocketService.instance
+  }
+
+  public setInChatScreen(value: boolean) {
+    this.isInChatScreen = value
+  }
+
+  private async fetchUserData(userId: string) {
+    try {
+      const response = await fetch(`${INSTARENT_API_URL}/users/${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INSTARENT_API_KEY}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data')
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+      return null
+    }
   }
 
   public connect(userId: string) {
@@ -46,11 +73,17 @@ class SocketService {
         console.error('Socket error:', error)
       })
 
-      this.socket.on('receive_message', (data) => {
+      this.socket.on('receive_message', async (data) => {
         this.notifyHandlers('receive_message', data)
         if (data.receiverId === userId) {
           this.incrementUnreadCount()
           this.fetchUnreadCount(userId)
+
+          if (!this.isInChatScreen) {
+            const userData = await this.fetchUserData(data.senderId)
+            const senderName = userData?.name
+            showMessageToast(senderName, data.message)
+          }
         }
       })
     }

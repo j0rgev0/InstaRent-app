@@ -160,6 +160,11 @@ export default function ChatScreen() {
     if (currentUserId && roomChatID) {
       fetchMessages(1)
       socket.joinRoom(roomChatID)
+      socket.setInChatScreen(true)
+    }
+
+    return () => {
+      socket.setInChatScreen(false)
     }
   }, [currentUserId, roomChatID])
 
