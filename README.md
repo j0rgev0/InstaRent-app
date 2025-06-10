@@ -1,50 +1,127 @@
-# Welcome to your Expo app 👋
+# InstaRent App 🏠
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+InstaRent is a modern mobile application built with Expo and React Native, designed to facilitate property rentals and management. The app provides a seamless experience for both property owners and renters.
 
-## Get started
+## 🚀 Features
 
-1. Install dependencies
+- User authentication and authorization
+- Property listing and management
+- Location-based search with Google Maps integration
+- Real-time messaging and notifications
+- Secure payment processing
+- Image upload and management
+- Responsive and modern UI with NativeWind (TailwindCSS)
+- Cross-platform support (iOS & Android)
+
+## 🛠️ Tech Stack
+
+- **Framework**: Expo (React Native)
+- **Language**: TypeScript
+- **Styling**: NativeWind (TailwindCSS)
+- **Database**: Neon Database with Drizzle ORM
+- **Authentication**: Better Auth
+- **Maps**: Google Maps & React Native Maps
+- **State Management**: React Native's built-in state management
+- **UI Components**: Expo Vector Icons, React Native Elements
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Node.js (LTS version)
+- npm or yarn
+- Expo CLI
+- iOS Simulator (for Mac) or Android Studio (for Android development)
+
+## 🚀 Getting Started
+
+1. Clone the repository:
+
+   ```bash
+   git clone [your-repository-url]
+   cd instarent-app
+   ```
+
+2. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add necessary environment variables:
 
-   ```bash
-   npx expo start
+   ```
+   GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   DATABASE_URL=your_database_url
    ```
 
-In the output, you'll find options to open the app in a
+4. Start the development server:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm start
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+5. Run on your preferred platform:
 
-## Get a fresh project
+   ```bash
+   # For iOS
+   npm run ios
+   
+   # For Android
+   npm run android
+   
+   # For web
+   npm run web
+   ```
 
-When you're ready, run:
+## 📱 Development
+
+The project uses file-based routing with Expo Router. Main directories:
+
+- `/app` - Main application code and routes
+- `/components` - Reusable React components
+- `/utils` - Utility functions and helpers
+- `/hooks` - Custom React hooks
+- `/constants` - Application constants
+- `/assets` - Static assets (images, fonts, etc.)
+- `/db` - Database schemas and migrations
+
+## 🔧 Available Scripts
+
+- `npm start` - Start the Expo development server
+- `npm run android` - Run on Android device/emulator
+- `npm run ios` - Run on iOS simulator
+- `npm run web` - Run in web browser
+- `npm run lint` - Run ESLint
+- `npm run db:push` - Push database schema changes
+
+## 📦 Database Management
+
+The project uses Drizzle ORM with Neon Database. To manage database schemas:
 
 ```bash
-npm run reset-project
+npm run db:push
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🤝 Contributing
 
-## Learn more
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-To learn more about developing your project with Expo, look at the following resources:
+## 📄 License
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Join the community
+## 👥 Authors
 
-Join our community of developers creating universal apps.
+- Your Name - Initial work
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🙏 Acknowledgments
+
+- Expo team for the amazing framework
+- React Native community
+- All contributors who have helped shape this project
