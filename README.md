@@ -230,7 +230,17 @@ Common issues and solutions:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - see the [LICENSE](LICENSE) file for details.
+
+### License Restrictions
+
+- This software is free and open source
+- Commercial use is not permitted without explicit permission
+- Any modifications must be released under the same license
+- If you use this software in a network service, you must provide the source code to users
+- You must include the original copyright notice and license text in any distribution
+
+For more information about the AGPL-3.0 license, visit: <https://www.gnu.org/licenses/agpl-3.0.html>
 
 ## 👥 Authors
 
