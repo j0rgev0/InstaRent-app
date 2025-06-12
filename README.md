@@ -1,6 +1,27 @@
 # InstaRent App 🏠
 
-InstaRent is a cross-platform mobile application built with React Native and Expo that serves as a comprehensive property rental and sales marketplace. The application enables users to browse, publish, and manage property listings while facilitating direct communication between property owners and potential renters or buyers through an integrated real-time chat system.
+InstaRent is an innovative mobile platform that revolutionizes the real estate market by directly connecting property owners and tenants. Its main objective is to democratize access to housing through a collaborative community, where each person can offer their property or find their ideal home, connecting, sharing, and facilitating the rental process without traditional intermediaries.
+
+The platform is designed to create an ecosystem where local knowledge and trust are fundamental. For example, a property owner can offer their apartment while a tenant can share their references and preferences, thus generating a transparent and direct relationship. InstaRent offers personalized profiles where users can indicate their housing preferences, desired location, and budget, as well as their available properties for rent.
+
+Key features include:
+
+- Intelligent property search based on location and preferences
+- Real-time messaging system for direct communication
+- Verified profiles to increase trust between users
+- Map integration for location visualization
+- Rating and review system
+- Digital document and contract management
+
+The application is specifically targeted at:
+
+- Property owners looking to rent their properties efficiently
+- Tenants searching for their next home
+- Students in need of temporary accommodation
+- Professionals seeking housing flexibility
+- Real estate investors looking to manage their properties
+
+This approach breaks with the traditional real estate intermediation model, promoting a network where information flows transparently and decisions are made more quickly and efficiently. Development has been carried out using React Native with Expo to ensure a native experience on iOS and Android, along with a robust backend architecture that ensures platform scalability and security.
 
 ## 🚀 Features
 
