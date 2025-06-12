@@ -21,7 +21,7 @@ const IndexPage = () => {
       <View className="flex-1 p-6">
         <View className="flex-1 items-center justify-center gap-8">
           <View className="items-center gap-2">
-            <Text className="text-4xl font-bold text-darkBlue">Welcome to Instarent</Text>
+            <Text className="text-4xl font-bold text-darkBlue">Welcome to InstaRent</Text>
             <Text className="text-lg text-gray-600 text-center">
               Your trusted platform for property rentals
             </Text>
