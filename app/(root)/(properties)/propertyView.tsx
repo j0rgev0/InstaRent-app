@@ -41,8 +41,6 @@ const PropertyView = () => {
   const params = useLocalSearchParams()
   const { width } = useWindowDimensions()
 
-  const fromHome = params.fromHome === 'true' ? true : false
-
   const propertyId = params.propertyId as string | undefined
   const [property, setProperty] = useState<Property | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -570,7 +568,7 @@ const PropertyView = () => {
 
   const renderBottomButton = () => (
     <>
-      {!fromHome || property.user_id === session?.user.id ? (
+      {property.user_id === session?.user.id ? (
         <TouchableOpacity
           onPress={handleEdit}
           className="bg-darkBlue rounded-xl p-4 items-center mt-4">
